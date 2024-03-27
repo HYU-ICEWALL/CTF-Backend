@@ -13,7 +13,7 @@ app.use(cookieParser());
 app.use(sessionManager.session);
 
 
-app.use('/account', accountRouter);
+app.use('/api/account', accountRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
