@@ -1,6 +1,6 @@
 class Database{
-  constructor(name){
-    this.name = name;
+  constructor(databaseName){
+    this.name = databaseName;
   };
 
   async insertData(key, value){}
@@ -8,6 +8,5 @@ class Database{
   async updateData(key, value){}
   async deleteData(key){}
 }
-
 
 module.exports = Database
