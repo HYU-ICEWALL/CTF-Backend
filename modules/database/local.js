@@ -1,5 +1,6 @@
 const Database = require("./database");
-const fs = require('fs');
+const fsSync = require('fs');
+const fs = fsSync.promises;
 
 class LocalDatabase extends Database {
   constructor(name, path) {
