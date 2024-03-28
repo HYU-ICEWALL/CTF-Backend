@@ -85,10 +85,12 @@ body{
 {
     "id": "",
     "name" : "",
+    "description": "",
     "src" : "",
     "flag" : "",
-    "page" : "",
-    "tag" : [] 
+    "link" : "",
+    "score": "",
+    "category" : "",
 }
 ```
 
