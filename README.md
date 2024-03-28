@@ -45,3 +45,69 @@ body{
     "newPassword" : "newtestpassword"
 }
 ```
+
+
+## Schema
+0. Session
+```json
+{
+    "token" : "asfasdfasdf",
+    "uuid" : "uuidadsfasdf" 
+}
+```
+
+1. Account
+```json
+{
+    "id" : "",
+    "password" : "",
+    "email" : "",
+    "uuid" : "",
+    "salt" : "",
+    "verified" : "",
+    "authority" : "",
+}
+```
+
+2. Profile
+```json
+{
+    "id" : "",
+    "email" : "",
+    "name" : "",
+    "organization" : "",
+    "department" : "",
+}
+```
+
+3. Problem
+```json
+{
+    "id": "",
+    "name" : "",
+    "src" : "",
+    "flag" : "",
+    "page" : "",
+    "tag" : [] 
+}
+```
+
+4. Contest
+```json
+{
+    "id" : "",
+    "name" : "",
+    "manager" : [],
+    "problems" : [],
+    "begin_at" : "",
+    "duration" : "",
+    "participants" : []
+}
+```
+
+5. Scoreboard
+```json
+{
+    "contest_id": "",
+}
+```
