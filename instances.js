@@ -15,26 +15,32 @@ const AccountManager = require('./modules/manager/account');
 // const accountManager = new AccountManager(localAccountDB);
 
 const redisSessionDBName = 'redisSessionDB';
-const redisSessionDB = new RedisDatabase(redisSessionDBName);
+const redisSessionDB = new RedisDatabase(redisSessionDBName, {
+  socket: {
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
+    connectTimeout: 100000
+  },
+  password: process.env.REDIS_PASSWORD,
+  legacyMode: false,
+});
+
 const sessionManager = new SessionManager(redisSessionDB);
 
 
-const mongoAccountDBName = 'account';
-const mongoAccountDB = new Mongoose(mongoAccountDBName, accountSchema);
-const accountManager = new AccountManager(mongoAccountDB);
-
-const mongoProblemDBName = 'problem';
-const mongoProblemDB = new Mongoose(mongoProblemDBName, problemSchema);
-const problemManager = new ProblemManager(mongoProblemDB);
-
-const mongoContestDBName = 'contest';
-const mongoContestDB = new Mongoose(mongoContestDBName, contestSchema);
-const contestManager = new ContestManager(mongoContestDB);
+const mongoDBURL = process.env.MONGO_DB_URL;
+const mongoDBName = 'mongodb';
+const mongoDB = new Mongoose(mongoDBName, {
+  "account": accountSchema,
+  "problem": problemSchema,
+  "contest": contestSchema
+}, mongoDBURL);
+const accountManager = new AccountManager(mongoDB);
+const problemManager = new ProblemManager(mongoDB);
+const contestManager = new ContestManager(mongoDB);
 
 const run = async () => {
-  await mongoAccountDB.connect();
-  await mongoProblemDB.connect();
-  await mongoContestDB.connect();
+  await mongoDB.connect();
 }
 
 module.exports = {

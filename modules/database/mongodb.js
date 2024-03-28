@@ -1,21 +1,19 @@
-require('dotenv').config();
-
 const Database = require('./database');
 const mongoose = require('mongoose');
 
-const url = process.env.MONGO_URL;
-
 class Mongoose extends Database {
-  constructor(name, schema) {
+  constructor(name, schemaObj, url) {
     super(name);
-    this.schema = schema;
+    this.schemaObj = schemaObj;
+    this.url = url;
   }
   
   async connect(){
-    
     this.client = mongoose;
-    console.log(`Mongo database ${this.name} connected...`);
-    this.client.connect(url).catch(err => {
+    this.client.connect(this.url).then((value) => {
+      console.log(`Mongo database ${this.name} connected...`);
+    })
+    .catch(err => {
       console.log('Failed to connect to Mongo database...');
       console.error(err);
     });
@@ -25,7 +23,9 @@ class Mongoose extends Database {
       console.error(err);
     });  
 
-    this.client.model(this.name, this.schema);
+    Object.keys(this.schemaObj).map((value, index) => {
+      this.client.model(value, this.schemaObj[value]);
+    });
   }
 
   keyToObj(key){

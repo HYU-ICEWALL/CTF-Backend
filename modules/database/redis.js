@@ -1,20 +1,10 @@
-require('dotenv').config();
 const redis = require('redis');
 const Database = require('./database');
 
 class RedisDatabase extends Database {
-  constructor(name) {
+  constructor(name, clientOptions) {
     super(name);
-    this.clientOptions = {
-      socket: {
-        port: process.env.REDIS_PORT,
-        host: process.env.REDIS_HOST,
-        connectTimeout: 100000
-      },
-      password: process.env.REDIS_PASSWORD,
-      legacyMode: false,
-
-    };
+    this.clientOptions = clientOptions;
 
     
     this.client = redis.createClient(this.clientOptions);
