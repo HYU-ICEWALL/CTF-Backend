@@ -99,7 +99,7 @@ interface Problem{
     id: number,             // Problem id
     name : string,          // Problem name
     description: string,    // Problem description
-    src : string,           // Problem source (download)
+    source : string,           // Problem source (download)
     flag : string,          // Problem flag (answer)
     link : string,          // Problem link (ex. web, pwn)
     score: number,          // Problem score

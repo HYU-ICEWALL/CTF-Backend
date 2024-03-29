@@ -5,8 +5,9 @@ const accountSchema = new Schema({
   password: String,
   salt: String,
   email: String,
+  uuid: String,
   verified: Boolean,
-  authority: Number // 0 : User, 1 : Admin
+  authority: Number
 });
 
 module.exports = accountSchema;
