@@ -1,13 +1,12 @@
 class Database{
-  constructor(name){
-    this.name = name;
+  constructor(databaseName){
+    this.name = databaseName;
   };
 
-  async insertData(key, value){}
-  async findData(key){}
-  async updateData(key, value){}
-  async deleteData(key){}
+  async insertData(){}
+  async findData(){}
+  async updateData(){}
+  async deleteData(){}
 }
-
 
 module.exports = Database

@@ -1,27 +1,54 @@
 require('dotenv').config();
-const LocalDatabase = require("./modules/database/local");
 const RedisDatabase = require('./modules/database/redis');
 const SessionManager = require('./modules/manager/session');
-const AccountManager = require('./modules/manager/account');
+const Mongoose = require('./modules/database/mongodb');
 
-const localAccountDBPath = __dirname + '/' + process.env.LOCAL_DB_PATH + '/account.json';
-const localAccountDBName = 'localAccountDB';
-const localAccountDB = new LocalDatabase(localAccountDBName, localAccountDBPath);
+const accountSchema = require('./modules/schema/account');
+const problemSchema = require('./modules/schema/problem');
+const contestSchema = require('./modules/schema/contest');
+const profileSchema = require('./modules/schema/profile');
+
+const ProblemManager = require('./modules/manager/problem');
+const ContestManager = require('./modules/manager/contest');
+const AccountManager = require('./modules/manager/account');
+const ProfileManager = require('./modules/manager/profile');
 
 const redisSessionDBName = 'redisSessionDB';
-const redisSessionDB = new RedisDatabase(redisSessionDBName);
+const redisSessionDB = new RedisDatabase(redisSessionDBName, {
+  socket: {
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
+    connectTimeout: 100000
+  },
+  password: process.env.REDIS_PASSWORD,
+  legacyMode: false,
+});
+
 const sessionManager = new SessionManager(redisSessionDB);
 
-const accountManager = new AccountManager(localAccountDB);
+
+const mongoDBURL = process.env.MONGO_DB_URL;
+const mongoDBName = 'mongodb';
+const mongoDB = new Mongoose(mongoDBName, {
+  "account": accountSchema,
+  "problem": problemSchema,
+  "contest": contestSchema,
+  "profile": profileSchema,
+}, mongoDBURL);
+const accountManager = new AccountManager(mongoDB, "account");
+const problemManager = new ProblemManager(mongoDB, "problem");
+const contestManager = new ContestManager(mongoDB, "contest");
+const profileManager = new ProfileManager(mongoDB, "profile");
 
 const run = async () => {
-  await localAccountDB.connect();
-  await localAccountDB.load();
+  await mongoDB.connect();
 }
 
 module.exports = {
-  localAccountDB,
   sessionManager,
   accountManager,
+  problemManager,
+  contestManager,
+  profileManager,
   run
 }

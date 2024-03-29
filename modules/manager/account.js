@@ -1,9 +1,11 @@
+require('dotenv').config();
 const { createSalt, encryptPassword } = require("../encrypt")
 const { v4 } = require('uuid');
 
 class AccountManager{
-  constructor(database){
+  constructor(database, modelName){
     this.database = database;
+    this.modelName = modelName;
   }
   
   createUuid = () => {
@@ -11,11 +13,11 @@ class AccountManager{
     return token[2] + token[1] + token[0] + token[3] + token[4];
   }
 
-  createAccount = (email, id, password) => {
+  async createAccount(email, id, password){
     try {
       const salt = createSalt();
       const encryptedPassword = encryptPassword(password, salt);
-
+    
       const account = {
         id: id,
         password: encryptedPassword,
@@ -24,22 +26,25 @@ class AccountManager{
         email: email,
         verified: false,
       }
-
-      this.database.insertData(id, account);
-      console.log('Account created : ' + id);
-
+    
+      await this.database.insertData(this.modelName, account).then((value) => {
+        console.log("Account created : " + id);
+      });
+    
       return account;
-    } catch (error) {
+    } catch (err) {
       console.error('Failed to create account : ' + id);
-      console.error(error);
+      console.error(err);
+      return undefined;
     }
   }
 
-  findAccountWithId = (id) => {
+  async findAccountWithId(id){
     try {
-      const account = this.database.getData(id);
+      const account = await this.database.findData(this.modelName, id);
       if (!account) {
-        throw new Error('Account not found : ' + id);
+        console.log('Account not found : ' + id);
+        return {};
       }
 
       return account;
@@ -50,15 +55,17 @@ class AccountManager{
     }
   }
 
-  findAccountExist = (id, password) => {
+  async findAccountExist(id, password){
     try {
-      const account = this.database.findData(id);
+      const account = await this.database.findData(this.modelName, id);
       if (!account) {
-        return undefined;
+        console.log('Account not found : ' + id);
+        return {};
       }
 
       if (account.password !== encryptPassword(password, account.salt)) {
-        return undefined;
+        console.log('Password not matched : ' + id);
+        return {};
       }
 
       return account;
@@ -69,9 +76,9 @@ class AccountManager{
     }
   }
 
-  deleteAccount = (id, password) => {
+  async deleteAccount(id, password){
     try {
-      const account = this.database.getData(id);
+      const account = await this.database.findData(this.modelName, id);
       if (!account) {
         throw new Error('Account not found : ' + id);
       }
@@ -81,7 +88,9 @@ class AccountManager{
         throw new Error('Password not matched : ' + id);
       }
 
-      this.database.deleteData(id);
+      await this.database.deleteData(this.modelName, id).then((value) => {
+        console.log('Account deleted : ' + id);
+      });
     } catch (error) {
       console.error('Failed to delete account : ' + id);
       console.error(error);
@@ -89,9 +98,10 @@ class AccountManager{
       return undefined;
     }
   }
-  changePassword = (id, password, newPassword) => {
+
+  async changePassword(id, password, newPassword){
     try {
-      const account = this.database.getData(id);
+      const account = this.database.getData(this.modelName, id);
       if (!account) {
         throw new Error('Account not found : ' + id);
       }
@@ -103,8 +113,9 @@ class AccountManager{
 
       const newEncryptedPassword = encryptPassword(newPassword, account.salt);
       account.password = newEncryptedPassword;
-
-      this.database.updateData(id, account);
+      await this.database.updateData(this.modelName, id, account).then((value) => {
+        console.log('Password changed : ' + id);
+      });
 
       return account;
     } catch (error) {

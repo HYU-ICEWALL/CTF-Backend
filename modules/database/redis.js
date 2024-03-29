@@ -1,21 +1,10 @@
-require('dotenv').config();
 const redis = require('redis');
 const Database = require('./database');
 
 class RedisDatabase extends Database {
-  constructor(name) {
+  constructor(name, clientOptions) {
     super(name);
-    this.clientOptions = {
-      socket: {
-        port: process.env.REDIS_PORT,
-        host: process.env.REDIS_HOST,
-        connectTimeout: 100000
-      },
-      password: process.env.REDIS_PASSWORD,
-      legacyMode: false,
-
-    };
-
+    this.clientOptions = clientOptions;
     
     this.client = redis.createClient(this.clientOptions);
     this.client.connect().then(() => {
@@ -28,18 +17,27 @@ class RedisDatabase extends Database {
       console.error('Failed to connect to Redis database...');
       console.error(error);
     });
+
+    this.client.on('reconnecting', () => {
+      console.log('Reconnecting to Redis database...');
+    });
+
   }
 
-  async insertData(key, value){
+  async insertData(){
+    const [key, value] = arguments;
     return await this.client.set(key, value);
   }
-  async findData(key) {
+  async findData() {
+    const [key] = arguments;
     return await this.client.get(key);
   }
-  async updateData(key, value) {
+  async updateData() {
+    const [key, value] = arguments;
     return await this.client.set(key, value);
   }
-  async deleteData(key) {
+  async deleteData() {
+    const [key] = arguments;
     return await this.client.del(key);
   }
 }
