@@ -2,17 +2,16 @@ require('dotenv').config();
 const RedisDatabase = require('./modules/database/redis');
 const SessionManager = require('./modules/manager/session');
 const Mongoose = require('./modules/database/mongodb');
+
 const accountSchema = require('./modules/schema/account');
 const problemSchema = require('./modules/schema/problem');
 const contestSchema = require('./modules/schema/contest');
+const profileSchema = require('./modules/schema/profile');
+
 const ProblemManager = require('./modules/manager/problem');
 const ContestManager = require('./modules/manager/contest');
 const AccountManager = require('./modules/manager/account');
-
-// const localAccountDBPath = __dirname + '/' + process.env.LOCAL_DB_PATH + '/account.json';
-// const localAccountDBName = 'localAccountDB';
-// const localAccountDB = new LocalDatabase(localAccountDBName, localAccountDBPath);
-// const accountManager = new AccountManager(localAccountDB);
+const ProfileManager = require('./modules/manager/profile');
 
 const redisSessionDBName = 'redisSessionDB';
 const redisSessionDB = new RedisDatabase(redisSessionDBName, {
@@ -33,11 +32,13 @@ const mongoDBName = 'mongodb';
 const mongoDB = new Mongoose(mongoDBName, {
   "account": accountSchema,
   "problem": problemSchema,
-  "contest": contestSchema
+  "contest": contestSchema,
+  "profile": profileSchema,
 }, mongoDBURL);
 const accountManager = new AccountManager(mongoDB);
 const problemManager = new ProblemManager(mongoDB);
 const contestManager = new ContestManager(mongoDB);
+const profileManager = new ProfileManager(mongoDB);
 
 const run = async () => {
   await mongoDB.connect();
@@ -48,6 +49,5 @@ module.exports = {
   accountManager,
   problemManager,
   contestManager,
-
   run
 }
