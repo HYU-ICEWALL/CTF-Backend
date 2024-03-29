@@ -63,6 +63,7 @@ body{
 interface Session{ 
     token : string,         // String from SessionManager.createSessionToken()
     uuid : string           // String from AccountManager.createUuid()
+    id : string,            // Account id
 }
 ```
 

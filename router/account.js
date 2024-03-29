@@ -1,6 +1,6 @@
 const express = require('express');
-const { accountManager, sessionManager } = require('../instances');
 const router = express.Router();
+const { accountManager, sessionManager } = require('../instances');
 
 router.post('/register', async (req, res) => {
   // TODO : 회원가입
