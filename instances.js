@@ -35,10 +35,10 @@ const mongoDB = new Mongoose(mongoDBName, {
   "contest": contestSchema,
   "profile": profileSchema,
 }, mongoDBURL);
-const accountManager = new AccountManager(mongoDB);
-const problemManager = new ProblemManager(mongoDB);
-const contestManager = new ContestManager(mongoDB);
-const profileManager = new ProfileManager(mongoDB);
+const accountManager = new AccountManager(mongoDB, "account");
+const problemManager = new ProblemManager(mongoDB, "problem");
+const contestManager = new ContestManager(mongoDB, "contest");
+const profileManager = new ProfileManager(mongoDB, "profile");
 
 const run = async () => {
   await mongoDB.connect();
@@ -49,5 +49,6 @@ module.exports = {
   accountManager,
   problemManager,
   contestManager,
+  profileManager,
   run
 }

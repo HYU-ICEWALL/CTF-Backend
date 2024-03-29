@@ -1,9 +1,10 @@
 class ContestManager{
-  constructor(database){
+  constructor(database, modelName){
     this.database = database;
+    this.modelName = modelName;
   }
 
-  createContest = (id, name, manager, begin_at, duration) => {
+  async createContest(id, name, manager, begin_at, duration){
     try {
       const contest = {
         id: id,
@@ -15,8 +16,9 @@ class ContestManager{
         participants: []
       }
 
-      this.database.insertData(id, contest);
-      console.log('Contest created : ' + id);
+      await this.database.insertData(this.modelName, contest).then((value) => {
+        console.log('Contest created : ' + id);
+      });
 
       return contest;
     } catch (error) {
@@ -25,11 +27,12 @@ class ContestManager{
     }
   }
 
-  findContest = (key) => {
+  async findContest(key){
     try {
-      const contest = this.database.getData(key);
+      const contest = await this.database.findData(key);
       if (!contest) {
-        throw new Error('Contest not found : ' + key);
+        console.log('Contest not found : ' + key);
+        return {};
       }
 
       return contest;
@@ -40,44 +43,50 @@ class ContestManager{
     }
   }
 
-  deleteContest = (key) => {
+  async deleteContest(key){
     try {
-      const contest = this.database.getData(key);
+      const contest = await this.database.findData(key);
       if (!contest) {
         throw new Error('Contest not found : ' + key);
       }
 
-      this.database.deleteData(key);
+      await this.database.deleteData(key).then((value) => {
+        console.log('Contest deleted : ' + key);
+      });
     } catch (error) {
       console.error('Failed to delete contest : ' + key);
       console.error(error);
     }
   }
 
-  updateProblems = (key, problems) => {
+  async updateProblems(key, problems){
     try {
-      const contest = this.database.getData(key);
+      const contest = await this.database.getData(key);
       if (!contest) {
         throw new Error('Contest not found : ' + key);
       }
 
       contest.problems = problems;
-      this.database.updateData(key, contest);
+      await this.database.updateData(key, contest).then((value) => {
+        console.log('Problems updated : ' + key);
+      });
     } catch (error) {
       console.error('Failed to add problems to contest : ' + key);
       console.error(error);
     }
   }
 
-  updateParticipants = (key, participants) => {
+  async updateParticipants(key, participants){
     try {
-      const contest = this.database.getData(key);
+      const contest = await this.database.getData(key);
       if (!contest) {
         throw new Error('Contest not found : ' + key);
       }
 
       contest.participants = participants;
-      this.database.updateData(key, contest);
+      await this.database.updateData(key, contest).then((value) => {
+        console.log('Participants updated : ' + key);
+      });
     } catch (error) {
       console.error('Failed to add participants to contest : ' + key);
       console.error(error);

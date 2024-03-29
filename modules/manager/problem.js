@@ -1,10 +1,15 @@
 class ProblemManager {
-  constructor(database) {
+  constructor(database, modelName) {
     this.database = database;
+    this.modelName = modelName;
   }
 
-  createProblem(id, name, src, flag, link, desc, category) {
+  async createProblem(id, name, src, flag, link, desc, category) {
     try {
+      if((await this.database.findData(this.modelName, id)) == {}){
+        throw new Error('Problem already exists : ' + id);
+      }
+
       const problem = {
         id: id,
         name: name,
@@ -15,19 +20,22 @@ class ProblemManager {
         category: category
       }
 
-      this.database.insertData(id, problem);
-      console.log('Problem created : ' + id);
+      await this.database.insertData(this.modelName, problem).then(() => {
+        console.log('Problem created : ' + id);
+      });
 
       return problem;
     } catch (error) {
       console.error('Failed to create problem : ' + id);
       console.error(error);
+
+      return undefined;
     }
   }
 
-  findProblem = (key) => {
+  async findProblem(key){
     try {
-      const problem = this.database.getData(key);
+      const problem = await this.database.findData(this.modelName, key);
       if (!problem) {
         throw new Error('Problem not found : ' + key);
       }
@@ -40,14 +48,16 @@ class ProblemManager {
     }
   }
 
-  deleteProblem = (key) => {
+  async deleteProblem(key){
     try {
-      const problem = this.database.getData(key);
+      const problem = await this.database.getData(this.modelName, key);
       if (!problem) {
         throw new Error('Problem not found : ' + key);
       }
 
-      this.database.deleteData(key);
+      await this.database.deleteData(this.modelName, key).then((value) => {
+        console.log('Problem deleted : ' + key);
+      });
     } catch (error) {
       console.error('Failed to delete problem : ' + key);
       console.error(error);

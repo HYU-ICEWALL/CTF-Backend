@@ -5,7 +5,6 @@ class RedisDatabase extends Database {
   constructor(name, clientOptions) {
     super(name);
     this.clientOptions = clientOptions;
-
     
     this.client = redis.createClient(this.clientOptions);
     this.client.connect().then(() => {
@@ -18,18 +17,27 @@ class RedisDatabase extends Database {
       console.error('Failed to connect to Redis database...');
       console.error(error);
     });
+
+    this.client.on('reconnecting', () => {
+      console.log('Reconnecting to Redis database...');
+    });
+
   }
 
-  async insertData(key, value){
+  async insertData(){
+    const [key, value] = arguments;
     return await this.client.set(key, value);
   }
-  async findData(key) {
+  async findData() {
+    const [key] = arguments;
     return await this.client.get(key);
   }
-  async updateData(key, value) {
+  async updateData() {
+    const [key, value] = arguments;
     return await this.client.set(key, value);
   }
-  async deleteData(key) {
+  async deleteData() {
+    const [key] = arguments;
     return await this.client.del(key);
   }
 }

@@ -22,9 +22,9 @@ class Mongoose extends Database {
       console.log('Failed to connect to Mongo database...');
       console.error(err);
     });  
-
-    Object.keys(this.schemaObj).map((value, index) => {
-      this.client.model(value, this.schemaObj[value]);
+    this.model = {};
+    Object.keys(this.schemaObj).map((key, index) => {
+      this.model[key] = this.client.model(key, this.schemaObj[key]);
     });
   }
 
@@ -34,17 +34,22 @@ class Mongoose extends Database {
     return query;
   }
 
-  async insertData(key, value) {
-    return await this.model.create(value);
+  async insertData() {
+    const [model, value] = arguments;
+    console.log(value);
+    return await this.model[model].create(value);
   }
-  async findData(key) {
-    return await this.model.find(this.keyToObj(key));
+  async findData() {
+    const [model, key] = arguments;
+    return await this.model[model].findOne(this.keyToObj(key));
   }
-  async updateData(key, value) {
-    return await this.model.updateOne(this.keyToObj(key), value);
+  async updateData() {
+    const [model, key, value] = arguments;
+    return await this.model[model].updateOne(this.keyToObj(key), value);
   }
-  async deleteData(key) {
-    return await this.model.deleteOne(this.keyToObj(key));
+  async deleteData() {
+    const [model, key] = arguments;
+    return await this.model[model].deleteOne(this.keyToObj(key));
   }
 }
 

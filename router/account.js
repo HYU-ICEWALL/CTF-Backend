@@ -7,16 +7,19 @@ router.post('/register', async (req, res) => {
   // 1. 이메일 or 전화번호 중복 체크
   try {
     const { email, id, password } = req.body;
-    if(accountManager.findAccountExist(id, password) != undefined){
+    if((await accountManager.findAccountExist(id, password)) == {}){
       res.status(400).send('Account already exists');
       return;
     }
     // 2. 회원가입
-    const account = accountManager.createAccount(email, id, password);
-    res.status(200).send('Account created. Verify your email.');
+    const account = await accountManager.createAccount(email, id, password);
+    if(account == undefined){
+      throw new Error('Failed to create account');
+    }
 
+    res.status(200).send('Account created. Verify your email.');
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
 });
@@ -27,7 +30,7 @@ router.post('/login', async (req, res) => {
   // 2. 비밀번호 확인
   try {
     const { id, password } = req.body;
-    const account = accountManager.findAccountExist(id, password);
+    const account = await accountManager.findAccountExist(id, password);
     if (account == undefined) {
       res.status(400).send('Account not found');
       return;
@@ -36,7 +39,6 @@ router.post('/login', async (req, res) => {
     if(!!req.session && req.session.uuid === account.uuid && !!req.session.token){
       console.log(req.session.token);
       res.status(403).send('Already logged in');
-
       return;
     }
 
@@ -87,7 +89,7 @@ router.post('/logout', (req, res) => {
   }
 });
 
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', (req, res) => {
   // TODO : 토큰 갱신
   // 1. 토큰 갱신
   try {
@@ -118,12 +120,12 @@ router.post('/verify', (req, res) => {
   res.send('not implemented');
 });
 
-router.post('/withdraw', (req, res) => {
+router.post('/withdraw', async (req, res) => {
   // TODO : 회원 탈퇴
   // 1. 회원 탈퇴
   try {
     const { id, password } = req.body;
-    const account = deleteAccount(id, password);
+    const account = await accountManager.deleteAccount(id, password);
     if (account == undefined) {
       res.status(400).send('Account not found');
       return;
@@ -142,12 +144,12 @@ router.post('/withdraw', (req, res) => {
   }
 });
 
-router.post('/change-password', (req, res) => {
+router.post('/change-password', async (req, res) => {
   // TODO : 비밀번호 변경
   try {
     // 1. 비밀번호 변경
     const {id, password, newPassword} = req.body;
-    const account = changePassword(id, password, newPassword);
+    const account = await accountManager.changePassword(id, password, newPassword);
     if(account == undefined){
       res.status(400).send('Account not found');
       return;
