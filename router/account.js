@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
       console.log(req.session);
     });
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
   
@@ -84,7 +84,7 @@ router.post('/logout', (req, res) => {
       res.status(200).send('Logout success');
     });
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
 });
@@ -108,7 +108,7 @@ router.post('/refresh', (req, res) => {
       res.status(200).send('Token refresh success');
     });
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
 });
@@ -139,7 +139,7 @@ router.post('/withdraw', async (req, res) => {
       res.status(200).send('Withdraw success');
     });
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
 });
@@ -163,7 +163,7 @@ router.post('/change-password', async (req, res) => {
     })
 
   } catch (error) {
-    res.status(503).send('Internal Server Error');
+    res.status(500).send('Internal Server Error');
     console.error(error);
   }
 });
