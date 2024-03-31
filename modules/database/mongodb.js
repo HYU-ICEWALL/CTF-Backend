@@ -41,15 +41,15 @@ class Mongoose extends Database {
   }
   async findData() {
     const [model, key] = arguments;
-    return await this.model[model].findOne(this.keyToObj(key));
+    return await this.model[model].find(key);
   }
   async updateData() {
     const [model, key, value] = arguments;
-    return await this.model[model].updateOne(this.keyToObj(key), value);
+    return await this.model[model].updateOne(key, value);
   }
   async deleteData() {
     const [model, key] = arguments;
-    return await this.model[model].deleteOne(this.keyToObj(key));
+    return await this.model[model].deleteOne(key);
   }
 }
 
