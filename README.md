@@ -62,8 +62,7 @@ body{
 ```ts
 interface Session{ 
     token : string,         // String from SessionManager.createSessionToken()
-    uuid : string           // String from AccountManager.createUuid()
-    id : string,            // Account id
+    account : Account,       // Account object
 }
 ```
 
@@ -104,7 +103,7 @@ interface Problem{
     flag : string,          // Problem flag (answer)
     link : string,          // Problem link (ex. web, pwn)
     score: number,          // Problem score
-    category : number       // 0 : Web, 1 : Pwn, 2 : Reversing, 3 : Forensic, 4 :: Misc...
+    category : number       // 0 : Web, 1 : Pwn, 2 : Reversing, 3 : Forensic, 4 : Misc...
 }
 ```
 
@@ -115,10 +114,44 @@ interface Contest{
     id : number,            // Contest id
     name : string,          // Contest name
     description: string,    // Contest description
-    manager: string,        // Contest manager (account uuid or _id)
+    manager: string,        // Contest manager (account id)
     begin_at: String,       // Contest begin time
     duration: number,       // Contest duration (minute)
     problems: number[],     // Contest problems (problem id)
-    participants: string[]  // Contest participants (account uuid or _id)
+    participants: string[]  // Contest participants (account id)
 }
 ```
+
+
+### Architecture
+
+1. Database Module
+- database.js
+    - insert : Insert data.
+    - find : Find data.
+    - update : Update data.
+    - delete : Delete data.
+2. Manager Module
+- accountManager.js
+    - createAccount : Create account with id and password. Insert account into dbms. Return account if success, null if fail.
+    - findAccountWithId : Find account with id. Return account id to object if success, null if fail.
+    - findAccount : Find account with id and password. Return account if success, null if fail.
+    - updateAccount : Create new account with id and new password and update. Return new account if success, null if fail.
+    - deleteAccount : Delete account with id and password. Return true if success, false if fail.
+- profileManager.js
+    - createProfile : Create profile with id and email. Insert profile into dbms. Return profile if success, null if fail.
+    - findProfiles : Find profiles with `{key : value}`. Return profile if success, null if fail.
+    - updateProfile : Create new profile with id and update. Return new profile if success, null if fail.
+    - deleteProfile : Delete profile with id. Return true if success, false if fail.
+- problemManager.js
+    - createProblem : Create problem. Insert problem into dbms. Return problem if success, null if fail.
+    - findProblems : Find problems with `{key : value}`. Return problem if success, null if fail.
+    - updateProblem : Create new problem and update. Return new problem if success, null if fail.
+    - deleteProblem : Delete problem with id. Return true if success, false if fail.
+- contestManager.js
+    - createContest : Create contest. Insert contest into dbms. Return contest if success, null if fail.
+    - findContests : Find contests with `{key : value}`. Return contest if success, null if fail.
+    - updateContest : Create new contest and update. Return new contest if success, null if fail.
+    - deleteContest : Delete contest with id. Return true if success, false if fail.
+
+3. Router Module
