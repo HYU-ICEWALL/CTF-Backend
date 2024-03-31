@@ -25,10 +25,6 @@ class SessionManager{
     const token = v4().split('-');
     return token[2] + token[1] + token[0] + token[3] + token[4];
   }
-
-  createSession(uuid){
-    return [uuid, this.createSessionToken()]
-  }
 }
 
 module.exports = SessionManager
