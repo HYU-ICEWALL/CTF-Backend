@@ -42,7 +42,7 @@ class ProblemManager {
 
   async deleteProblem(id){
     try {
-      const problems = await this.database.getData(this.modelName, {id: id});
+      const problems = await this.database.findData(this.modelName, {id: id});
       if (problems.length === 0) {
         throw new Error('Problem not found : ' + id);
       }
@@ -73,8 +73,10 @@ class ProblemManager {
       if(problems.length > 1){
         throw new Error('Problem is duplicated : ' + id);
       }
+
+      const problem = problems[0];
       const newProblem = {
-        id: id,
+        id: problem.id,
         name: name,
         src: src,
         flag: flag,

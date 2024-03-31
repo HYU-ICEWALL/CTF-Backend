@@ -4,15 +4,23 @@ class ContestManager{
     this.modelName = modelName;
   }
 
-  async createContest(id, name, manager, problems, begin_at, duration, participants){
+  async createContest(id, name, description, manager, begin_at, duration, problems, participants){
     try {
+      if(problems === undefined){
+        problems = [];
+      }
+      if(participants === undefined){
+        participants = [];
+      }
+
       const contest = {
         id: id,
         name: name,
+        description: description,
         manager: manager,
-        problems: problems,
         begin_at: begin_at,
         duration: duration,
+        problems: problems,
         participants: participants
       }
 
@@ -72,9 +80,9 @@ class ContestManager{
         throw new Error('Contest is duplicated : ' + id);
       }
 
-      const newContest = contests[0];
-      newContest = {
-        id: id,
+      const contest = contests[0];
+      const newContest = {
+        id: contest.id,
         name: name,
         manager: manager,
         problems: problems,

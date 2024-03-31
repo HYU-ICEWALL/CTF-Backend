@@ -50,7 +50,7 @@ class ProfileManager {
         throw new Error('Profile not found : ' + id);
       }
 
-      await this.database.deleteData(this.modelName, id).then((value) => {
+      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
         console.log('Profile deleted : ' + id);
       });
 
@@ -62,22 +62,24 @@ class ProfileManager {
     }
   }
 
-  async updateProfile(id, email, name, organization, department){
+  async updateProfile(id, name, organization, department){
     try {
-      const profile = await this.database.findData(this.modelName, {id: id});
-      if (!profile) {
+      const profiles = await this.database.findData(this.modelName, {id: id});
+      if (profiles.length === 0) {
         throw new Error('Profile not found : ' + id);
       }
 
+      const profile = profiles[0];
+
       const newProfile = {
-        id: id,
-        email: email,
+        id: profile.id,
+        email: profile.email,
         name: name,
         organization: organization,
         department: department,
       }
 
-      await this.database.updateData(this.modelName, {id: id}, newProfile).then((value) => {
+      await this.database.updateData(this.modelName, {id: newProfile.id}, newProfile).then((value) => {
         console.log('Profile updated : ' + id);
       });
       
