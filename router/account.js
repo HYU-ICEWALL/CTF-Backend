@@ -33,14 +33,14 @@ router.post('/login', async (req, res) => {
   // 1. 이메일 or 전화번호 체크
   // 2. 비밀번호 확인
   try {
-    if(!!req.session && !!req.session.account && accountManager.compareAccount(req.session.account,account) && !!req.session.token){
+    
+    const { id, password } = req.body;
+    const account = await accountManager.findAccount(id, password);
+    if(!!req.session && !!req.session.account && accountManager.compareAccount(req.session.account, account) && !!req.session.token){
       console.log('Already logged in');
       res.status(403).send('Already logged in');
       return;
     }
-
-    const { id, password } = req.body;
-    const account = await accountManager.findAccount(id, password);
     if (account == undefined) {
       console.log('Account not found');
       res.status(400).send('Account not found');
@@ -109,7 +109,7 @@ router.get('/refresh', (req, res) => {
       return;
     }
 
-    if(req.session.token != res.cookies.token){
+    if(req.session.token != req.cookies.token){
       console.log('Token not matched');
       res.status(400).send('Token not matched');
       return;
@@ -123,8 +123,8 @@ router.get('/refresh', (req, res) => {
         return;
       }
       // 2. 갱신 완료
-      console.log('Token refresh success');
-      res.status(200).send('Token refresh success');
+      console.log('Session refresh success');
+      res.status(200).send('Session refresh success');
     });
   } catch (error) {
     res.status(500).send('Internal Server Error');
@@ -148,7 +148,7 @@ router.post('/withdraw', async (req, res) => {
       res.status(401).send('Unauthorized');
       return;
     }
-    if(req.session.token != res.cookies.token){
+    if(req.session.token != req.cookies.token){
       console.log('Token not matched');
       res.status(401).send('Unauthorized');
       return;
@@ -196,6 +196,8 @@ router.post('/change-password', async (req, res) => {
       res.status(400).send('Account not found or password not matched');
       return;
     }
+
+    
 
     req.session.destroy((err) => {
       if(err){

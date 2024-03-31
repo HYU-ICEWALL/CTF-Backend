@@ -2,6 +2,7 @@ require('dotenv').config();
 const RedisDatabase = require('./modules/database/redis');
 const SessionManager = require('./modules/manager/session');
 const Mongoose = require('./modules/database/mongodb');
+const RedisStore = require('connect-redis').default;
 
 const accountSchema = require('./modules/schema/account');
 const problemSchema = require('./modules/schema/problem');
@@ -24,7 +25,17 @@ const redisSessionDB = new RedisDatabase(redisSessionDBName, {
   legacyMode: false,
 });
 
-const sessionManager = new SessionManager(redisSessionDB);
+const sessionManager = new SessionManager(redisSessionDB, {
+  store: new RedisStore({ client: redisSessionDB.client }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    ttl: parseInt(process.env.SESSION_EXPIRED)
+  }
+});
 
 
 const mongoDBURL = process.env.MONGO_DB_URL;
