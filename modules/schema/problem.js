@@ -7,6 +7,7 @@ const problemSchema = new Schema({
   source: String,
   flag: String,
   link: String,
+  score: Number,
   category: Number
 });
 
