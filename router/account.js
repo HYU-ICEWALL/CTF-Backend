@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
     
     const { id, password } = req.body;
     const account = await accountManager.findAccount(id, password);
-    if(!!req.session && !!req.session.account && accountManager.compareAccount(req.session.account, account) && !!req.session.token){
+    if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
       console.log('Already logged in');
       res.status(403).send('Already logged in');
       return;
@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
       httpOnly: true,
     });
     req.session.token = token;
-    req.session.account = account;
+    req.session.id = account.id;
 
     req.session.save((err) => {
       if (err) {
@@ -103,7 +103,7 @@ router.get('/refresh', (req, res) => {
   // TODO : 토큰 갱신
   // 1. 토큰 갱신
   try {
-    if (!req.session || !req.session.token || !req.session.account) {
+    if (!req.session || !req.session.token || !req.session.id) {
       console.log('Session Not found');
       res.status(400).send('Session Not found');
       return;
@@ -143,7 +143,7 @@ router.post('/withdraw', async (req, res) => {
   // TODO : 회원 탈퇴
   // 1. 회원 탈퇴
   try {
-    if(!req.session || !req.session.token || !req.session.account){
+    if(!req.session || !req.session.token || !req.session.id){
       console.log('Session not found');
       res.status(401).send('Unauthorized');
       return;
@@ -155,15 +155,7 @@ router.post('/withdraw', async (req, res) => {
     }
 
     const { id, password } = req.body;
-    let account = await accountManager.findAccount(id, password);
-
-    if(accountManager.compareAccount(req.session.account, account) === false){
-      console.log('Account not matched');
-      res.status(401).send('Unauthorized');
-      return;
-    }
-
-    account = await accountManager.deleteAccount(id, password);
+    const account = await accountManager.deleteAccount(id, password);
     if (account === undefined) {
       console.log('Failed to delete account');
       throw new Error('Failed to delete account');
@@ -217,7 +209,7 @@ router.post('/change-password', async (req, res) => {
 
 router.get('/validate', (req, res) => {
   try {
-    if(!req.cookies.token || !req.session || !req.session.token || !req.session.account){
+    if(!req.cookies.token || !req.session || !req.session.token || !req.session.id){
       console.log('Session not found');
       res.status(401).send('Unauthorized');
       return;
@@ -230,7 +222,7 @@ router.get('/validate', (req, res) => {
     }
 
     console.log('Authorized');
-    res.status(200).json(req.session.account);
+    res.status(200).json(req.session.id);
   } catch (error) {
     console.log('Internal Server Error');
     res.status(500).send('Internal Server Error');
