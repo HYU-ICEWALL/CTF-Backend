@@ -230,7 +230,7 @@ router.get('/validate', (req, res) => {
     }
 
     console.log('Authorized');
-    res.status(200).send('Authorized');
+    res.status(200).json(req.session.account);
   } catch (error) {
     console.log('Internal Server Error');
     res.status(500).send('Internal Server Error');
