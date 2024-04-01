@@ -215,5 +215,27 @@ router.post('/change-password', async (req, res) => {
   }
 });
 
+router.get('/validate', (req, res) => {
+  try {
+    if(!req.cookies.token || !req.session || !req.session.token || !req.session.account){
+      console.log('Session not found');
+      res.status(401).send('Unauthorized');
+      return;
+    }
+
+    if(req.cookies.token != req.session.token){
+      console.log('Token not matched');
+      res.status(401).send('Unauthorized');
+      return;
+    }
+
+    console.log('Authorized');
+    res.status(200).send('Authorized');
+  } catch (error) {
+    console.log('Internal Server Error');
+    res.status(500).send('Internal Server Error');
+    console.error(error); 
+  }
+});
 
 module.exports = router;
