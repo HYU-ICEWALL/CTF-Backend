@@ -4,16 +4,24 @@ class ContestManager{
     this.modelName = modelName;
   }
 
-  async createContest(id, name, manager, begin_at, duration){
+  async createContest(id, name, description, manager, begin_at, duration, problems, participants){
     try {
+      if(problems === undefined){
+        problems = [];
+      }
+      if(participants === undefined){
+        participants = [];
+      }
+
       const contest = {
         id: id,
         name: name,
+        description: description,
         manager: manager,
-        problems: [],
         begin_at: begin_at,
         duration: duration,
-        participants: []
+        problems: problems,
+        participants: participants
       }
 
       await this.database.insertData(this.modelName, contest).then((value) => {
@@ -24,72 +32,74 @@ class ContestManager{
     } catch (error) {
       console.error('Failed to create contest : ' + id);
       console.error(error);
+      return null;
     }
   }
 
-  async findContest(key){
+  async findContests(key){
     try {
-      const contest = await this.database.findData(key);
-      if (!contest) {
-        console.log('Contest not found : ' + key);
-        return {};
-      }
-
-      return contest;
+      const contests = await this.database.findData(this.modelName, key);
+      return contests;
     } catch (error) {
       console.error('Failed to find contest : ' + key);
       console.error(error);
-      return undefined;
+      return null;
     }
   }
 
-  async deleteContest(key){
+  async deleteContest(id){
     try {
-      const contest = await this.database.findData(key);
-      if (!contest) {
-        throw new Error('Contest not found : ' + key);
+      const contests = await this.database.findData(this.modelName, {id: id});
+      if (contests.length === 0) {
+        throw new Error('Contest not found : ' + id);
       }
 
-      await this.database.deleteData(key).then((value) => {
-        console.log('Contest deleted : ' + key);
+      if(contests.length > 1){
+        throw new Error('Contest is duplicated : ' + id);
+      }
+
+      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
+        console.log('Contest deleted : ' + id);
       });
+      return true;
     } catch (error) {
-      console.error('Failed to delete contest : ' + key);
+      console.error('Failed to delete contest : ' + id);
       console.error(error);
+      return false;
     }
   }
 
-  async updateProblems(key, problems){
+  async updateContest(id, name, manager, problems, begin_at, duration, participants){
     try {
-      const contest = await this.database.getData(key);
-      if (!contest) {
-        throw new Error('Contest not found : ' + key);
+      const contests = await this.database.findData(this.modelName, {id: id});
+      if (contests.length === 0) {
+        throw new Error('Contest not found : ' + id);
       }
 
-      contest.problems = problems;
-      await this.database.updateData(key, contest).then((value) => {
-        console.log('Problems updated : ' + key);
-      });
-    } catch (error) {
-      console.error('Failed to add problems to contest : ' + key);
-      console.error(error);
-    }
-  }
-
-  async updateParticipants(key, participants){
-    try {
-      const contest = await this.database.getData(key);
-      if (!contest) {
-        throw new Error('Contest not found : ' + key);
+      if(contests.length > 1){
+        throw new Error('Contest is duplicated : ' + id);
       }
 
-      contest.participants = participants;
-      await this.database.updateData(key, contest).then((value) => {
-        console.log('Participants updated : ' + key);
+      const contest = contests[0];
+      const newContest = {
+        id: contest.id,
+        name: name,
+        manager: manager,
+        problems: problems,
+        begin_at: begin_at,
+        duration: duration,
+        participants: participants
+      }
+      await this.database.updateData(this.modelName, {id: id}, newContest).then((value) => {
+        console.log('Contest updated : ' + id);
       });
+
+      return newContest;
     } catch (error) {
-      console.error('Failed to add participants to contest : ' + key);
+      console.error('Failed to add problems to contest : ' + id);
       console.error(error);
+
+      return null;
     }
   }
 }

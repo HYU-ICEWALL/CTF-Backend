@@ -6,10 +6,6 @@ class ProblemManager {
 
   async createProblem(id, name, src, flag, link, desc, category) {
     try {
-      if((await this.database.findData(this.modelName, id)) == {}){
-        throw new Error('Problem already exists : ' + id);
-      }
-
       const problem = {
         id: id,
         name: name,
@@ -29,38 +25,74 @@ class ProblemManager {
       console.error('Failed to create problem : ' + id);
       console.error(error);
 
-      return undefined;
+      return null;
     }
   }
 
-  async findProblem(key){
+  async findProblems(key){
     try {
-      const problem = await this.database.findData(this.modelName, key);
-      if (!problem) {
-        throw new Error('Problem not found : ' + key);
-      }
-
-      return problem;
+      const problems = await this.database.findData(this.modelName, key);
+      return problems;
     } catch (error) {
       console.error('Failed to find problem : ' + key);
       console.error(error);
-      return undefined;
+      return null;
     }
   }
 
-  async deleteProblem(key){
+  async deleteProblem(id){
     try {
-      const problem = await this.database.getData(this.modelName, key);
-      if (!problem) {
-        throw new Error('Problem not found : ' + key);
+      const problems = await this.database.findData(this.modelName, {id: id});
+      if (problems.length === 0) {
+        throw new Error('Problem not found : ' + id);
       }
 
-      await this.database.deleteData(this.modelName, key).then((value) => {
-        console.log('Problem deleted : ' + key);
+      if(problems.length > 1){
+        throw new Error('Problem is duplicated : ' + id);
+      }
+
+      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
+        console.log('Problem deleted : ' + id);
       });
+
+      return true;
     } catch (error) {
-      console.error('Failed to delete problem : ' + key);
+      console.error('Failed to delete problem : ' + id);
       console.error(error);
+      return false;
+    }
+  }
+
+  async updateProblem(id, name, src, flag, link, desc, category){
+    try {
+      const problems = await this.database.findData(this.modelName, {id: id});
+      if (problems.length === 0) {
+        throw new Error('Problem not found : ' + id);
+      }
+
+      if(problems.length > 1){
+        throw new Error('Problem is duplicated : ' + id);
+      }
+
+      const problem = problems[0];
+      const newProblem = {
+        id: problem.id,
+        name: name,
+        src: src,
+        flag: flag,
+        link: link,
+        desc: desc,
+        category: category
+      }
+      await this.database.updateData(this.modelName, {id: id}, newProblem).then((value) => {
+        console.log('Problem updated : ' + id);
+      });
+
+      return newProblem;
+    } catch (error) {
+      console.error('Failed to update problem : ' + id);
+      console.error(error);
+      return null;
     }
   }
 }
