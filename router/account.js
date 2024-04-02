@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { accountManager, sessionManager } = require('../instances');
+const { APIResponse } = require('../modules/response');
 
 router.post('/register', async (req, res) => {
   // TODO : 회원가입
@@ -10,7 +11,7 @@ router.post('/register', async (req, res) => {
     const account = await accountManager.findAccount(id, password);
     if(account !== undefined){
       console.log('Account already exists');
-      res.status(400).send('Account already exists');
+      res.status(400).json(APIResponse(400, 'Account already exists', null));
       return;
     }
     // 2. 회원가입
@@ -21,9 +22,9 @@ router.post('/register', async (req, res) => {
     }
 
     console.log('Account created');
-    res.status(200).send('Account created. Verify your email.');
+    res.status(200).json(APIResponse(200, 'Account created', {id: newAccount.id}));
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
   }
 });
@@ -38,12 +39,12 @@ router.post('/login', async (req, res) => {
     const account = await accountManager.findAccount(id, password);
     if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
       console.log('Already logged in');
-      res.status(403).send('Already logged in');
+      res.status(400).json(APIResponse(400, 'Already logged in', null));
       return;
     }
     if (account == undefined) {
       console.log('Account not found');
-      res.status(400).send('Account not found');
+      res.status(400).json(APIResponse(400, 'Account not found', null));
       return;
     }
     
@@ -62,10 +63,10 @@ router.post('/login', async (req, res) => {
       }
       // 4. 로그인 완료
       console.log('Login success');
-      res.status(200).send('Login success');
+      res.status(200).json(APIResponse(200, 'Login success', {id: account.id}));
     });
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
   }
   
@@ -78,7 +79,7 @@ router.get('/logout', (req, res) => {
     const token = req.session.token;
     if (!token) {
       console.log('Not logged in');
-      res.status(400).send('Not logged in');
+      res.status(400).json(APIResponse(400, 'Not logged in', null));
       return;
     }
     res.clearCookie('token');
@@ -86,15 +87,15 @@ router.get('/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.log('Session destroy failed');
-        res.status(400).send('Session destroy failed');
+        res.status(400).json(APIResponse(400, 'Session destroy failed', null));
         return;
       }
       console.log('Session destroyed');
       // 3. 로그아웃 완료
-      res.status(200).send('Logout success');
+      res.status(200).json(APIResponse(200, 'Logout success', null));
     });
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
   }
 });
@@ -105,13 +106,13 @@ router.get('/refresh', (req, res) => {
   try {
     if (!req.session || !req.session.token || !req.session.id) {
       console.log('Session Not found');
-      res.status(400).send('Session Not found');
+      res.status(400).json(APIResponse(400, 'Session Not found', null));
       return;
     }
 
     if(req.session.token != req.cookies.token){
       console.log('Token not matched');
-      res.status(400).send('Token not matched');
+      res.status(401).json(APIResponse(401, 'Token not matched', null));
       return;
     }
     
@@ -119,15 +120,15 @@ router.get('/refresh', (req, res) => {
     req.session.save((err) => {
       if (err) {
         console.log('Session save failed');
-        res.status(400).send('Session save failed');
+        res.status(400).json(APIResponse(400, 'Session save failed', null));
         return;
       }
       // 2. 갱신 완료
       console.log('Session refresh success');
-      res.status(200).send('Session refresh success');
+      res.status(200).json(APIResponse(200, 'Session refresh success', null));
     });
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
   }
 });
@@ -145,12 +146,12 @@ router.post('/withdraw', async (req, res) => {
   try {
     if(!req.session || !req.session.token || !req.session.id){
       console.log('Session not found');
-      res.status(401).send('Unauthorized');
+      res.status(401).json(APIResponse(401, 'Unauthorized', null));
       return;
     }
     if(req.session.token != req.cookies.token){
       console.log('Token not matched');
-      res.status(401).send('Unauthorized');
+      res.status(401).json(APIResponse(401, 'Unauthorized', null));
       return;
     }
 
@@ -168,7 +169,7 @@ router.post('/withdraw', async (req, res) => {
       }
       // 2. 탈퇴 완료
       console.log('Withdraw success');
-      res.status(200).send('Withdraw success');
+      res.status(200).json(APIResponse(200, 'Withdraw success', null));
     });
   } catch (error) {
     res.status(500).send('Internal Server Error');
@@ -185,7 +186,7 @@ router.post('/change-password', async (req, res) => {
     const account = await accountManager.changePassword(id, password, newPassword);
     if(account == undefined){
       console.log('Account not found or password not matched');
-      res.status(400).send('Account not found or password not matched');
+      res.status(400).json(APIResponse(400, 'Account not found or password not matched', null));
       return;
     }
 
@@ -198,11 +199,11 @@ router.post('/change-password', async (req, res) => {
       }
       // 2. 변경 완료
       console.log('Change password success');
-      res.status(200).send('Change password success');
+      res.status(200).json(APIResponse(200, 'Change password success', null));
     })
 
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
   }
 });
@@ -211,21 +212,21 @@ router.get('/validate', (req, res) => {
   try {
     if(!req.cookies.token || !req.session || !req.session.token || !req.session.id){
       console.log('Session not found');
-      res.status(401).send('Unauthorized');
+      res.status(401).json(APIResponse(401, 'Unauthorized', null));
       return;
     }
 
     if(req.cookies.token != req.session.token){
       console.log('Token not matched');
-      res.status(401).send('Unauthorized');
+      res.status(401).json(APIResponse(401, 'Unauthorized', null));
       return;
     }
 
     console.log('Authorized');
-    res.status(200).json(req.session.id);
+    res.status(200).json(APIResponse(200, 'Authorized', {id: req.session.id}));
   } catch (error) {
     console.log('Internal Server Error');
-    res.status(500).send('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error); 
   }
 });

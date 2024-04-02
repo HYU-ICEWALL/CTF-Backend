@@ -1,17 +1,11 @@
-class Response{
-  constructor(code, message, data){
-    this.code = code;
-    this.message = message;
-    this.data = data;
+const APIResponse = (code, message, data) => {
+  return {
+    code: code,
+    message: message,
+    data: data
   }
+};
 
-  response(){
-    return {
-      code: this.code,
-      message: this.message,
-      data: this.data
-    }
-  }
-}
-
-module.exports = Response;
+module.exports = {
+  APIResponse
+};
