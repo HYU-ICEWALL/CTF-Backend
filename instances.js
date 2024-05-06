@@ -46,10 +46,14 @@ const mongoDB = new Mongoose(mongoDBName, {
   "contest": contestSchema,
   "profile": profileSchema,
 }, mongoDBURL);
+
+
 const accountManager = new AccountManager(mongoDB, "account");
 const problemManager = new ProblemManager(mongoDB, "problem");
 const contestManager = new ContestManager(mongoDB, "contest");
 const profileManager = new ProfileManager(mongoDB, "profile");
+
+
 
 const run = async () => {
   await mongoDB.connect();
