@@ -48,6 +48,12 @@ router.post('/login', async (req, res) => {
       return;
     }
     
+    if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
+      console.log('Already logged in');
+      res.status(400).json(APIResponse(400, 'Already logged in', null));
+      return;
+    }
+    
     // 3. 토큰 확인 및 발급
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {

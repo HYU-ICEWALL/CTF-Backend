@@ -143,6 +143,27 @@ interface Score{
 }
 ```
 
+5. Scoreboard
+```ts
+interface Scoreboard{
+    _id : ObjectId,         // Id created from mongo DB
+    id : number,            // Contest id
+    name : string,          // Contest name
+    scores : Score[]        // Contest scores
+}
+```
+
+6. Score
+```ts
+interface Score{
+    _id : ObjectId,         // Id created from mongo DB
+    id : number,            // Contest id
+    account : string,       // Account id
+    score : number,         // Account score
+    time : number           // Account time
+}
+```
+
 
 ### Architecture
 
