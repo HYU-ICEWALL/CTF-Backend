@@ -44,38 +44,33 @@
 </div>
 
 <script type="text/javascript">
+    var xValues = [100,200,300,400,500,600,700,800,900,1000];
 
+    var data1 = [12, 3, 4, 2, 12, 3, 4, 17, 22, 34, 54, 67];
+    var data2 = [3, 9, 12, 14, 22, 32, 45, 12, 67, 45, 55, 7];
+    var data3 = [23, 19, 11, 134, 242, 352, 435, 22, 637, 445, 555, 57];
 
-    jQuery(function ($) {
-        var xValues = [100,200,300,400,500,600,700,800,900,1000];
-
-        var data1 = [12, 3, 4, 2, 12, 3, 4, 17, 22, 34, 54, 67];
-        var data2 = [3, 9, 12, 14, 22, 32, 45, 12, 67, 45, 55, 7];
-        var data3 = [23, 19, 11, 134, 242, 352, 435, 22, 637, 445, 555, 57];
-
-        new Chart(document.getElementById('score-board'),
-        {
-            type: "line",
-            data: {
-                labels: xValues,
-                datasets: [{
-                    data: data1,
-                    borderColor: "red",
-                    fill: true
-                },{
-                    data: data2,
-                    borderColor: "green",
-                    fill: true
-                },{
-                    data: data3,
-                    borderColor: "blue",
-                    fill: true
-                }]
-            },
-            options: {
-                legend: {display: true}
-            }
-        });
-      
+    new Chart(document.getElementById('score-board'),
+    {
+        type: "line",
+        data: {
+            labels: xValues,
+            datasets: [{
+                data: data1,
+                borderColor: "red",
+                fill: true
+            },{
+                data: data2,
+                borderColor: "green",
+                fill: true
+            },{
+                data: data3,
+                borderColor: "blue",
+                fill: true
+            }]
+        },
+        options: {
+            legend: {display: true}
+        }
     });
 </script>
