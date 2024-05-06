@@ -180,4 +180,30 @@ router.put('/', async (req, res) => {
   }
 });
 
+
+router.get('/scoreboard', async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (id == undefined) {
+      console.log('Invalid parameters');
+      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+      return;
+    }
+
+    const scoreboard = await contestManager.findScoreboard(id);
+    if (scoreboard == undefined) {
+      console.log('Scoreboard not found');
+      res.status(400).json(APIResponse(400, 'Scoreboard not found', null));
+      return;
+    }
+
+    console.log('Scoreboard found');
+    res.status(200).json(APIResponse(200, 'Scoreboard found', scoreboard));
+  } catch (error) {
+    console.log('Internal Server Error');
+    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
+    console.error(error);
+  }
+});
+
 module.exports = router;

@@ -8,6 +8,7 @@ const accountSchema = require('./modules/schema/account');
 const problemSchema = require('./modules/schema/problem');
 const contestSchema = require('./modules/schema/contest');
 const profileSchema = require('./modules/schema/profile');
+const scoreboardSchema = require('./modules/schema/scoreboard');
 
 const ProblemManager = require('./modules/manager/problem');
 const ContestManager = require('./modules/manager/contest');

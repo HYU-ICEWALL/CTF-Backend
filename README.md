@@ -118,7 +118,28 @@ interface Contest{
     begin_at: String,       // Contest begin time
     duration: number,       // Contest duration (minute)
     problems: number[],     // Contest problems (problem id)
-    participants: string[]  // Contest participants (account id)
+    participants: string[],  // Contest participants (account id)
+    scoreboard: number,     // Contest scoreboard (scoreboard id)
+}
+```
+
+5. Scoreboard
+```ts
+interface Scoreboard{
+    _id : ObjectId,         // Id created from mongo DB
+    id : number,            // Contest id
+    solved : Score[],       // Solved problems
+}
+```
+
+6. Score
+```ts
+interface Score{
+    _id : ObjectId,         // Id created from mongo DB
+    account : string,       // Account id
+    problem: number,        // Problem id
+    score: number,          // Problem score
+    timestamp: string,      // Problem solved time
 }
 ```
 
