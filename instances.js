@@ -14,6 +14,7 @@ const ProblemManager = require('./modules/manager/problem');
 const ContestManager = require('./modules/manager/contest');
 const AccountManager = require('./modules/manager/account');
 const ProfileManager = require('./modules/manager/profile');
+const ScoreboardManager = require('./modules/manager/scoreboard');
 
 const redisSessionDBName = 'redisSessionDB';
 const redisSessionDB = new RedisDatabase(redisSessionDBName, {
@@ -46,6 +47,7 @@ const mongoDB = new Mongoose(mongoDBName, {
   "problem": problemSchema,
   "contest": contestSchema,
   "profile": profileSchema,
+  "scoreboard": scoreboardSchema
 }, mongoDBURL);
 
 
@@ -53,8 +55,7 @@ const accountManager = new AccountManager(mongoDB, "account");
 const problemManager = new ProblemManager(mongoDB, "problem");
 const contestManager = new ContestManager(mongoDB, "contest");
 const profileManager = new ProfileManager(mongoDB, "profile");
-
-
+const scoreboardManager = new ScoreboardManager(mongoDB, "scoreboard");
 
 const run = async () => {
   await mongoDB.connect();
@@ -66,5 +67,6 @@ module.exports = {
   problemManager,
   contestManager,
   profileManager,
+  scoreboardManager,
   run
 }

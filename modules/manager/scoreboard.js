@@ -62,8 +62,12 @@ class ScoreboardManager {
   async updateScoreboard(id, solved) {
     try {
       const scoreboards = await this.database.findData(this.modelName, { id: id });
-      if (scoreboard.length === 0) {
+      if (scoreboards.length === 0) {
         throw new Error('Scoreboard not found : ' + id);
+      }
+
+      if (scoreboards.length > 1) {
+        throw new Error('Scoreboard is duplicated : ' + id);
       }
 
       const scoreboard = scoreboards[0];
