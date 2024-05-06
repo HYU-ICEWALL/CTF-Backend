@@ -1,3 +1,5 @@
+const { APIError, APIResponse } = require('../response');
+
 class ProfileManager {
   constructor(database, modelName) {
     this.database = database;
@@ -14,80 +16,64 @@ class ProfileManager {
         department: department,
       }
 
-      await this.database.insertData(this.modelName, profile).then((value) => {
-        console.log('Profile created : ' + id);
-      });
+      const result = await this.database.insertData(this.modelName, profile);
+      if (result instanceof APIError) {
+        return result;
+      }
 
-      return profile;
+      return new APIResponse(0, { id: id });
     } catch (error) {
-      console.error('Failed to create profile : ' + id);
       console.error(error);
-
-      return null;
+      return new APIError(400, 'Failed to create profile : ' + id);
     }
   }
 
   async findProfile(key){
     try {
-      const profile = await this.database.findData(this.modelName, key);
-      if (!profile) {
-        console.log('Profile not found : ' + key);
-        return undefined;
+      const result = await this.database.findData(this.modelName, key);
+      const profiles = result.data;
+      if (profiles.length === 0) {
+        return new APIError(411, 'Profile not found : ' + key);
+      }
+      else if (profiles.length > 1) {
+        return new APIError(412, 'Profile is duplicated : ' + key);
       }
 
-      return profile;
+      return new APIResponse(0, profiles[0]);
     } catch (error) {
-      console.error('Failed to find profile : ' + key);
       console.error(error);
-      return null;
+      return new APIError(410, 'Failed to find profile : ', key);
     }
   }
 
   async deleteProfile(id){
     try {
-      const profile = await this.database.findData(this.modelName, {id: id});
-      if (!profile) {
-        throw new Error('Profile not found : ' + id);
+      const result = await this.database.deleteData(this.modelName, {id: id});
+      if(result instanceof APIError){
+        return result;
       }
-
-      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
-        console.log('Profile deleted : ' + id);
-      });
-
-      return true;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to delete profile : ' + id);
       console.error(error);
-      return null;
+      return new APIError(420, 'Failed to delete profile : ' + id);
     }
   }
 
   async updateProfile(id, name, organization, department){
     try {
-      const profiles = await this.database.findData(this.modelName, {id: id});
-      if (profiles.length === 0) {
-        throw new Error('Profile not found : ' + id);
+      const change = {}
+      if(name) change.name = name;
+      if(organization) change.organization = organization;
+      if(department) change.department = department;
+
+      const result = await this.database.updateData(this.modelName, {id: id}, change);
+      if(result instanceof APIError){
+        return result;
       }
-
-      const profile = profiles[0];
-
-      const newProfile = {
-        id: profile.id,
-        email: profile.email,
-        name: name,
-        organization: organization,
-        department: department,
-      }
-
-      await this.database.updateData(this.modelName, {id: newProfile.id}, newProfile).then((value) => {
-        console.log('Profile updated : ' + id);
-      });
-      
-      return newProfile;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to update profile : ' + id);
       console.error(error);
-      return null;
+      return new APIError(430, 'Failed to update profile : ' + id);
     }
   }
 }

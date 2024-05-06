@@ -1,10 +1,12 @@
+const {APIError, APIResponse} = require('../response');
+
 class ContestManager{
   constructor(database, modelName){
     this.database = database;
     this.modelName = modelName;
   }
 
-  async createContest(id, name, description, manager, begin_at, duration, problems, participants){
+  async createContest(id, name, description, begin_at, duration, problems, participants){
     try {
       if(problems === undefined){
         problems = [];
@@ -17,89 +19,63 @@ class ContestManager{
         id: id,
         name: name,
         description: description,
-        manager: manager,
         begin_at: begin_at,
         duration: duration,
         problems: problems,
         participants: participants
       }
 
-      await this.database.insertData(this.modelName, contest).then((value) => {
-        console.log('Contest created : ' + id);
-      });
-
-      return contest;
+      const result = await this.database.insertData(this.modelName, contest);
+      if (result instanceof APIError) {
+        return result;
+      }
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to create contest : ' + id);
       console.error(error);
-      return null;
+      return new APIError(200, 'Failed to create contest : ' + id);
     }
   }
 
   async findContests(key){
     try {
-      const contests = await this.database.findData(this.modelName, key);
-      return contests;
+      const result = await this.database.findData(this.modelName, key);
+      return result;
     } catch (error) {
-      console.error('Failed to find contest : ' + key);
       console.error(error);
-      return null;
+      return new APIError(210, 'Failed to find contest : ', key);
     }
   }
 
   async deleteContest(id){
     try {
-      const contests = await this.database.findData(this.modelName, {id: id});
-      if (contests.length === 0) {
-        throw new Error('Contest not found : ' + id);
+      const result = await this.database.deleteData(this.modelName, {id: id});
+      if(result instanceof APIError){
+        return result;
       }
-
-      if(contests.length > 1){
-        throw new Error('Contest is duplicated : ' + id);
-      }
-
-      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
-        console.log('Contest deleted : ' + id);
-      });
-      return true;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to delete contest : ' + id);
       console.error(error);
-      return false;
+      return new APIError(220, 'Failed to delete contest : ' + id);
     }
   }
 
-  async updateContest(id, name, manager, problems, begin_at, duration, participants){
+  async updateContest(id, name, begin_at, duration, problems, participants){
     try {
-      const contests = await this.database.findData(this.modelName, {id: id});
-      if (contests.length === 0) {
-        throw new Error('Contest not found : ' + id);
-      }
+      const change = {}
+      if(name) change.name = name;
+      if(begin_at) change.begin_at = begin_at;
+      if(duration) change.duration = duration;
+      if(problems) change.problems = problems;
+      if(participants) change.participants = participants;
 
-      if(contests.length > 1){
-        throw new Error('Contest is duplicated : ' + id);
+      const result = await this.database.updateData(this.modelName, {id: id}, change);
+      if(result instanceof APIError){
+        return result;
       }
-
-      const contest = contests[0];
-      const newContest = {
-        id: contest.id,
-        name: name,
-        manager: manager,
-        problems: problems,
-        begin_at: begin_at,
-        duration: duration,
-        participants: participants
-      }
-      await this.database.updateData(this.modelName, {id: id}, newContest).then((value) => {
-        console.log('Contest updated : ' + id);
-      });
-
-      return newContest;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to add problems to contest : ' + id);
       console.error(error);
-
-      return null;
+      return new APIError(230, 'Failed to update contest : ' + id);
     }
   }
 }
