@@ -37,14 +37,15 @@ router.post('/login', async (req, res) => {
     
     const { id, password } = req.body;
     const account = await accountManager.findAccount(id, password);
-    if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
-      console.log('Already logged in');
-      res.status(400).json(APIResponse(400, 'Already logged in', null));
-      return;
-    }
     if (account == undefined) {
       console.log('Account not found');
       res.status(400).json(APIResponse(400, 'Account not found', null));
+      return;
+    }
+    
+    if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
+      console.log('Already logged in');
+      res.status(400).json(APIResponse(400, 'Already logged in', null));
       return;
     }
     
