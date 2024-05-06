@@ -8,7 +8,8 @@ const problemSchema = new Schema({
   flag: String,
   link: String,
   score: Number,
-  category: Number
+  category: Number,
+  contest: Number,  // contest id
 });
 
 module.exports = problemSchema;

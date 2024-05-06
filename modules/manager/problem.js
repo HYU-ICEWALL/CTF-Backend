@@ -4,7 +4,7 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem(id, name, src, flag, link, desc, category) {
+  async createProblem(id, name, src, flag, link, desc, category, contest) {
     try {
       const problem = {
         id: id,
@@ -13,7 +13,8 @@ class ProblemManager {
         flag: flag,
         link: link,
         desc: desc,
-        category: category
+        category: category,
+        contest: contest
       }
 
       await this.database.insertData(this.modelName, problem).then(() => {
@@ -63,7 +64,7 @@ class ProblemManager {
     }
   }
 
-  async updateProblem(id, name, src, flag, link, desc, category){
+  async updateProblem(id, name, src, flag, link, desc, category, contest){
     try {
       const problems = await this.database.findData(this.modelName, {id: id});
       if (problems.length === 0) {
@@ -82,7 +83,8 @@ class ProblemManager {
         flag: flag,
         link: link,
         desc: desc,
-        category: category
+        category: category,
+        contest: contest
       }
       await this.database.updateData(this.modelName, {id: id}, newProblem).then((value) => {
         console.log('Problem updated : ' + id);

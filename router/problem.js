@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const { id, name, category } = req.query;
+    const { id, name, category, contest } = req.query;
     
     const query = {};
     if (id != undefined) {
@@ -17,6 +17,10 @@ router.get("/", async (req, res) => {
     if (category != undefined) {
       query.category = category;
     }
+    if (contest != undefined) {
+      query.contest = contest;
+    }
+
     if(Object.keys(query).length === 0){
       console.log('Invalid parameters');
       res.status(400).json(APIResponse(400, 'Invalid parameters', null));
@@ -28,6 +32,10 @@ router.get("/", async (req, res) => {
       console.log('Problem not found');
       res.status(400).json(APIResponse(400, 'Problem not found', null));
       return;
+    }
+
+    for(let i = 0; i < problems.length; i++){
+      delete problems[i].flag;
     }
 
     console.log('Problem found');
@@ -54,9 +62,9 @@ router.post("/", async (req, res) => {
       res.status(401).json(APIResponse(401, 'Unauthorized', null));
       return;
     }
-    const { id, name, description, source, flag, link, score, category } = req.body;
+    const { id, name, description, source, flag, link, score, category, contest } = req.body;
     // console.log(req.body);
-    if(id == undefined || name == undefined || description == undefined || source == undefined || flag == undefined || link == undefined || score == undefined || category == undefined){
+    if(id == undefined || name == undefined || description == undefined || source == undefined || flag == undefined || link == undefined || score == undefined || category == undefined || contest == undefined){
       console.log('Invalid parameters');
       res.status(400).json(APIResponse(400, 'Invalid parameters', null));
       return;
@@ -69,7 +77,7 @@ router.post("/", async (req, res) => {
       return;
     }
 
-    const newProblem = await problemManager.createProblem(id, name, description, source, flag, link, score, category);
+    const newProblem = await problemManager.createProblem(id, name, description, source, flag, link, score, category, contest);
     if (newProblem == undefined) {
       console.log('Problem create failed');
       res.status(500).json(APIResponse(500, 'Problem create failed', null));
