@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     // session check
-    let { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
+    const { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
     // console.log(req.body);
     if(problems == undefined){
       problems = [];
@@ -50,7 +50,15 @@ router.post("/", async (req, res) => {
     }
 
 
-    if(id == undefined || name == undefined || description == undefined || manager == undefined || begin_at == undefined || duration == undefined || problems == undefined || participants == undefined){
+    if(id == undefined ||
+       name == undefined || 
+       description == undefined || 
+       manager == undefined || 
+       begin_at == undefined || 
+       duration == undefined || 
+       problems == undefined || 
+       participants == undefined)
+    {
       console.log('Invalid parameters');
       res.status(400).json(APIResponse(400, 'Invalid parameters', null));
       return;
@@ -65,13 +73,6 @@ router.post("/", async (req, res) => {
     if (req.session.token != req.cookies.token) {
       console.log('Token not matched');
       res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    const contests = await contestManager.findContests({ id: id });
-    if (Object.keys(contests).length !== 0) {
-      console.log('Contest already exists');
-      res.status(400).json(APIResponse(400, 'Contest already exists', null));
       return;
     }
 
