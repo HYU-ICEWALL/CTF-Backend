@@ -210,10 +210,14 @@ router.post('/flag', async (req, res) => {
         problem: problem,
         score: problemResult.data[0].score,
         account: req.session.id,
-        // TODO : convert time to hh:mm:ss
         time: time,
       }
     });
+
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
 
     res.status(200).json(new APIResponse(0, { result: true }));
   }catch(error){

@@ -221,8 +221,29 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     // TODO : sort by score
-    
-    
+    const { solved } = result.data;
+    const scoreboards = {};
+    for(let i = 0; i < solved.length; i++){
+      const score = solved[i];
+
+      const accountId = score.account;
+      if (!scoreboards[accountId]){
+        scoreboards[accountId] = [];
+      } 
+
+      scoreboards[accountId].push({
+        score: score.score,
+        time: score.time,
+      });
+    }
+
+    Object.keys(scoreboards).forEach((key) => {
+      // sort by time asc
+      scoreboards[key].sort((a, b) => {
+        return a.time - b.time;
+      });
+    });
+    result.data.solved = scoreboards;
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
