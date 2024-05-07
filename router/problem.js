@@ -15,6 +15,7 @@ router.get("/", async (req, res) => {
 
     if(Object.keys(query).length === 0){
       res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
     }
 
     const result = await problemManager.findProblems(query);
