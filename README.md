@@ -104,6 +104,7 @@ interface Problem{
     link : string,          // Problem link (ex. web, pwn)
     score: number,          // Problem score
     category : number       // 0 : Web, 1 : Pwn, 2 : Reversing, 3 : Forensic, 4 : Misc...
+    contest: number         // Contest id
 }
 ```
 

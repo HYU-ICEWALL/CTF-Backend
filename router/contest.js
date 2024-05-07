@@ -1,209 +1,306 @@
 const express = require('express');
-const { contestManager } = require('../instances');
-const { APIResponse } = require('../modules/response');
+const { contestManager, scoreboardManager, accountManager } = require('../instances');
+const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
+
+
+// admin only
+router.post("/", async (req, res) => {
+  try {
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
+      return;
+    }
+
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
+      return;
+    }
+
+    const { id, name, description, begin_at, duration, problems, participants } = req.body;
+    if (id == undefined || name == undefined || description == undefined || begin_at == undefined || duration == undefined || problems == undefined || participants == undefined) {
+      res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
+    }
+
+    const contest = {
+      id: id,
+      name: name,
+      description: description,
+      manager: req.session.id,
+      begin_at: begin_at,
+      duration: duration,
+      problems: problems,
+      participants: participants,
+    };
+
+    const result = await contestManager.createContest(contest);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(200).json(new APIError(820, "Contest create failed"));
+  }
+});
 
 router.get("/", async (req, res) => {
   try {
-    const { id, name, manager } = req.query;
+    const { id, name } = req.query;
     const query = {};
-    if (id != undefined) {
-      query.id = id;
-    }
-    if (name != undefined) {
-      query.name = name;
-    }
-    if (manager != undefined) {
-      query.manager = manager;
-    }
-    
+    if (id) query.id = id;
+    if (name) query.name = name;
+
     if (Object.keys(query).length === 0) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+      res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
-    const contests = await contestManager.findContests(query);
-    if (contests == undefined) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
-      return;
-    }
-    console.log('Contest found');
-    res.status(200).json(APIResponse(200, 'Contest found', contests));
+
+    const result = await contestManager.findContests(query);
+    return res.status(200).json(result);
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(821, "Contest find failed"));
   }
 });
 
-router.post("/", async (req, res) => {
-  try {
-    // session check
-    const { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
-    // console.log(req.body);
-    if(problems == undefined){
-      problems = [];
-    }
-
-    if(participants == undefined){
-      participants = [];
-    }
-
-
-    if(id == undefined ||
-       name == undefined || 
-       description == undefined || 
-       manager == undefined || 
-       begin_at == undefined || 
-       duration == undefined || 
-       problems == undefined || 
-       participants == undefined)
-    {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
-      return;
-    }
-
-    if (req.session.token == undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    const newContest = await contestManager.createContest(id, name, description, manager, begin_at, duration, problems, participants);
-    if (newContest == undefined) {
-      console.log('Contest creation failed');
-      res.status(500).json(APIResponse(500, 'Contest creation failed', null));
-      return;
-    }
-
-    res.status(200).send(newContest);
-  } catch (error) {
-    res.status(500).send('Internal Server Error');
-    console.error(error);
-  }
-});
-
+// admin only
 router.delete('/', async (req, res) => {
   try {
-    // session check
-    if (req.session.token === undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
       return;
     }
 
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
       return;
     }
 
     const { id } = req.body;
     if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
-      return;
-    }
-
-    const contest = await contestManager.findContests({ id: id });
-    if (Object.keys(contest).length === 0) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
+      res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
     const result = await contestManager.deleteContest(id);
-    if(result === false){
-      console.log('Failed to delete contest');
-      res.status(500).json(APIResponse(500, 'Failed to delete contest', null));
-      return;
-    }
-
-    console.log('Contest deleted');
-    res.status(200).json(APIResponse(200, 'Contest deleted', null));
+    res.status(200).json(result);
   } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(822, "Contest delete failed"));
   }
 });
 
+// admin only
 router.put('/', async (req, res) => {
   try {
-    // session check
-    if (req.session.token == undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
       return;
     }
 
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
       return;
     }
 
     const { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
 
     if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+      res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
-    const contests = await contestManager.findContests({ id: id });
-    if (Object.keys(contests).length === 0) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
+    const query = {};
+    if (name) query.name = name;
+    if (description) query.description = description;
+    if (manager) query.manager = manager;
+    if (begin_at) query.begin_at = begin_at;
+    if (duration) query.duration = duration;
+    if (problems) query.problems = problems;
+    if (participants) query.participants = participants;
+
+    if (Object.keys(query).length === 0) {
+      res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
-    const newContest = await contestManager.updateContest(id, name, description, manager, begin_at, duration, problems, participants);
-    if (newContest == undefined || newContest == null) {
-      console.log('Contest update failed');
-      res.status(500).json(APIResponse(500, 'Contest update failed', null));
-      return;
-    }
-
-    console.log('Contest updated');
-    res.status(200).json(APIResponse(200, 'Contest updated', newContest));
+    const result = await contestManager.updateContest(id, query);
+    res.status(200).json(result);
   } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(823, "Contest update failed"));
   }
 });
 
+
+// admin only
+router.post('/scoreboard', async (req, res) => {
+  try {
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
+      return;
+    }
+
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
+      return;
+    }
+
+    const { id } = req.body;
+    if (id == undefined) {
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
+      return;
+    }
+
+    const contestResult = await contestManager.findContests({ id: id });
+    if (contestResult instanceof APIError) {
+      res.status(200).json(contestResult);
+      return;
+    }
+
+    const contest = contestResult.data[0];
+    const result = await scoreboardManager.createScoreboard({ contest: id, begin_at: contest.begin_at, duration: contest.duration });
+    res.status(200).json(result);
+  } catch (error) { 
+    console.error(error);
+    res.status(200).json(new APIError(824, 'Failed to create scoreboard'));
+  }
+});
 
 router.get('/scoreboard', async (req, res) => {
   try {
     const { id } = req.query;
     if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
       return;
     }
-
-    const scoreboard = await contestManager.findScoreboard(id);
-    if (scoreboard == undefined) {
-      console.log('Scoreboard not found');
-      res.status(400).json(APIResponse(400, 'Scoreboard not found', null));
-      return;
-    }
-
-    console.log('Scoreboard found');
-    res.status(200).json(APIResponse(200, 'Scoreboard found', scoreboard));
+    const result = await scoreboardManager.findScoreboard({ contest: id });
+    res.status(200).json(result);
   } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(825, 'Failed to find scoreboard'));
+  }
+});
+
+// admin only
+router.delete('/scoreboard', async (req, res) => {
+  try{
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
+      return;
+    }
+
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
+      return;
+    }
+
+    const { id } = req.body;
+    if (id == undefined) {
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
+      return;
+    }
+
+    const result = await scoreboardManager.deleteScoreboard(id);
+    res.status(200).json(result);
+  }catch(error){
+    console.error(error);
+    res.status(200).json(new APIError(826, 'Failed to delete scoreboard'));
+  }
+});
+
+// admin only
+router.put('/scoreboard', async (req, res) => {
+  try {
+    if (!req.session || !req.session.token || !req.session.id) {
+      res.status(200).json(new APIError(602, 'Session not found'));
+      return;
+    }
+
+    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+      res.status(200).json(new APIError(611, 'Cookie malformed'));
+      return;
+    }
+
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
+      return;
+    }
+
+    const { id, begin_at, duration } = req.body;
+    if (id == undefined) {
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
+      return;
+    }
+
+    const query = {};
+    if (begin_at) query.begin_at = begin_at;
+    if (duration) query.duration = duration;
+
+    if (Object.keys(query).length === 0) {
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
+      return;
+    }
+
+    const result = await scoreboardManager.updateScoreboard(id, query);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(200).json(new APIError(827, 'Failed to update scoreboard'));
   }
 });
 

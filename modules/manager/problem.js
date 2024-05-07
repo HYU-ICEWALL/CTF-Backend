@@ -1,100 +1,81 @@
+const { APIError, APIResponse } = require('../response');
+
 class ProblemManager {
   constructor(database, modelName) {
     this.database = database;
     this.modelName = modelName;
   }
 
-  async createProblem(id, name, src, flag, link, desc, category, contest) {
+  async createProblem(id, name, desc, src, flag, link, score, category, contest) {
     try {
       const problem = {
         id: id,
         name: name,
-        src: src,
+        description: desc,
+        source: src,
         flag: flag,
         link: link,
-        desc: desc,
+        score: score,
         category: category,
-        contest: contest
+        contest: contest,
       }
 
-      await this.database.insertData(this.modelName, problem).then(() => {
-        console.log('Problem created : ' + id);
-      });
+      const result = await this.database.insertData(this.modelName, problem);
+      if (result instanceof APIError) {
+        return result;
+      }
 
-      return problem;
+      return new APIResponse(0, { id: id });
     } catch (error) {
-      console.error('Failed to create problem : ' + id);
       console.error(error);
-
-      return null;
+      return new APIError(300, 'Failed to create problem : ' + id);
     }
   }
 
   async findProblems(key){
     try {
-      const problems = await this.database.findData(this.modelName, key);
-      return problems;
+      const result = await this.database.findData(this.modelName, key);
+      return result;
     } catch (error) {
-      console.error('Failed to find problem : ' + key);
       console.error(error);
-      return null;
+      return new APIError(310, 'Failed to find problem : ', key);
     }
   }
 
   async deleteProblem(id){
     try {
-      const problems = await this.database.findData(this.modelName, {id: id});
-      if (problems.length === 0) {
-        throw new Error('Problem not found : ' + id);
+      const result = await this.database.deleteData(this.modelName, {id: id});
+      if(result instanceof APIError){
+        return result;
       }
-
-      if(problems.length > 1){
-        throw new Error('Problem is duplicated : ' + id);
-      }
-
-      await this.database.deleteData(this.modelName, {id: id}).then((value) => {
-        console.log('Problem deleted : ' + id);
-      });
-
-      return true;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to delete problem : ' + id);
       console.error(error);
-      return false;
+      return new APIError(320, 'Failed to delete problem : ' + id);
     }
   }
 
-  async updateProblem(id, name, src, flag, link, desc, category, contest){
+  async updateProblem(id, name, desc, src, flag, link, score, category, contest){
     try {
-      const problems = await this.database.findData(this.modelName, {id: id});
-      if (problems.length === 0) {
-        throw new Error('Problem not found : ' + id);
-      }
+      const change = {}
+      if(name) change.name = name;
+      if(desc) change.description = desc;
+      if(src) change.source = src;
+      if(flag) change.flag = flag;
+      if(link) change.link = link;
+      if(score) change.score = score;
+      if(category) change.category = category;
+      if(contest) change.contest = contest;
 
-      if(problems.length > 1){
-        throw new Error('Problem is duplicated : ' + id);
-      }
 
-      const problem = problems[0];
-      const newProblem = {
-        id: problem.id,
-        name: name,
-        src: src,
-        flag: flag,
-        link: link,
-        desc: desc,
-        category: category,
-        contest: contest
+      const result = await this.database.updateData(this.modelName, {id: id}, problem);
+      if(result instanceof APIError){
+        return result;
       }
-      await this.database.updateData(this.modelName, {id: id}, newProblem).then((value) => {
-        console.log('Problem updated : ' + id);
-      });
-
-      return newProblem;
+      return new APIResponse(0, {id: id});
     } catch (error) {
-      console.error('Failed to update problem : ' + id);
       console.error(error);
-      return null;
+      return new APIError(330, 'Failed to update problem : ' + id);
     }
   }
 }
