@@ -115,7 +115,7 @@ router.get('/refresh', (req, res) => {
   }
 });
 
-router.post('/withdraw', async (req, res) => {
+router.delete('/', async (req, res) => {
   try {
     if(!req.session || !req.session.token || !req.session.id){
       res.status(200).json(new APIError(602, 'Session not found'));
@@ -153,7 +153,7 @@ router.post('/withdraw', async (req, res) => {
   }
 });
 
-router.post('/change-password', async (req, res) => {
+router.put('/', async (req, res) => {
   try {
     if(!req.session || !req.session.token || !req.session.id){
       res.status(200).json(new APIError(602, 'Session not found'));

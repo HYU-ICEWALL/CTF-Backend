@@ -41,4 +41,14 @@ app.use((req, res) => {
 app.listen(port, async () => {
   console.log(`Auth Server listening on port ${port}`);
   await run();
+
+  // create admin account
+  const { accountManager } = require('./instances');
+  const result = await accountManager.createAccount(process.env.ADMIN_EMAIL, process.env.ADMIN_ID, process.env.ADMIN_PASSWORD);
+
+  if (result.code == 0) {
+    console.log('Admin account created');
+  }else{
+    console.log(result);
+  }
 });
