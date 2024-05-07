@@ -8,6 +8,7 @@ router.get("/", async (req, res) => {
     const { id } = req.query;
     if (id == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
     }
 
     const result = await profileManager.findProfile({ id: id });

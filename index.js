@@ -35,7 +35,7 @@ app.use('/admin', adminRouter);
 
 
 app.use((req, res) => {
-  res.status(404).json(APIResponse(404, 'Not Found', null));
+  res.status(404).json(new APIResponse(-1, 'Page Not Found'));
 });
 
 app.listen(port, async () => {
