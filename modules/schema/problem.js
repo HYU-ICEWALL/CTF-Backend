@@ -7,7 +7,7 @@ const problemSchema = new Schema({
   source: { type: String, required: true },
   flag: { type: String, required: true },
   link: { type: String, required: true },
-  score: { type: Number, required: true },
+  score: { type: String, required: true },
   category: { type: String, required: true },
   contest: { type: String, required: true }
 });

@@ -51,6 +51,11 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { id, name } = req.query;
+    if (keyword == undefined) {
+      res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
+    }
+    
     const query = {};
     if (id) query.id = id;
     if (name) query.name = name;
@@ -210,6 +215,14 @@ router.get('/scoreboard', async (req, res) => {
       return;
     }
     const result = await scoreboardManager.findScoreboard({ contest: id });
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
+
+    // TODO : sort by score
+    
+    
     res.status(200).json(result);
   } catch (error) {
     console.error(error);

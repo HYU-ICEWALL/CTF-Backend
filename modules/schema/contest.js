@@ -6,7 +6,7 @@ const contestSchema = new Schema({
   description: { type: String },
   problems: { type: Array, required: true},
   begin_at: { type: String, required: true },
-  duration: { type: String, required: true },
+  end_at: { type: String, required: true },
   participants: { type: Array, required: true },
 });
 
