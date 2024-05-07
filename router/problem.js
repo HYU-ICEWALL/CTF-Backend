@@ -170,7 +170,7 @@ router.post('/flag', async (req, res) => {
       return;
     }
 
-    const { contest, problem, flag } = req.body;
+    const { contest, problem, flag, time } = req.body;
     if (id == undefined || flag == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
@@ -200,7 +200,7 @@ router.post('/flag', async (req, res) => {
     }
 
     if (problemResult.data[0].flag != flag) {
-      res.status(200).json(new APIError(836, "Flag incorrect"));
+      res.status(200).json(new APIResponse(0, { result: false }));
       return;
     }
 
@@ -211,11 +211,11 @@ router.post('/flag', async (req, res) => {
         score: problemResult.data[0].score,
         account: req.session.id,
         // TODO : convert time to hh:mm:ss
-        timestamp: new Date().getTime(),
+        time: time,
       }
     });
 
-    res.status(200).json(result);
+    res.status(200).json(new APIResponse(0, { result: true }));
   }catch(error){
     console.error(error);
     res.status(200).json(new APIError(837, "Problem flag check failed"));

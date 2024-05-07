@@ -108,7 +108,7 @@ router.get('/logout', async (req, res) => {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      res.status(200).json(new APIResponse(0, null));
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
     console.error(error);
@@ -123,14 +123,15 @@ router.get('/refresh', async (req, res) => {
       res.status(200).json(sessionResult);
       return;
     }
-    
+
+    req.session.token = sessionManager.createSessionToken();
     req.session.touch();
     req.session.save((err) => {
       if (err) {
         res.status(200).json(new APIError(605, 'Session refresh failed'));
         return;
       }
-      res.status(200).json(new APIResponse(0, null));
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
     console.error(error);
@@ -182,7 +183,7 @@ router.delete('/', async (req, res) => {
         return;
       }
 
-      res.status(200).json(new APIResponse(0, null));
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
     console.error(error);
@@ -219,7 +220,7 @@ router.put('/', async (req, res) => {
       res.status(200).json(result);
       return;
     }
-    res.status(200).json(new APIResponse(0, null));
+    res.status(200).json(new APIResponse(0, {}));
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(815, 'Account change password failed'));
