@@ -1,18 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const { accountManager, sessionManager } = require('../instances');
+const { accountManager, sessionManager, profileManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 
-router.post('/register', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { email, id, password } = req.body;
-    if (!email || !id || !password) {
+    if (!!req.session && !!req.session.id && !!req.session.token) {
+      res.status(200).json(new APIError(601, 'Session found'));
+      return;
+    }
+
+    const { email, id, password, name, organization, department } = req.body;
+    if (!email || !id || !password || !name || !organization || !department) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
 
-    const result = await accountManager.createAccount(email, id, password);
-    res.status(200).json(result);
+    const accountResult = await accountManager.createAccount({
+      email: email,
+      id: id,
+      password: password,
+    });
+
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+
+    const profileResult = await accountManager.createProfile({
+      id: id,
+      email: email,
+      name: name,
+      organization: organization,
+      department: department,
+    });
+
+    if (profileResult instanceof APIError) {
+      res.status(200).json(profileResult);
+      return;
+    }
+
+    res.status(200).json(new APIResponse(0, { id: id }));
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(810, 'Account register failed'));
@@ -31,14 +59,17 @@ router.post('/login', async (req, res) => {
     if (!id || !password) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
-    }
-    
-    
-    const result = await accountManager.findAccountWithPassword(id, password);
+    }    
+    const result = await accountManager.findAccountWithPassword({
+      id: id,
+      password: password,
+    });
+
     if (result instanceof APIError) {
       res.status(200).json(result);
       return;
     }
+
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {
       httpOnly: true,
@@ -61,15 +92,11 @@ router.post('/login', async (req, res) => {
   
 });
 
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
   try {
-    if (!req.session || !req.session.token || !req.session.id) {
-      res.status(200).json(new APIError(602, 'Session not found'));
-      return;
-    }
-
-    if(req.cookies.token != req.session.token || req.cookies.id != req.session.id){
-      res.status(200).json(new APIError(611, 'Cookie malformed'));
+    const sessionResult = await sessionManager.checkValidSession(req);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
@@ -89,15 +116,11 @@ router.get('/logout', (req, res) => {
   }
 });
 
-router.get('/refresh', (req, res) => {
+router.get('/refresh', async (req, res) => {
   try {
-    if(!req.session || !req.session.token || !req.session.id){
-      res.status(200).json(new APIError(602, 'Session not found'));
-      return;
-    }
-
-    if(req.session.token != req.cookies.token || req.session.id != req.cookies.id){
-      res.status(200).json(new APIError(611, 'Cookie malformed'));
+    const sessionResult = await sessionManager.checkValidSession(req);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
     
@@ -115,14 +138,11 @@ router.get('/refresh', (req, res) => {
   }
 });
 
-router.post('/withdraw', async (req, res) => {
+router.delete('/', async (req, res) => {
   try {
-    if(!req.session || !req.session.token || !req.session.id){
-      res.status(200).json(new APIError(602, 'Session not found'));
-      return;
-    }
-    if(req.session.token != req.cookies.token || req.session.id != req.cookies.id){
-      res.status(200).json(new APIError(611, 'Cookie malformed'));
+    const sessionResult = await sessionManager.checkValidSession(req);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
@@ -131,20 +151,37 @@ router.post('/withdraw', async (req, res) => {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
-
-    const result = await accountManager.deleteAccount(id, password);
-    if(result instanceof APIError){
-      res.status(200).json(result);
+    
+    if (req.session.id != id) {
+      res.status(200).json(new APIError(801, "Permission denied"));
       return;
     }
     
-    req.session.destroy((err) => {
+    res.clearCookie('token');
+    res.clearCookie('id');
+    req.session.destroy(async (err) => {
       if(err){
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      res.clearCookie('token');
-      res.clearCookie('id');
+      const profileResult = await profileManager.deleteProfile({
+        id: id,
+      });
+      if (profileResult instanceof APIError) {
+        res.status(200).json(profileResult);
+        return;
+      }
+
+      const accountResult = await accountManager.deleteAccount({
+        id: id,
+        password: password,
+      });
+
+      if (accountResult instanceof APIError) {
+        res.status(200).json(accountResult);
+        return;
+      }
+
       res.status(200).json(new APIResponse(0, null));
     });
   } catch (error) {
@@ -153,14 +190,11 @@ router.post('/withdraw', async (req, res) => {
   }
 });
 
-router.post('/change-password', async (req, res) => {
+router.put('/', async (req, res) => {
   try {
-    if(!req.session || !req.session.token || !req.session.id){
-      res.status(200).json(new APIError(602, 'Session not found'));
-      return;
-    }
-    if(req.session.token != req.cookies.token || req.session.id != req.cookies.id){
-      res.status(200).json(new APIError(611, 'Cookie malformed'));
+    const sessionResult = await sessionManager.checkValidSession(req);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
@@ -171,7 +205,16 @@ router.post('/change-password', async (req, res) => {
       return;
     }
 
-    const result = await accountManager.updateAccountPassword(id, password, newPassword);
+    if (req.session.id != id){
+      res.status(200).json(new APIError(801, "Permission denied"));
+      return;
+    }
+
+    const result = await accountManager.updateAccountPassword({
+      id: id,
+      password: password,
+      newPassword: newPassword,
+    });
     if(result instanceof APIError){
       res.status(200).json(result);
       return;

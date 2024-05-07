@@ -6,7 +6,7 @@ class ProfileManager {
     this.modelName = modelName;
   }
 
-  async createProfile(id, email, name, organization, department) {
+  async createProfile({id: id, email: email, name: name, organization: organization, department: department}) {
     try {
       const profile = {
         id: id,
@@ -46,7 +46,7 @@ class ProfileManager {
     }
   }
 
-  async deleteProfile(id){
+  async deleteProfile({id: id}){
     try {
       const result = await this.database.deleteData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -59,7 +59,7 @@ class ProfileManager {
     }
   }
 
-  async updateProfile(id, name, organization, department){
+  async updateProfile({id: id, name: name, organization: organization, department: department}){
     try {
       const change = {}
       if(name) change.name = name;

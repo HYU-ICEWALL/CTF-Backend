@@ -6,7 +6,7 @@ class ContestManager{
     this.modelName = modelName;
   }
 
-  async createContest(id, name, description, begin_at, duration, problems, participants){
+  async createContest({id: id, name: name, description: description, begin_at: begin_at, duration: duration, problems: problems, participants: participants}){
     try {
       if(problems === undefined){
         problems = [];
@@ -46,7 +46,7 @@ class ContestManager{
     }
   }
 
-  async deleteContest(id){
+  async deleteContest({id: id}){
     try {
       const result = await this.database.deleteData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -59,7 +59,7 @@ class ContestManager{
     }
   }
 
-  async updateContest(id, name, begin_at, duration, problems, participants){
+  async updateContest({id: id, name: name, begin_at: begin_at, duration: duration, problems: problems, participants: participants}){
     try {
       const change = {}
       if(name) change.name = name;

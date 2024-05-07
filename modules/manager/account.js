@@ -9,7 +9,7 @@ class AccountManager{
     this.modelName = modelName;
   }
 
-  async createAccount(email, id, password){
+  async createAccount({email: email, id: id, password: password}){
     try {
       const salt = createSalt();
       const encryptedPassword = encryptPassword(password, salt);
@@ -32,7 +32,7 @@ class AccountManager{
     }
   }
 
-  async findAccountWithId(id){
+  async findAccountWithId({id: id}){
     try {
       const result = await this.database.findData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -54,7 +54,7 @@ class AccountManager{
     }
   }
 
-  async findAccountWithPassword(id, password){
+  async findAccountWithPassword({id: id, password: password}){
     try {
       const result = await this.database.findData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -82,7 +82,7 @@ class AccountManager{
     }
   }
 
-  async deleteAccount(id, password){
+  async deleteAccount({id: id, password: password}){
     try {
       const findResult = await this.findAccountWithPassword(id, password);
       if(findResult instanceof APIError){
@@ -101,7 +101,7 @@ class AccountManager{
     }
   }
 
-  async changePassword(id, password, newPassword){
+  async changePassword({id: id, password: password, newPassword: newPassword}){
     try {
       const accounts = this.database.findData(this.modelName, {id: id});
       if (accounts.length === 0) {
