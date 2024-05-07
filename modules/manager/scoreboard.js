@@ -6,7 +6,7 @@ class ScoreboardManager {
     this.modelName = modelName;
   }
 
-  async createScoreboard(contest, begin_at, duration) {
+  async createScoreboard({contest: contest, begin_at: begin_at, duration: duration}) {
     try {
       const scoreboard = {
         contest: contest,
@@ -48,7 +48,7 @@ class ScoreboardManager {
     }
   }
 
-  async deleteScoreboard(id) {
+  async deleteScoreboard({id: id}) {
     try {
       const result = await this.database.deleteData(this.modelName, { contest: id });
       if (result instanceof APIError) {
@@ -62,7 +62,7 @@ class ScoreboardManager {
     }
   }
 
-  async updateScoreboard(id, begin_at, duration, solved) {
+  async updateScoreboard({id: id, begin_at: begin_at, duration: duration, solved: solved}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
@@ -81,7 +81,7 @@ class ScoreboardManager {
     }
   }
 
-  async addSolved(id, solved) {
+  async addSolved({id: id, solved: solved}) {
     try {
       const result = await this.findScoreboard(id);
       if (result instanceof APIError) {

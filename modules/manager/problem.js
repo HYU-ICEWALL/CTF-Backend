@@ -6,13 +6,13 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem(id, name, desc, src, flag, link, score, category, contest) {
+  async createProblem({id: id, name: name, description: description, source: source, flag: flag, link: link, score: score, category: category, contest: contest}) {
     try {
       const problem = {
         id: id,
         name: name,
-        description: desc,
-        source: src,
+        description: description,
+        source: source,
         flag: flag,
         link: link,
         score: score,
@@ -42,7 +42,7 @@ class ProblemManager {
     }
   }
 
-  async deleteProblem(id){
+  async deleteProblem({id: id}){
     try {
       const result = await this.database.deleteData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -55,7 +55,7 @@ class ProblemManager {
     }
   }
 
-  async updateProblem(id, name, desc, src, flag, link, score, category, contest){
+  async updateProblem({id: id, name: name, desc: desc, src: src, flag: flag, link: link, score: score, category: category, contest: contest}){
     try {
       const change = {}
       if(name) change.name = name;

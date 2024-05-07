@@ -38,12 +38,11 @@ class Mongoose extends Database {
   async insertData() {
     try{
       const [model, value] = arguments;
-      console.log(value);
       const result = await this.model[model].create(value);
       return new APIResponse(0, result);
     }catch(err){
       console.error(err);
-      return new APIError(700, 'Failed to insert data : ' + err);
+      return new APIError(700, 'Failed to insert data');
     }
   }
   async findData() {
