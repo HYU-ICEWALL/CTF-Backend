@@ -48,6 +48,22 @@ app.listen(port, async () => {
 
   if (result.code == 0) {
     console.log('Admin account created');
+
+    // create admin profile
+    const { profileManager } = require('./instances');
+    const result = await profileManager.createProfile(
+      process.env.ADMIN_ID,
+      process.env.ADMIN_EMAIL,
+      process.env.ADMIN_NAME,
+      process.env.ADMIN_ORGANIZATION,
+      process.env.ADMIN_DEPARTMENT,
+    );
+
+    if (result.code == 0) {
+      console.log('Admin profile created');
+    } else {
+      console.log(result);
+    }
   }else{
     console.log(result);
   }
