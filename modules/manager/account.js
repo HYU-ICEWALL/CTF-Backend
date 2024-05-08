@@ -26,7 +26,7 @@ class AccountManager{
       if (result instanceof APIError) {
         return result;
       }
-      return new APIResponse(0, {id: account.id});
+      return new APIResponse(0, {});
     } catch (err) {
       return new APIError(100, 'Failed to create account : ' + id);
     }
@@ -94,7 +94,7 @@ class AccountManager{
         return result;
       }
 
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(130, 'Failed to delete account : ' + id);
@@ -126,11 +126,25 @@ class AccountManager{
         return result;
       }
 
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(140, 'Failed to change password : ' + id);
     }
+  }
+
+  checkAuthority = async (req) => {
+    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+    if (accountResult.data.authority != 1) {
+      res.status(200).json(new APIError(801, 'Permission denied'));
+      return;
+    }
+
+    return new APIResponse(0, {});
   }
 }
 

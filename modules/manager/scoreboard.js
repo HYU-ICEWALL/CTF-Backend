@@ -20,7 +20,7 @@ class ScoreboardManager {
         return result;
       }
 
-      return new APIResponse(0, { contest: contest });
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(500, 'Failed to create scoreboard : ' + contest);
@@ -55,7 +55,7 @@ class ScoreboardManager {
         return result;
       }
 
-      return new APIResponse(0, { contest: id });
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(520, 'Failed to delete scoreboard : ' + id);
@@ -74,7 +74,7 @@ class ScoreboardManager {
         return result;
       }
 
-      return new APIResponse(0, { contest: id });
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(530, 'Failed to update scoreboard : ' + id);
@@ -83,28 +83,42 @@ class ScoreboardManager {
 
   async addSolved({id: id, solved: solved}) {
     try {
-      const result = await this.findScoreboard(id);
+      // $push
+      const result = await this.database.updateData(this.modelName, { contest: id }, { $push: { solved: solved } });
       if (result instanceof APIError) {
         return result;
       }
 
-      const scoreboard = result.data;
-      
-      // TODO : check invalid timestamp
-
-      scoreboard.solved.push(solved);
-
-      const change = { solved: scoreboard.solved };
-      const update = await this.database.updateData(this.modelName, { contest: id }, change);
-      if (update instanceof APIError) {
-        return update;
-      }
-
-      return new APIResponse(0, null);
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(540, 'Failed to add solved : ' + id);
     }
+  }
+
+  async findProcessedScoreboard({id: id}){
+    const result = await this.findScoreboard(id);
+    const { solved } = result.data;
+
+    const processed = {};
+    for(let i = 0; i < solved.length; i++){
+      const accountId = solved[i].account;
+      if(processed[accountId] == undefined){
+        processed[accountId] = {
+          total: 0,
+          timestamps: []
+        };
+      }
+      processed[accountId].total += solved[i].score;
+      processed[accountId].timestamps.push({
+        problem: solved[i].problem,
+        timestamp: solved[i].timestamp,
+        score: processed[accountId].total,
+      });
+    }
+
+    result.data.solved = processed;
+    return result;
   }
 }
 

@@ -5,17 +5,20 @@ const { APIResponse, APIError } = require('../modules/response');
 
 router.post('/', async (req, res) => {
   try {
+    // check session exist
     if (!!req.session && !!req.session.id && !!req.session.token) {
       res.status(200).json(new APIError(601, 'Session found'));
       return;
     }
 
+    // check parameter
     const { email, id, password, name, organization, department } = req.body;
     if (!email || !id || !password || !name || !organization || !department) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
 
+    // create account
     const accountResult = await accountManager.createAccount({
       email: email,
       id: id,
@@ -27,6 +30,8 @@ router.post('/', async (req, res) => {
       return;
     }
 
+
+    // create profile
     const profileResult = await accountManager.createProfile({
       id: id,
       email: email,
@@ -49,17 +54,21 @@ router.post('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
+    // check session exist
     if(!!req.session && !!req.session.id && !!req.session.token)
     {
       res.status(200).json(new APIError(601, 'Session found'));
       return;
     }
 
+    // check parameter
     const { id, password } = req.body;
     if (!id || !password) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }    
+
+    // find account with password
     const result = await accountManager.findAccountWithPassword({
       id: id,
       password: password,
@@ -70,6 +79,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+    // create session
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {
       httpOnly: true,
@@ -94,12 +104,14 @@ router.post('/login', async (req, res) => {
 
 router.get('/logout', async (req, res) => {
   try {
+    // check session valid
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // clear session
     res.clearCookie('token');
     res.clearCookie('id');
 
@@ -118,12 +130,14 @@ router.get('/logout', async (req, res) => {
 
 router.get('/refresh', async (req, res) => {
   try {
+    // check session valid
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // refresh session
     req.session.token = sessionManager.createSessionToken();
     req.session.touch();
     req.session.save((err) => {
@@ -131,6 +145,7 @@ router.get('/refresh', async (req, res) => {
         res.status(200).json(new APIError(605, 'Session refresh failed'));
         return;
       }
+      res.cookie('token', req.session.token);
       res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
@@ -141,30 +156,37 @@ router.get('/refresh', async (req, res) => {
 
 router.delete('/', async (req, res) => {
   try {
+    // check session valid
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // check parameter
     const { id, password } = req.body;
     if (!id || !password) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
     
-    if (req.session.id != id) {
-      res.status(200).json(new APIError(801, "Permission denied"));
+    // check permission
+    const permissionResult = await accountManager.checkAuthority(req);
+    if (permissionResult instanceof APIError) {
+      res.status(200).json(permissionResult);
       return;
     }
     
-    res.clearCookie('token');
-    res.clearCookie('id');
+    // delete session
     req.session.destroy(async (err) => {
       if(err){
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
+      res.clearCookie('token');
+      res.clearCookie('id');
+
+      // delete profile
       const profileResult = await profileManager.deleteProfile({
         id: id,
       });
@@ -173,6 +195,7 @@ router.delete('/', async (req, res) => {
         return;
       }
 
+      // delete account
       const accountResult = await accountManager.deleteAccount({
         id: id,
         password: password,
@@ -193,34 +216,48 @@ router.delete('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
   try {
+    // check session valid
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // check parameter
     const { id, password, newPassword } = req.body;
-
     if (!id || !password || !newPassword) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
 
-    if (req.session.id != id){
-      res.status(200).json(new APIError(801, "Permission denied"));
+    // check permission
+    const permissionResult = await accountManager.checkAuthority(req);
+    if (permissionResult instanceof APIError) {
+      res.status(200).json(permissionResult);
       return;
     }
 
-    const result = await accountManager.updateAccountPassword({
-      id: id,
-      password: password,
-      newPassword: newPassword,
+    // delete session
+    req.session.destroy(async (err) => {
+      if (err) {
+        res.status(200).json(new APIError(604, 'Session destroy failed'));
+        return;
+      }
+      res.clearCookie('token');
+      res.clearCookie('id');
+      
+      // update account password
+      const result = await accountManager.updateAccountPassword({
+        id: id,
+        password: password,
+        newPassword: newPassword,
+      });
+      if(result instanceof APIError){
+        res.status(200).json(result);
+        return;
+      }
+      res.status(200).json(new APIResponse(0, {}));
     });
-    if(result instanceof APIError){
-      res.status(200).json(result);
-      return;
-    }
-    res.status(200).json(new APIResponse(0, {}));
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(815, 'Account change password failed'));

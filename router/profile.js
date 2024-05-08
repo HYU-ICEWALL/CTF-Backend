@@ -1,16 +1,18 @@
 const express = require('express');
-const { profileManager } = require('../instances');
+const { profileManager, sessionManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
+    // check parameters
     const { id } = req.query;
     if (id == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
+    // find profile
     const result = await profileManager.findProfile({ id: id });
     res.status(200).json(result);
   } catch (error) {
@@ -80,12 +82,14 @@ router.get("/", async (req, res) => {
 
 router.put('/', async (req, res) => {
   try {
+    // check session
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // check parameters
     const { id, name, organization, department } = req.body;
     
     if (req.session.id != id){
@@ -109,6 +113,7 @@ router.put('/', async (req, res) => {
       return;
     }
 
+    // update profile
     const result = await profileManager.updateProfile(query);
     res.status(200).json(result);
   } catch (error) {

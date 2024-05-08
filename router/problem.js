@@ -1,10 +1,11 @@
 const express = require('express');
-const { problemManager, scoreboardManager, contestManager } = require('../instances');
+const { problemManager, scoreboardManager, contestManager, profileManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
+    // check parameters
     const { id, name, category, contest } = req.query;
     
     const query = {};
@@ -18,6 +19,7 @@ router.get("/", async (req, res) => {
       return;
     }
 
+    // find problems
     const result = await problemManager.findProblems(query);
     res.status(200).json(result);
   } catch (error) {
@@ -164,46 +166,67 @@ router.get("/", async (req, res) => {
 
 router.post('/flag', async (req, res) => {
   try{
+    // session check
     const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    // parameter check
     const { contest, problem, flag, time } = req.body;
     if (id == undefined || flag == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
+    // find contest
     const contestResult = await contestManager.findContests({ id: contest });
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
       return;
     }
 
-    const participants = contestResult.data[0].participants;
-    if (!participants.includes(req.session.id)) {
-      res.status(200).json(new APIError(834, "Not a participant"));
-      return;
-    }
-
+    // find problems
     const problemResult = await problemManager.findProblems({ id: problem });
     if (problemResult instanceof APIError) {
       res.status(200).json(problemResult);
       return;
     }
 
-    if (problemResult.data.length === 0 || problemResult.data.length > 1) {
+    // check problems length 1
+    if (problemResult.data.length !== 1) {
       res.status(200).json(new APIError(835, "Problem to check flag not found"));
       return;
     }
 
+    // check flag correct
     if (problemResult.data[0].flag != flag) {
       res.status(200).json(new APIResponse(0, { result: false }));
       return;
     }
+    
+    // add problem id in profile if solved
+    const profileResult = await profileManager.addSolved({ id: req.session.id, solved: {
+      problem: problem,
+      score: problemResult.data[0].score,
+      account: req.session.id,
+      time: time,
+    } });
 
+    if (profileResult instanceof APIError) {
+      res.status(200).json(profileResult);
+      return;
+    }
+    
+    // check id in participants
+    const participants = contestResult.data[0].participants;
+    if (!participants.includes(req.session.id)) {
+      res.status(200).json(new APIResponse(0, { result: true }));
+      return;
+    }
+
+    // add solved in scoreboard
     const result = await scoreboardManager.addSolved({
       id: contest, 
       solved: {

@@ -6,6 +6,17 @@ const profileSchema = new Schema({
   name: { type: String, required: true },
   organization: { type: String, required: true },
   department: { type: String, required: true },
+  solved: { type: [String], default: [] },
 });
 
+/*
+solved : [
+  {
+    problem : problem id,
+    score : problem score,
+    account : account id,
+    time : time (YYYY-MM-DD HH:MM:SS)
+  }
+]
+*/
 module.exports = profileSchema;
