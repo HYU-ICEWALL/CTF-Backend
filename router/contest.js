@@ -219,7 +219,7 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     // find scoreboard with contest id
-    const result = await scoreboardManager.findScoreboard({ contest: contest });
+    const result = await scoreboardManager.findProcessedScoreboard({ contest: contest });
     if (result instanceof APIError) {
       res.status(200).json(result);
       return;

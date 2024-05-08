@@ -228,7 +228,7 @@ router.post('/flag', async (req, res) => {
 
     // add solved in scoreboard
     const result = await scoreboardManager.addSolved({
-      id: contest, 
+      contest: contest, 
       solved: {
         problem: problem,
         score: problemResult.data[0].score,

@@ -48,9 +48,9 @@ class ScoreboardManager {
     }
   }
 
-  async deleteScoreboard({id: id}) {
+  async deleteScoreboard({contest: contest}) {
     try {
-      const result = await this.database.deleteData(this.modelName, { contest: id });
+      const result = await this.database.deleteData(this.modelName, { contest: contest });
       if (result instanceof APIError) {
         return result;
       }
@@ -58,18 +58,18 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(520, 'Failed to delete scoreboard : ' + id);
+      return new APIError(520, 'Failed to delete scoreboard : ' + contest);
     }
   }
 
-  async updateScoreboard({id: id, begin_at: begin_at, duration: duration, solved: solved}) {
+  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, solved: solved}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
       if(duration) change.duration = duration;
       if(solved) change.solved = solved;
       
-      const result = await this.database.updateData(this.modelName, { contest: id }, change);
+      const result = await this.database.updateData(this.modelName, { contest: contest }, change);
       if (result instanceof APIError) {
         return result;
       }
@@ -77,14 +77,14 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(530, 'Failed to update scoreboard : ' + id);
+      return new APIError(530, 'Failed to update scoreboard : ' + contest);
     }
   }
 
-  async addSolved({id: id, solved: solved}) {
+  async addSolved({contest: contest, solved: solved}) {
     try {
       // $push
-      const result = await this.database.updateData(this.modelName, { contest: id }, { $push: { solved: solved } });
+      const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { solved: solved } });
       if (result instanceof APIError) {
         return result;
       }
@@ -96,8 +96,8 @@ class ScoreboardManager {
     }
   }
 
-  async findProcessedScoreboard({id: id}){
-    const result = await this.findScoreboard(id);
+  async findProcessedScoreboard({contest: contest}){
+    const result = await this.findScoreboard({contest: contest});
     const { solved } = result.data;
 
     const processed = {};
