@@ -29,7 +29,7 @@ class ContestManager{
       if (result instanceof APIError) {
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(200, 'Failed to create contest : ' + id);
@@ -52,7 +52,7 @@ class ContestManager{
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(220, 'Failed to delete contest : ' + id);
@@ -72,7 +72,7 @@ class ContestManager{
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(230, 'Failed to update contest : ' + id);

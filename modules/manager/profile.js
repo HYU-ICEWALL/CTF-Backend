@@ -21,7 +21,7 @@ class ProfileManager {
         return result;
       }
 
-      return new APIResponse(0, { id: id });
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(400, 'Failed to create profile : ' + id);
@@ -52,7 +52,7 @@ class ProfileManager {
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(420, 'Failed to delete profile : ' + id);
@@ -70,10 +70,23 @@ class ProfileManager {
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(430, 'Failed to update profile : ' + id);
+    }
+  }
+
+  async addSolved({id: id, solved: solved}){
+    try {
+      const result = await this.database.updateData(this.modelName, {id: id}, { $push: { solved: solved } });
+      if(result instanceof APIError){
+        return result;
+      }
+      return new APIResponse(0, {});
+    } catch (error) {
+      console.error(error);
+      return new APIError(440, 'Failed to add solved : ' + id);
     }
   }
 }

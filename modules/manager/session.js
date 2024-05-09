@@ -27,20 +27,6 @@ class SessionManager{
 
     return new APIResponse(0, null);
   }
-
-  checkAuthority = async (req) => {
-    const accountResult = await accountManager.findAccountWithId(req.session.id);
-    if (accountResult instanceof APIError) {
-      res.status(200).json(accountResult);
-      return;
-    }
-    if (accountResult.data.authority != 1) {
-      res.status(200).json(new APIError(801, 'Permission denied'));
-      return;
-    }
-
-    return new APIResponse(0, null);
-  }
 }
 
 module.exports = SessionManager

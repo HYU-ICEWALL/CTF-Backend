@@ -25,7 +25,7 @@ class ProblemManager {
         return result;
       }
 
-      return new APIResponse(0, { id: id });
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(300, 'Failed to create problem : ' + id);
@@ -48,7 +48,7 @@ class ProblemManager {
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(320, 'Failed to delete problem : ' + id);
@@ -72,7 +72,7 @@ class ProblemManager {
       if(result instanceof APIError){
         return result;
       }
-      return new APIResponse(0, {id: id});
+      return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
       return new APIError(330, 'Failed to update problem : ' + id);
