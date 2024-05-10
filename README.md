@@ -201,7 +201,7 @@ Get the list of `problem`.
 }
 ```
 
-#### GET `/api/problem/flag`
+#### POST `/api/problem/flag`
 Submit the `flag` of the `problem`. If the `flag` is correct, the server saves the information to `scoreboard`.
 
 - Request body
@@ -211,7 +211,6 @@ Submit the `flag` of the `problem`. If the `flag` is correct, the server saves t
 | `contest` | `string` | Contest id. |
 | `problem` | `string` | Problem id. |
 | `flag` | `string` | Problem flag. |
-| `time` | `string` | Sovled time. |
 
 - Response (Correct)
 ```json
