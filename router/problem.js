@@ -174,8 +174,8 @@ router.post('/flag', async (req, res) => {
     }
 
     // parameter check
-    const { contest, problem, flag, time } = req.body;
-    if (id == undefined || flag == undefined) {
+    const { contest, problem, flag } = req.body;
+    if (contest == undefined || problem == undefined || flag == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
@@ -206,13 +206,16 @@ router.post('/flag', async (req, res) => {
       return;
     }
     
+    // YYYY-MM-DD HH:MM:SS
+    const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
     // add problem id in profile if solved
     const profileResult = await profileManager.addSolved({ id: req.session.id, solved: {
       problem: problem,
       score: problemResult.data[0].score,
       account: req.session.id,
       time: time,
-    } });
+    }});
 
     if (profileResult instanceof APIError) {
       res.status(200).json(profileResult);
