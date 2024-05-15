@@ -29,7 +29,6 @@ class AccountManager{
     return true;
   }
 
-
   async createAccount({email: email, id: id, password: password}){
     try {
       if(!this.checkValidAccount(id, password, email)){
