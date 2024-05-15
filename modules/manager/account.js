@@ -10,8 +10,32 @@ class AccountManager{
     this.modelName = modelName;
   }
 
+  checkValidAccount = (id, password, email) => {
+    // id must start with alphabet and contain only alphabet and number and length must be 6 ~ 20
+    if (!/^[a-zA-Z][a-zA-Z0-9]{5,19}$/.test(id)) {
+      return false;
+    }
+
+    // password must contain alphabet, number, special character and length must be 8 ~ 20
+    if (!/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,20}$/.test(password)) {
+      return false;
+    }
+
+    // email must be valid
+    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/.test(email)) {
+      return false;
+    }
+
+    return true;
+  }
+
+
   async createAccount({email: email, id: id, password: password}){
     try {
+      if(!this.checkValidAccount(id, password, email)){
+        return new APIError(101, 'Invalid account format : ' + id);
+      }
+
       const salt = createSalt();
       const encryptedPassword = encryptPassword(password, salt);
     
