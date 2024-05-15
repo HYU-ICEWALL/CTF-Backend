@@ -27,21 +27,10 @@ class ScoreboardManager {
     }
   }
 
-  async findScoreboard(key) {
+  async findScoreboards(key) {
     try {
       const result = await this.database.findData(this.modelName, key);
-      if (result instanceof APIError) {
-        return result;
-      }
-
-      const scoreboards = result.data;
-      if (scoreboards.length === 0) {
-        return new APIError(511, 'Scoreboard not found : ' + key);
-      } else if (scoreboards.length > 1) {
-        return new APIError(512, 'Scoreboard is duplicated : ' + key);
-      }
-
-      return new APIResponse(0, scoreboards[0]);
+      return result;
     } catch (error) {
       console.error(error);
       return new APIError(510, 'Failed to find scoreboard : ' + key);
@@ -97,13 +86,22 @@ class ScoreboardManager {
   }
 
   async findProcessedScoreboard({contest: contest}){
-    const result = await this.findScoreboard({contest: contest});
-    const { solved } = result.data;
+    const result = await this.findScoreboards({contest: contest});
+    if (result.data.length === 0) {
+      return new APIError(511, 'Scoreboard not found : ' + key);
+    } else if (result.data.length > 1) {
+      return new APIError(512, 'Scoreboard is duplicated : ' + key);
+    }    
+    const { solved } = result.data[0];
+    result.data.solved = this.processSovled(solved);
+    return result;
+  }
 
+  processSovled(solved){
     const processed = {};
-    for(let i = 0; i < solved.length; i++){
+    for (let i = 0; i < solved.length; i++) {
       const accountId = solved[i].account;
-      if(processed[accountId] == undefined){
+      if (processed[accountId] == undefined) {
         processed[accountId] = {
           total: 0,
           timestamps: []
@@ -116,9 +114,7 @@ class ScoreboardManager {
         score: processed[accountId].total,
       });
     }
-
-    result.data.solved = processed;
-    return result;
+    return processed;
   }
 }
 

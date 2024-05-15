@@ -2,6 +2,7 @@ require('dotenv').config();
 const { createSalt, encryptPassword } = require("../encrypt")
 const { v4 } = require('uuid');
 const { APIResponse, APIError } = require('../response');
+const { accountManager } = require('../../instances');
 
 class AccountManager{
   constructor(database, modelName){
@@ -32,22 +33,21 @@ class AccountManager{
     }
   }
 
-  async findAccountWithId({id: id}){
+  // for admin
+  async findAccounts(key){
+    try {
+      const result = await this.database.findData(this.modelName, key);
+      return result;
+    } catch (error) {
+      console.error(error);
+      return new APIError(111, 'Failed to find accounts');
+    }
+  }
+
+  async findAccountsWithId({id: id}){
     try {
       const result = await this.database.findData(this.modelName, {id: id});
-      if(result instanceof APIError){
-        return result;
-      }
-
-      const accounts = result.data;
-      if(accounts.length === 0){
-        return new APIError(111, 'Account not found : ' + id);
-      }
-      else if(accounts.length > 1){
-        return new APIError(112, 'Account is duplicated : ' + id);
-      }
-
-      return new APIResponse(0, accounts[0]);
+      return result;
     } catch (error) {
       console.error(error);
       return new APIError(110, 'Failed to find account : ' + id);
@@ -82,14 +82,9 @@ class AccountManager{
     }
   }
 
-  async deleteAccount({id: id, password: password}){
+  async deleteAccounts(key){
     try {
-      const findResult = await this.findAccountWithPassword(id, password);
-      if(findResult instanceof APIError){
-        return new APIError(131, 'Failed to find account to delete : ' + id);
-      }
-
-      const result = await this.database.deleteData(this.modelName, {id: id});
+      const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){
         return result;
       }
@@ -134,12 +129,21 @@ class AccountManager{
   }
 
   checkAuthority = async (req) => {
-    const accountResult = await accountManager.findAccountWithId(req.session.id);
+    const accountResult = await accountManager.findAccountsWithId({id: req.session.id});
     if (accountResult instanceof APIError) {
       res.status(200).json(accountResult);
       return;
     }
-    if (accountResult.data.authority != 1) {
+    const accounts = accountResult.data;
+    if (accounts.length === 0) {
+      return new APIError(141, 'Account not found : ' + id);
+    }
+
+    if (accounts.length > 1) {
+      return new APIError(142, 'Account is duplicated : ' + id);
+    }
+
+    if (accounts[0].authority != 1) {
       res.status(200).json(new APIError(801, 'Permission denied'));
       return;
     }
