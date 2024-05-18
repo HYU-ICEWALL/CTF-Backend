@@ -48,7 +48,7 @@ app.listen(port, async () => {
     email: process.env.ADMIN_EMAIL,
     id: process.env.ADMIN_ID,
     password: process.env.ADMIN_PASSWORD,
-  });
+  }, process.env.SALT_SIZE);
 
   if (accountResult.code == 0) {
     console.log('Admin account created');
