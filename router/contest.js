@@ -1,5 +1,5 @@
 const express = require('express');
-const { contestManager, scoreboardManager, accountManager } = require('../instances');
+const { contestManager, scoreboardManager, accountManager, problemManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
@@ -51,7 +51,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { id, name } = req.query;
+    const { id, name, problems = false, scoreboards = false } = req.query;
     if (keyword == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
@@ -68,6 +68,41 @@ router.get("/", async (req, res) => {
 
     // find contests
     const result = await contestManager.findContests(query);
+    
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
+    if (!problems && !scoreboards){
+      res.status(200).json(result);
+      return;
+    }
+    const contests = result.data.map(async contest => {
+      const temp = {
+        contest: contest,
+      };
+      // find problems in contest problems
+      if (problems){
+        const problems = await problemManager.findProblems({contest: contest.id});
+        if (problems instanceof APIError) {
+          temp.problems = undefined;
+        } else {
+          temp.problems = problems.data;
+        }
+      }
+      // find scoreboard in contest
+      if (scoreboards){
+        const scoreboard = await scoreboardManager.findScoreboards({contest: contest.id});
+        if (scoreboard instanceof APIError) {
+          temp.scoreboard = undefined;
+        } else {
+          temp.scoreboard = scoreboard.data;
+        }
+      }
+      return temp;
+    });
+    result.data = contests;
+
     return res.status(200).json(result);
   } catch (error) {
     console.error(error);
@@ -217,14 +252,12 @@ router.get('/scoreboard', async (req, res) => {
       res.status(200).json(new APIResponse(800, 'Invalid parameters'));
       return;
     }
-
     // find scoreboard with contest id
     const result = await scoreboardManager.findProcessedScoreboard({ contest: contest });
     if (result instanceof APIError) {
       res.status(200).json(result);
       return;
     }
-
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
