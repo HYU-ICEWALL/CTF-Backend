@@ -1,7 +1,7 @@
 // const { encryptPassword, createSalt } = require('./modules/encrypt');
 const { accountManager, contestManager, problemManager, profileManager, scoreboardManager, run } = require('./instances');
 const fs = require('fs');
-
+require('dotenv').config();
 
 const createRandomAccount = () => {
   const account = {
@@ -115,7 +115,7 @@ const createTest = async () => {
   const accountCreateTest = async () => {
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
-      const accountResult = await accountManager.createAccount(account);
+      const accountResult = await accountManager.createAccount(account, process.env.SALT_SIZE);
       const profile = profiles[i];
       const profileResult = await profileManager.createProfile(profile);
       if (accountResult.code != 0 || profileResult.code != 0) {

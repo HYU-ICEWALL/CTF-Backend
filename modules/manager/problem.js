@@ -67,7 +67,7 @@ class ProblemManager {
       if(contest) change.contest = contest;
 
 
-      const result = await this.database.updateData(this.modelName, {id: id}, problem);
+      const result = await this.database.updateData(this.modelName, {id: id}, change);
       if(result instanceof APIError){
         return result;
       }
