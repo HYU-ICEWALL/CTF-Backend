@@ -1,4 +1,3 @@
 node_modules
 .env
 db/account.json
-test.js
