@@ -23,6 +23,7 @@ router.post('/', async (req, res) => {
       email: email,
       id: id,
       password: password,
+      authority: 0,
     });
 
     if (accountResult instanceof APIError) {

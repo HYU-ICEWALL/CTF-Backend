@@ -6,7 +6,7 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem({id: id, name: name, description: description, source: source, flag: flag, link: link, score: score, category: category, contest: contest}) {
+  async createProblem({id: id, name: name, description: description, source: source, flag: flag, link: link, score: score, category: category}) {
     try {
       const problem = {
         id: id,
@@ -17,7 +17,6 @@ class ProblemManager {
         link: link,
         score: score,
         category: category,
-        contest: contest,
       }
 
       const result = await this.database.insertData(this.modelName, problem);

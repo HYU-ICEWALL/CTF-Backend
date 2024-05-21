@@ -1,8 +1,6 @@
 require('dotenv').config();
 const { createSalt, encryptPassword } = require("../encrypt")
-const { v4 } = require('uuid');
 const { APIResponse, APIError } = require('../response');
-const { accountManager } = require('../../instances');
 
 class AccountManager{
   constructor(database, modelName){
@@ -29,11 +27,11 @@ class AccountManager{
     return true;
   }
 
-  async createAccount({email: email, id: id, password: password}){
+  async createAccount({email: email, id: id, password: password, authority: authority}){
     try {
-      if(!this.checkValidAccount(id, password, email)){
-        return new APIError(101, 'Invalid account format : ' + id);
-      }
+      // if(!this.checkValidAccount(id, password, email)){
+      //   return new APIError(101, 'Invalid account format : ' + id);
+      // }
 
       const salt = createSalt();
       const encryptedPassword = encryptPassword(password, salt);
@@ -44,6 +42,7 @@ class AccountManager{
         salt: salt,
         email: email,
         verified: false,
+        authority: authority
       }
     
       const result = await this.database.insertData(this.modelName, account);
@@ -105,7 +104,7 @@ class AccountManager{
     }
   }
 
-  async deleteAccounts(key){
+  async deleteAccount(key){
     try {
       const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){
@@ -152,7 +151,7 @@ class AccountManager{
   }
 
   checkAuthority = async (req) => {
-    const accountResult = await accountManager.findAccountsWithId({id: req.session.id});
+    const accountResult = await this.findAccountsWithId({id: req.session.id});
     if (accountResult instanceof APIError) {
       res.status(200).json(accountResult);
       return;

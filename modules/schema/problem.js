@@ -9,7 +9,7 @@ const problemSchema = new Schema({
   link: { type: String, required: true },
   score: { type: String, required: true },
   category: { type: String, required: true },
-  contest: { type: String, required: true }
+  contest: { type: String }
 });
 
 module.exports = problemSchema;

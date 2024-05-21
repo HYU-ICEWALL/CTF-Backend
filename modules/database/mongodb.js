@@ -58,6 +58,7 @@ class Mongoose extends Database {
   async updateData() {
     try {
       const [model, key, value] = arguments;
+      // console.log(value);
       const result = await this.model[model].updateOne(key, value);
       if (result.matchedCount == 0){
         return new APIError(721, 'No matched data to update');
@@ -73,10 +74,7 @@ class Mongoose extends Database {
     try {
       const [model, key] = arguments;
       const result = await this.model[model].deleteOne(key);
-      if (result.deletedCount == 1){
-        return new APIResponse(0, result);
-      }
-      return new APIError(731, 'No matched data to delete');
+      return new APIResponse(0, result);
     } catch (err) {
       console.error(err);
       return new APIError(730, 'Failed to delete data');
