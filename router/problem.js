@@ -15,10 +15,10 @@ router.get("/", async (req, res) => {
     if(contest) query.contest = contest;
 
     if(Object.keys(query).length === 0){
-      res.status(200).json(new APIError(800, "Invalid parameters"));
-      return;
+      // find all problems
+      const result = await problemManager.findProblems({});
+      return res.status(200).json(result);
     }
-
     // find problems
     const result = await problemManager.findProblems(query);
     res.status(200).json(result);

@@ -189,7 +189,7 @@ router.delete('/', async (req, res) => {
       res.clearCookie('id');
 
       // delete profile
-      const profileResult = await profileManager.deleteProfile({
+      const profileResult = await profileManager.deleteProfiles({
         id: id,
       });
       if (profileResult instanceof APIError) {
@@ -198,7 +198,7 @@ router.delete('/', async (req, res) => {
       }
 
       // delete account
-      const accountResult = await accountManager.deleteAccount({
+      const accountResult = await accountManager.deleteAccounts({
         id: id,
         password: password,
       });

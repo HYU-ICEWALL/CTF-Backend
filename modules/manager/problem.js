@@ -41,16 +41,16 @@ class ProblemManager {
     }
   }
 
-  async deleteProblem({id: id}){
+  async deleteProblems(key){
     try {
-      const result = await this.database.deleteData(this.modelName, {id: id});
+      const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(320, 'Failed to delete problem : ' + id);
+      return new APIError(320, 'Failed to delete problem : ' + key);
     }
   }
 

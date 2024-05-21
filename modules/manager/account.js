@@ -9,28 +9,30 @@ class AccountManager{
 
   checkValidAccount = (id, password, email) => {
     // id must start with alphabet and contain only alphabet and number and length must be 6 ~ 20
+    const result = {}
     if (!/^[a-zA-Z][a-zA-Z0-9]{5,19}$/.test(id)) {
-      return false;
+      result.id = id;
     }
 
     // password must contain alphabet, number, special character and length must be 8 ~ 20
     if (!/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,20}$/.test(password)) {
-      return false;
+      result.password = password;
     }
 
     // email must be valid
     if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/.test(email)) {
-      return false;
+      result.email = email;
     }
 
-    return true;
+    return Object.keys(result).length === 0 ? true : result;
   }
 
   async createAccount({email: email, id: id, password: password, authority: authority}, saltSize){
     try {
-      // if(!this.checkValidAccount(id, password, email)){
-      //   return new APIError(101, 'Invalid account format : ' + id);
-      // }
+      const valid = this.checkValidAccount(id, password, email);
+      if(valid != true){
+        return new APIError(101, 'Invalid account format : ' + JSON.stringify(valid));
+      }
 
       const salt = createSalt(saltSize);
       const encryptedPassword = encryptPassword(password, salt);
@@ -104,7 +106,7 @@ class AccountManager{
     }
   }
 
-  async deleteAccount(key){
+  async deleteAccounts(key){
     try {
       const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){

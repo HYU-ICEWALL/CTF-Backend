@@ -38,9 +38,9 @@ class ScoreboardManager {
     }
   }
 
-  async deleteScoreboard({contest: contest}) {
+  async deleteScoreboards(key) {
     try {
-      const result = await this.database.deleteData(this.modelName, { contest: contest });
+      const result = await this.database.deleteData(this.modelName, key);
       if (result instanceof APIError) {
         return result;
       }
@@ -48,7 +48,7 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(520, 'Failed to delete scoreboard : ' + contest);
+      return new APIError(520, 'Failed to delete scoreboard : ' + key);
     }
   }
 
