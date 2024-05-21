@@ -26,7 +26,7 @@ class AccountManager{
     return true;
   }
 
-  async createAccount({email: email, id: id, password: password, authority: authority}){
+  async createAccount({email: email, id: id, password: password, authority: authority}, saltSize){
     try {
       // if(!this.checkValidAccount(id, password, email)){
       //   return new APIError(101, 'Invalid account format : ' + id);
@@ -50,6 +50,7 @@ class AccountManager{
       }
       return new APIResponse(0, {});
     } catch (err) {
+      console.log(err);
       return new APIError(100, 'Failed to create account : ' + id);
     }
   }

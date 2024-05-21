@@ -24,6 +24,7 @@ router.post('/', async (req, res) => {
       email: email,
       id: id,
       password: password,
+      authority: 0,
     }, process.env.SALT_SIZE);
 
     if (accountResult instanceof APIError) {
