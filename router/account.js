@@ -85,7 +85,7 @@ router.post('/login', async (req, res) => {
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {
       httpOnly: true,
-      maxAge: parseInt(process.env.SESSION_EXPIRED),
+      // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
     });
     req.session.token = token;
@@ -103,6 +103,20 @@ router.post('/login', async (req, res) => {
   }
   
 });
+
+router.get('/auth', async (req, res) => {
+  try {
+    const sessionResult = await sessionManager.checkValidSession(req);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
+      return;
+    }
+    res.status(200).json(new APIResponse(0, { id: req.session.id }));
+  }catch(err){
+    console.error(err);
+    res.status(200).json(new APIError(816, 'Account auth failed'));
+  }
+})
 
 router.get('/logout', async (req, res) => {
   try {
