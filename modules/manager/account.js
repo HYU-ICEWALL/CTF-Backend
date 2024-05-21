@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { createSalt, encryptPassword } = require("../encrypt")
 const { APIResponse, APIError } = require('../response');
 
@@ -33,7 +32,7 @@ class AccountManager{
       //   return new APIError(101, 'Invalid account format : ' + id);
       // }
 
-      const salt = createSalt();
+      const salt = createSalt(saltSize);
       const encryptedPassword = encryptPassword(password, salt);
     
       const account = {

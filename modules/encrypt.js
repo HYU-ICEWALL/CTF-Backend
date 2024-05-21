@@ -1,8 +1,6 @@
-require('dotenv').config();
 const crypto = require('crypto');
-const saltSize = process.env.SALT_SIZE || 64;
 
-const createSalt = () => {
+const createSalt = (saltSize) => {
   return crypto.randomBytes(parseInt(saltSize)).toString('base64');
 }
 

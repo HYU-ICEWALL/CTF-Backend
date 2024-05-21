@@ -1,3 +1,4 @@
+require('dotenv').config(); 
 const express = require('express');
 const router = express.Router();
 const { accountManager, sessionManager, profileManager } = require('../instances');
@@ -23,8 +24,7 @@ router.post('/', async (req, res) => {
       email: email,
       id: id,
       password: password,
-      authority: 0,
-    });
+    }, process.env.SALT_SIZE);
 
     if (accountResult instanceof APIError) {
       res.status(200).json(accountResult);
