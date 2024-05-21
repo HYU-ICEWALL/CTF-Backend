@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
 
 
     // create profile
-    const profileResult = await accountManager.createProfile({
+    const profileResult = await profileManager.createProfile({
       id: id,
       email: email,
       name: name,
