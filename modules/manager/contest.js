@@ -47,16 +47,16 @@ class ContestManager{
     }
   }
 
-  async deleteContest({id: id}){
+  async deleteContests(key){
     try {
-      const result = await this.database.deleteData(this.modelName, {id: id});
+      const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(220, 'Failed to delete contest : ' + id);
+      return new APIError(220, 'Failed to delete contest : ' + key);
     }
   }
 

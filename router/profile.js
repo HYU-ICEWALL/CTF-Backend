@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
     }
 
     // find profile
-    const result = await profileManager.findProfile({ id: id });
+    const result = await profileManager.findProfiles({ id: id });
     res.status(200).json(result);
   } catch (error) {
     console.error(error);

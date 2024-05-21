@@ -28,34 +28,27 @@ class ProfileManager {
     }
   }
 
-  async findProfile(key){
+  async findProfiles(key){
     try {
       const result = await this.database.findData(this.modelName, key);
-      const profiles = result.data;
-      if (profiles.length === 0) {
-        return new APIError(411, 'Profile not found : ' + key);
-      }
-      else if (profiles.length > 1) {
-        return new APIError(412, 'Profile is duplicated : ' + key);
-      }
 
-      return new APIResponse(0, profiles[0]);
+      return result;
     } catch (error) {
       console.error(error);
       return new APIError(410, 'Failed to find profile : ', key);
     }
   }
 
-  async deleteProfile({id: id}){
+  async deleteProfiles(key){
     try {
-      const result = await this.database.deleteData(this.modelName, {id: id});
+      const result = await this.database.deleteData(this.modelName, key);
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(420, 'Failed to delete profile : ' + id);
+      return new APIError(420, 'Failed to delete profile : ' + key);
     }
   }
 
