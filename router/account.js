@@ -88,6 +88,13 @@ router.post('/login', async (req, res) => {
       // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
     });
+
+    res.cookie('id', id, {
+      httpOnly: true,
+      // maxAge: parseInt(process.env.SESSION_EXPIRED),
+      // TODO : "domain : 'frontend domain'"
+    });
+
     req.session.token = token;
     req.session.id = id;
 
