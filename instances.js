@@ -37,6 +37,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
     // secure: true,
     // sameSite: 'none',
     // maxAge: parseInt(process.env.SESSION_EXPIRED),
+    httpOnly: true,
   }
 });
 
