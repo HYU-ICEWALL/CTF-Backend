@@ -33,7 +33,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,
+    secure: true,
     sameSite: 'None',
     httpOnly: false,
     ttl: parseInt(process.env.SESSION_EXPIRED)
