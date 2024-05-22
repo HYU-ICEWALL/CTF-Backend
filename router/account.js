@@ -113,7 +113,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/auth', async (req, res) => {
   try {
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
@@ -128,7 +128,7 @@ router.get('/auth', async (req, res) => {
 router.get('/logout', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
@@ -154,7 +154,8 @@ router.get('/logout', async (req, res) => {
 router.get('/refresh', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
@@ -180,7 +181,8 @@ router.get('/refresh', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
@@ -240,7 +242,8 @@ router.delete('/', async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;

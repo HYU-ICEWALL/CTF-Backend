@@ -16,12 +16,12 @@ class SessionManager{
     return token[2] + token[1] + token[0] + token[3] + token[4];
   }
 
-  checkValidSession = async (req) => {
-    if (!req.session || !req.session.token || !req.session.id) {
+  checkValidSession = async (cookie, session) => {
+    if(!cookie || !session){
       return new APIError(602, 'Session not found');
     }
-
-    if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+    
+    if (session.token != cookie.token || session.id != cookie.id) {
       return new APIError(611, 'Cookie malformed');
     }
 
