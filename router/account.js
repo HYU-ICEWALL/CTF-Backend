@@ -110,6 +110,7 @@ router.post('/login', async (req, res) => {
         res.clearCookie('id');
         res.status(200).json(new APIError(602, 'Session save failed'));
       }
+      console.log(req.session);
       res.status(200).json(new APIResponse(0, {id: id}));
     });
   } catch (error) {
