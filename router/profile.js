@@ -83,7 +83,8 @@ router.get("/", async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session
-    const sessionResult = await sessionManager.checkValidSession(req);
+    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
