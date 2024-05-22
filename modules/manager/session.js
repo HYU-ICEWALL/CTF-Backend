@@ -17,7 +17,7 @@ class SessionManager{
   }
 
   checkValidSession = async (cookie, session) => {
-    if(!cookie || !session){
+    if(!cookie || !session || Object.keys(cookie).length === 0 || Object.keys(session).length === 0 || !session.token || !session.id){
       return new APIError(602, 'Session not found');
     }
     
