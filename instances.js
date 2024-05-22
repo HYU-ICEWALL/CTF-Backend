@@ -29,14 +29,15 @@ const redisSessionDB = new RedisDatabase(redisSessionDBName, {
 
 const sessionManager = new SessionManager(redisSessionDB, {
   store: new RedisStore({ client: redisSessionDB.client }),
+  name: "session",
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: true,
-    sameSite: 'None',
+    sameSite: 'none',
     httpOnly: false,
-    ttl: parseInt(process.env.SESSION_EXPIRED),
+    maxAge: parseInt(process.env.SESSION_EXPIRED),
   }
 });
 
