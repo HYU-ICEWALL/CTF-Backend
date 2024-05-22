@@ -86,18 +86,18 @@ router.post('/login', async (req, res) => {
     // create session
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {
-      httpOnly: false,
+      // httpOnly: false,
       // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
-      sameSite: "None",
+      sameSite: "none",
       secure: true
     });
 
     res.cookie('id', id, {
-      httpOnly: false,
+      // httpOnly: false,
       // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
-      sameSite: "None",
+      sameSite: "none",
       secure: true
     });
 
