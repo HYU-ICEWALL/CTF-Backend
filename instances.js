@@ -37,7 +37,6 @@ const sessionManager = new SessionManager(redisSessionDB, {
     sameSite: 'None',
     httpOnly: false,
     ttl: parseInt(process.env.SESSION_EXPIRED),
-    domain: "*",
   }
 });
 
