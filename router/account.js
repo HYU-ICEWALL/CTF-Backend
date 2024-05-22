@@ -56,12 +56,14 @@ router.post('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
+    console.log(req.cookies, req.session);
+
     // check session exist
-    if(!!req.session && !!req.session.id && !!req.session.token)
-    {
-      res.status(200).json(new APIError(601, 'Session found'));
-      return;
-    }
+    // if(!!req.session && !!req.session.id && !!req.session.token)
+    // {
+    //   res.status(200).json(new APIError(601, 'Session found'));
+    //   return;
+    // }
 
     // check parameter
     const { id, password } = req.body;
