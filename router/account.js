@@ -84,13 +84,13 @@ router.post('/login', async (req, res) => {
     // create session
     const token = sessionManager.createSessionToken();
     res.cookie('token', token, {
-      httpOnly: true,
+      // httpOnly: true,
       // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
     });
 
     res.cookie('id', id, {
-      httpOnly: true,
+      // httpOnly: true,
       // maxAge: parseInt(process.env.SESSION_EXPIRED),
       // TODO : "domain : 'frontend domain'"
     });
@@ -100,6 +100,8 @@ router.post('/login', async (req, res) => {
 
     req.session.save((err) => {
       if (err) {
+        res.clearCookie('token');
+        res.clearCookie('id');
         res.status(200).json(new APIError(602, 'Session save failed'));
       }
       res.status(200).json(new APIResponse(0, {id: id}));
@@ -113,6 +115,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/auth', async (req, res) => {
   try {
+    console.log(req.cookies, req.session);
     const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
