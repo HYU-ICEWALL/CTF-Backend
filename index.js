@@ -15,7 +15,7 @@ const adminRouter = require('./router/admin');
 const { APIResponse } = require('./modules/response');
 
 app.use(cors({
-  origin: "https://ctf.icewall.org",
+  origin: true,
   credentials: true
 }));
 
