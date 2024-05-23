@@ -77,11 +77,17 @@ router.post('/login', async (req, res) => {
     // create session
     const token = sessionManager.createSessionToken();
 
-    sessionManager.createSession(req, token, id).then(err => {
+    req.session.data = {
+      id: id,
+      token: token,
+    };
+
+    req.session.save((err) => {
       if (err) {
-        res.status(200).json(new APIError(602, 'Session save failed'));
+        res.status(200).json(new APIError(603, 'Session save failed'));
+        return;
       }
-      res.status(200).json(new APIResponse(0, { id: id }));
+      return res.status(200).json(new APIResponse(0, { id: id }));
     });
   } catch (error) {
     console.error(error);
