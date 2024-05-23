@@ -32,17 +32,17 @@ router.get("/", async (req, res) => {
 // admin only
 // router.post("/", async (req, res) => {
 //   try {
-//     if (!req.session || !req.session.token || !req.session.id) {
+//     if (!req.session || !req.session.token || !req.session.data.id) {
 //       res.status(200).json(new APIError(602, 'Session not found'));
 //       return;
 //     }
 
-//     if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+//     if (req.session.token != req.cookies.token || req.session.data.id != req.cookies.id) {
 //       res.status(200).json(new APIError(611, 'Cookie malformed'));
 //       return;
 //     }
 
-//     const accountResult = await accountManager.findAccountWithId(req.session.id);
+//     const accountResult = await accountManager.findAccountWithId(req.session.data.id);
 //     if (accountResult instanceof APIError) {
 //       res.status(200).json(accountResult);
 //       return;
@@ -77,17 +77,17 @@ router.get("/", async (req, res) => {
 // admin only
 // router.delete('/', async (req, res) => {
 //   try {
-//     if (!req.session || !req.session.token || !req.session.id) {
+//     if (!req.session || !req.session.token || !req.session.data.id) {
 //       res.status(200).json(new APIError(602, 'Session not found'));
 //       return;
 //     }
 
-//     if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+//     if (req.session.token != req.cookies.token || req.session.data.id != req.cookies.id) {
 //       res.status(200).json(new APIError(611, 'Cookie malformed'));
 //       return;
 //     }
 
-//     const accountResult = await accountManager.findAccountWithId(req.session.id);
+//     const accountResult = await accountManager.findAccountWithId(req.session.data.id);
 //     if (accountResult instanceof APIError) {
 //       res.status(200).json(accountResult);
 //       return;
@@ -114,17 +114,17 @@ router.get("/", async (req, res) => {
 // admin only
 // router.put('/', async (req, res) => {
 //   try {
-//     if (!req.session || !req.session.token || !req.session.id) {
+//     if (!req.session || !req.session.token || !req.session.data.id) {
 //       res.status(200).json(new APIError(602, 'Session not found'));
 //       return;
 //     }
 
-//     if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
+//     if (req.session.token != req.cookies.token || req.session.data.id != req.cookies.id) {
 //       res.status(200).json(new APIError(611, 'Cookie malformed'));
 //       return;
 //     }
 
-//     const accountResult = await accountManager.findAccountWithId(req.session.id);
+//     const accountResult = await accountManager.findAccountWithId(req.session.data.id);
 //     if (accountResult instanceof APIError) {
 //       res.status(200).json(accountResult);
 //       return;
@@ -167,7 +167,7 @@ router.get("/", async (req, res) => {
 router.post('/flag', async (req, res) => {
   try{
     // session check
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -211,10 +211,10 @@ router.post('/flag', async (req, res) => {
     const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     // add problem id in profile if solved
-    const profileResult = await profileManager.addSolved({ id: req.session.id, solved: {
+    const profileResult = await profileManager.addSolved({ id: req.session.data.id, solved: {
       problem: problem,
       score: problemResult.data[0].score,
-      account: req.session.id,
+      account: req.session.data.id,
       time: time,
     }});
 
@@ -225,7 +225,7 @@ router.post('/flag', async (req, res) => {
     
     // check id in participants
     const participants = contestResult.data[0].participants;
-    if (!participants.includes(req.session.id)) {
+    if (!participants.includes(req.session.data.id)) {
       res.status(200).json(new APIResponse(0, { result: true }));
       return;
     }
@@ -236,7 +236,7 @@ router.post('/flag', async (req, res) => {
       solved: {
         problem: problem,
         score: problemResult.data[0].score,
-        account: req.session.id,
+        account: req.session.data.id,
         time: time,
       }
     });

@@ -5,7 +5,6 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
 
-const cookieParser = require('cookie-parser');
 const accountRouter = require('./router/account');
 const profileRouter = require('./router/profile');
 const contestRouter = require('./router/contest');
@@ -15,13 +14,12 @@ const adminRouter = require('./router/admin');
 const { APIResponse } = require('./modules/response');
 
 app.use(cors({
-  origin: true,
+  origin: "*",
   credentials:true,
 }));
 
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(sessionManager.session);
 
 app.set('view engine', 'ejs');
@@ -63,8 +61,17 @@ app.listen(port, async () => {
     } else {
       console.log(accountResult);
     }
+    
+  }
 
+  const profileResult = await profileManager.findProfiles({
+    id: process.env.ADMIN_ID
+  });
 
+  if(profileResult.code == 0){
+    console.log('Admin profile already exists');
+  }
+  else{
     const profileResult = await profileManager.createProfile({
       id: process.env.ADMIN_ID,
       email: process.env.ADMIN_EMAIL,

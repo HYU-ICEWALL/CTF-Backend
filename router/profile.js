@@ -83,7 +83,7 @@ router.get("/", async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -93,7 +93,7 @@ router.put('/', async (req, res) => {
     // check parameters
     const { id, name, organization, department } = req.body;
     
-    if (req.session.id != id){
+    if (req.session.data.id != id){
       res.status(200).json(new APIError(801, 'Permission denied'));
       return;
     }

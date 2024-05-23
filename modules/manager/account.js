@@ -29,10 +29,10 @@ class AccountManager{
 
   async createAccount({email: email, id: id, password: password, authority: authority}, saltSize){
     try {
-      const valid = this.checkValidAccount(id, password, email);
-      if(valid != true){
-        return new APIError(101, 'Invalid account format : ' + JSON.stringify(valid));
-      }
+      // const valid = this.checkValidAccount(id, password, email);
+      // if(valid != true){
+      //   return new APIError(101, 'Invalid account format : ' + JSON.stringify(valid));
+      // }
 
       const salt = createSalt(saltSize);
       const encryptedPassword = encryptPassword(password, salt);
@@ -153,7 +153,7 @@ class AccountManager{
   }
 
   checkAuthority = async (req) => {
-    const accountResult = await this.findAccountsWithId({id: req.session.id});
+    const accountResult = await this.findAccountsWithId({id: req.session.data.id});
     if (accountResult instanceof APIError) {
       res.status(200).json(accountResult);
       return;

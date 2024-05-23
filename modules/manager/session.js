@@ -16,16 +16,19 @@ class SessionManager{
     return token[2] + token[1] + token[0] + token[3] + token[4];
   }
 
-  checkValidSession = async (cookie, session) => {
-    if(!cookie || !session || Object.keys(cookie).length === 0 || Object.keys(session).length === 0 || !session.token || !session.id){
-      return new APIError(602, 'Session not found');
-    }
-    
-    if (session.token != cookie.token || session.id != cookie.id) {
-      return new APIError(611, 'Cookie malformed');
+  createSession = async (req, token, id) => {
+    req.session.data = {
+      token: token,
+      id: id,
     }
 
-    return new APIResponse(0, null);
+    return req.session.save();
+  }
+
+  checkValidSession = async (session) => {
+    if(!session || !session.data || !session.data.token || !session.data.id){
+      return new APIError(603, 'Session not found');
+    }
   }
 }
 

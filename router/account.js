@@ -7,7 +7,7 @@ const { APIResponse, APIError } = require('../modules/response');
 router.post('/', async (req, res) => {
   try {
     // check session exist
-    if (!!req.session && !!req.session.id && !!req.session.token) {
+    if (!!req.session && !!req.session.data && !!req.session.data.id && !!req.session.data.token) {
       res.status(200).json(new APIError(601, 'Session found'));
       return;
     }
@@ -56,15 +56,6 @@ router.post('/', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    console.log(req.cookies, req.session);
-
-    // check session exist
-    // if(!!req.session && !!req.session.id && !!req.session.token)
-    // {
-    //   res.status(200).json(new APIError(601, 'Session found'));
-    //   return;
-    // }
-
     // check parameter
     const { id, password } = req.body;
     if (!id || !password) {
@@ -85,33 +76,12 @@ router.post('/login', async (req, res) => {
 
     // create session
     const token = sessionManager.createSessionToken();
-    res.cookie('token', token, {
-      // httpOnly: false,
-      // maxAge: parseInt(process.env.SESSION_EXPIRED),
-      // TODO : "domain : 'frontend domain'"
-      // sameSite: "none",
-      // secure: true
-    });
 
-    res.cookie('id', id, {
-      // httpOnly: false,
-      // maxAge: parseInt(process.env.SESSION_EXPIRED),
-      // TODO : "domain : 'frontend domain'"
-      // sameSite: "none",
-      // secure: true
-    });
-
-    req.session.token = token;
-    req.session.id = id;
-
-    req.session.save((err) => {
+    sessionManager.createSession(req, token, id).then(err => {
       if (err) {
-        res.clearCookie('token');
-        res.clearCookie('id');
         res.status(200).json(new APIError(602, 'Session save failed'));
       }
-      console.log(req.session);
-      res.status(200).json(new APIResponse(0, {id: id}));
+      res.status(200).json(new APIResponse(0, { id: id }));
     });
   } catch (error) {
     console.error(error);
@@ -122,13 +92,12 @@ router.post('/login', async (req, res) => {
 
 router.get('/auth', async (req, res) => {
   try {
-    console.log(req.cookies, req.session);
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
-    res.status(200).json(new APIResponse(0, { id: req.session.id }));
+    res.status(200).json(new APIResponse(0, { id: req.session.data.id }));
   }catch(err){
     console.error(err);
     res.status(200).json(new APIError(816, 'Account auth failed'));
@@ -138,15 +107,11 @@ router.get('/auth', async (req, res) => {
 router.get('/logout', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
-
-    // clear session
-    res.clearCookie('token');
-    res.clearCookie('id');
 
     req.session.destroy((err) => {
       if (err) {
@@ -164,7 +129,7 @@ router.get('/logout', async (req, res) => {
 router.get('/refresh', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -172,14 +137,15 @@ router.get('/refresh', async (req, res) => {
     }
 
     // refresh session
-    req.session.token = sessionManager.createSessionToken();
+    const token = sessionManager.createSessionToken();
+    req.session.data.token = token;
+
     req.session.touch();
     req.session.save((err) => {
       if (err) {
         res.status(200).json(new APIError(605, 'Session refresh failed'));
         return;
       }
-      res.cookie('token', req.session.token);
       res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
@@ -191,7 +157,7 @@ router.get('/refresh', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -218,8 +184,6 @@ router.delete('/', async (req, res) => {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      res.clearCookie('token');
-      res.clearCookie('id');
 
       // delete profile
       const profileResult = await profileManager.deleteProfiles({
@@ -252,7 +216,7 @@ router.delete('/', async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.cookies, req.session);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -279,9 +243,6 @@ router.put('/', async (req, res) => {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      res.clearCookie('token');
-      res.clearCookie('id');
-      
       // update account password
       const result = await accountManager.updateAccountPassword({
         id: id,
