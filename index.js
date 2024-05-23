@@ -14,7 +14,10 @@ const adminRouter = require('./router/admin');
 
 const { APIResponse } = require('./modules/response');
 
-app.use(cors());
+app.use(cors({
+  origin: "https://ctf.icewall.org",
+  credentials: true
+}));
 
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
