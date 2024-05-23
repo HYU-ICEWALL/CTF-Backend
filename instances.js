@@ -33,7 +33,8 @@ const sessionManager = new SessionManager(redisSessionDB, {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    // secure: true,
+    secure: true,
+    httpOnly: true,
     // maxAge: parseInt(process.env.SESSION_EXPIRED),
   }
 });
