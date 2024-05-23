@@ -17,9 +17,12 @@ class SessionManager{
   }
 
   checkValidSession = async (session) => {
-    session = JSON.parse(session);
+    if (!session) {
+      return new APIError(603, 'Session not found');
+    }
 
-    if(!session || !session.data || !session.data.token || !session.data.id){
+    session = JSON.parse(session);
+    if (!session.data || !session.data.token || !session.data.id) {
       return new APIError(603, 'Session not found');
     }
   }
