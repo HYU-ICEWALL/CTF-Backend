@@ -77,10 +77,11 @@ router.post('/login', async (req, res) => {
     // create session
     const token = sessionManager.createSessionToken();
 
-    req.session.data = {
-      id: id,
-      token: token,
-    };
+    // req.session.data = {
+    //   id: id,
+    //   token: token,
+    // };
+    req.session.token = token;
 
     req.session.save((err) => {
       if (err) {
