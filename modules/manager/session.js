@@ -20,7 +20,7 @@ class SessionManager{
     if (!session) {
       return new APIError(603, 'Session not found');
     }
-    
+    console.log(session);
     if (!session.data || !session.data.token || !session.data.id) {
       return new APIError(603, 'Session not found');
     }
