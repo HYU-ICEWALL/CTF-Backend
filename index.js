@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT;
 
-const cookieParser = require('cookie-parser');
+
 const accountRouter = require('./router/account');
 const profileRouter = require('./router/profile');
 const contestRouter = require('./router/contest');
@@ -14,12 +14,8 @@ const adminRouter = require('./router/admin');
 
 const { APIResponse } = require('./modules/response');
 
-app.use(cors({
-  origin: true,
-  credentials:true,
-}));
+app.use(cors());
 
-app.use(cookieParser());
 app.use(express.json({ extended: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionManager.session);
