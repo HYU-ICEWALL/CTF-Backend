@@ -17,6 +17,7 @@ class SessionManager{
   }
 
   checkValidSession = async (session) => {
+    console.log(session);
     if (!session) {
       return new APIError(603, 'Session not found');
     }
