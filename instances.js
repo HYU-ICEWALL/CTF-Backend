@@ -29,6 +29,7 @@ const redisSessionDB = new RedisDatabase(redisSessionDBName, {
 
 const sessionManager = new SessionManager(redisSessionDB, {
   store: new RedisStore({ client: redisSessionDB.client }),
+  name: "ctf-icewall",
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
