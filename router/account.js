@@ -99,6 +99,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/auth', async (req, res) => {
   try {
+    console.log("Session auth : " + req.session.data);
     const sessionResult = await sessionManager.checkValidSession(req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
