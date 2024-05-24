@@ -23,7 +23,7 @@ class SessionManager{
     }
     console.log(session);
     if (!session.data || !session.data.token || !session.data.id) {
-      return new APIError(603, 'Session not found');
+      return new APIError(604, 'Session data not found');
     }
   }
 }
