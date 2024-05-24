@@ -34,7 +34,9 @@ const sessionManager = new SessionManager(redisSessionDB, {
   saveUninitialized: false,
   cookie: {
     secure: true,
-    domain: "https://ctf.icewall.org",
+    httpOnly: true,
+    sameSite: 'none',
+
     // maxAge: parseInt(process.env.SESSION_EXPIRED),
   }
 });
