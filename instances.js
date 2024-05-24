@@ -36,7 +36,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
     // secure: true,
     // httpOnly: true,
     // sameSite: 'none',
-
+    domain: ".icewall.org"
     // maxAge: parseInt(process.env.SESSION_EXPIRED),
   }
 });
