@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
         res.status(200).json(new APIError(603, 'Session save failed'));
         return;
       }
-      console.log(req.session.data);
+      console.log("Session created : " + req.session.data);
       return res.status(200).json(new APIResponse(0, { id: id }));
     });
   } catch (error) {
