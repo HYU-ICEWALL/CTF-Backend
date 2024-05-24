@@ -33,11 +33,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    // secure: true,
-    // httpOnly: true,
-    // sameSite: 'none',
     domain: ".icewall.org"
-    // maxAge: parseInt(process.env.SESSION_EXPIRED),
   }
 });
 
