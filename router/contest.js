@@ -48,6 +48,58 @@ const router = express.Router();
 //   }
 // });
 
+router.get("/recent", async (req, res) => {
+  try{
+    const { count } = req.query;
+    if(count == 0){
+      res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
+    }
+
+    const contestResult = await contestManager.findContests({});
+    if (contestResult instanceof APIError) {
+      res.status(200).json(contestResult);
+      return;
+    }
+
+    // find recent contest
+    const contests = contestResult.data;
+    const data = {
+      recent : undefined,
+      upcoming : undefined,
+      inProgress : undefined,
+      ended : undefined,
+    };
+
+    for(let i = 0; i < contests.length; i++){
+      const contest = contests[i];
+      const begin_at = new Date(contest.begin_at);
+      const end_at = new Date(contest.end_at);
+      const now = new Date();
+
+      if (begin_at > now){
+        data.upcoming.push(contest);
+      } else if (end_at < now){
+        data.ended.push(contest);
+      } else {
+        data.inProgress.push(contest);
+      }
+    }
+
+    data.recent = data.inProgress[0];
+    if(!!count){
+      data.upcoming = data.upcoming.slice(0, count);
+      data.inProgress = data.inProgress.slice(0, count);
+      data.ended = data.ended.slice(0, count);
+    }
+
+    res.status(200).json(contestResult);
+  }catch(err){
+    console.error(err);
+    res.status(200).json(new APIError(800, "Recent contest find failed"));
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     // check parameters
