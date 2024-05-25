@@ -19,5 +19,12 @@ router.get('/', async (req, res) => {
     res.render('base', {body: './home/index'});
 })
 
+router.get('/problems', async (req, res) => {
+    // TODO: get problem sets from current contest
+    dummy = {}
+
+    res.render('base', {body: './home/problems', set: dummy})
+})
+
 
 module.exports = router;
