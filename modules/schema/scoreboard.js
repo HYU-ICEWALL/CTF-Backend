@@ -1,7 +1,7 @@
 const { Schema, SchemaType } = require('mongoose');
 
 const scoreboardSchema = new Schema({
-  contest: { type: String, required: true },
+  contest: { type: Schema.ObjectId, required: true },
   begin_at: { type: String, required: true },
   end_at: { type: String, required: true },
   // solved: { type: [Object], default: [] },

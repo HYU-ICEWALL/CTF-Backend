@@ -6,7 +6,7 @@ class ContestManager{
     this.modelName = modelName;
   }
 
-  async createContest({id: id, name: name, description: description, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants}){
+  async createContest({name: name, description: description, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants}){
     try {
       if(problems === undefined){
         problems = [];
@@ -16,7 +16,6 @@ class ContestManager{
       }
 
       const contest = {
-        id: id,
         name: name,
         description: description,
         begin_at: begin_at,
@@ -33,7 +32,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(200, 'Failed to create contest : ' + id);
+      return new APIError(200, 'Failed to create contest');
     }
   }
 
@@ -60,49 +59,48 @@ class ContestManager{
     }
   }
 
-  async updateContest({id: id, name: name, begin_at: begin_at, duration: duration, problems: problems, participants: participants}){
+  async updateContest({name: name, begin_at: begin_at, duration: duration, problems: problems, participants: participants}){
     try {
       const change = {}
-      if(name) change.name = name;
       if(begin_at) change.begin_at = begin_at;
       if(duration) change.duration = duration;
       if(problems) change.problems = problems;
       if(participants) change.participants = participants;
 
-      const result = await this.database.updateData(this.modelName, {id: id}, change);
+      const result = await this.database.updateData(this.modelName, {name: name}, change);
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(230, 'Failed to update contest : ' + id);
+      return new APIError(230, 'Failed to update contest : ' + name);
     }
   }
 
-  async updateProblems({id: id, problems: problems}){
+  async updateProblems({name: name, problems: problems}){
     try {
-      const result = await this.database.updateData(this.modelName, {id: id}, {problems: problems});
+      const result = await this.database.updateData(this.modelName, {name: name}, {problems: problems});
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(240, 'Failed to update problems : ' + id);
+      return new APIError(240, 'Failed to update problems : ' + name);
     }
   }
 
-  async updateParticipants({id: id, participants: participants}){
+  async updateParticipants({name: name, participants: participants}){
     try {
-      const result = await this.database.updateData(this.modelName, {id: id}, {participants: participants});
+      const result = await this.database.updateData(this.modelName, {name: name}, {participants: participants});
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(250, 'Failed to update participants : ' + id);
+      return new APIError(250, 'Failed to update participants : ' + name);
     }
   }
 }

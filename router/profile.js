@@ -21,65 +21,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// deprecated
-// router.post("/", async (req, res) => {
-//   try {
-//     const sessionResult = await sessionManager.checkValidSession(req);
-//     if (sessionResult instanceof APIError) {
-//       res.status(200).json(sessionResult);
-//       return;
-//     }
-    
-//     const { id, email, name, organization, department } = req.body;
-//     if (req.session.id != id){
-//       res.status(200).json(new APIError(801, 'Permission denied'));
-//       return;
-//     }
-    
-//     if (id == undefined || email == undefined || name == undefined || organization == undefined || department == undefined) {
-//       res.status(200).json(new APIError(800, 'Invalid parameters'));
-//       return;
-//     }
-
-//     const result = await profileManager.createProfile({
-//       id: id,
-//       email: email,
-//       name: name,
-//       organization: organization,
-//       department: department,
-//     });
-
-//     res.status(200).json(result);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(200).json(new APIError(840, 'Profile create failed'));
-//   }
-// });
-
-// admin only
-// router.delete('/', async (req, res) => {
-//   try {
-//     if (!req.session || !req.session.token || !req.session.id) {
-//       res.status(200).json(new APIError(602, 'Session not found'));
-//       return;
-//     }
-
-//     if (req.session.token != req.cookies.token || req.session.id != req.cookies.id) {
-//       res.status(200).json(new APIError(611, 'Cookie malformed'));
-//       return;
-//     }
-
-//     const { id } = req.body;
-//     if (id == undefined) {
-//       res.status(200).json(new APIError(800, 'Invalid parameters'));
-//       return;
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(200).json(new APIError(842, 'Profile delete failed'));
-//   }
-// });
-
 router.put('/', async (req, res) => {
   try {
     // check session

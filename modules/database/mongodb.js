@@ -3,9 +3,9 @@ const Database = require('./database');
 const mongoose = require('mongoose');
 
 class Mongoose extends Database {
-  constructor(name, schemaObj, url) {
+  constructor(name, schemas, url) {
     super(name);
-    this.schemaObj = schemaObj;
+    this.schemas = schemas;
     this.url = url;
   }
   
@@ -24,8 +24,8 @@ class Mongoose extends Database {
       console.error(err);
     });  
     this.model = {};
-    Object.keys(this.schemaObj).map((key, index) => {
-      this.model[key] = this.client.model(key, this.schemaObj[key]);
+    Object.keys(this.schemas).map((key, index) => {
+      this.model[key] = this.client.model(key, this.schemas[key]);
     });
   }
 

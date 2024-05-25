@@ -6,10 +6,9 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem({id: id, name: name, description: description, source: source, flag: flag, link: link, score: score, category: category}) {
+  async createProblem({name: name, description: description, source: source, flag: flag, link: link, score: score, category: category}) {
     try {
       const problem = {
-        id: id,
         name: name,
         description: description,
         source: source,
@@ -27,7 +26,7 @@ class ProblemManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(300, 'Failed to create problem : ' + id);
+      return new APIError(300, 'Failed to create problem : ' + name);
     }
   }
 
@@ -54,10 +53,9 @@ class ProblemManager {
     }
   }
 
-  async updateProblem({id: id, name: name, desc: desc, src: src, flag: flag, link: link, score: score, category: category, contest: contest}){
+  async updateProblem({name: name, desc: desc, src: src, flag: flag, link: link, score: score, category: category, contest: contest}){
     try {
       const change = {}
-      if(name) change.name = name;
       if(desc) change.description = desc;
       if(src) change.source = src;
       if(flag) change.flag = flag;
@@ -67,14 +65,14 @@ class ProblemManager {
       if(contest) change.contest = contest;
 
 
-      const result = await this.database.updateData(this.modelName, {id: id}, change);
+      const result = await this.database.updateData(this.modelName, {name: name}, change);
       if(result instanceof APIError){
         return result;
       }
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(330, 'Failed to update problem : ' + id);
+      return new APIError(330, 'Failed to update problem : ' + name);
     }
   }
 }

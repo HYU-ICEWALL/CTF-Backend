@@ -9,16 +9,10 @@ router.get("/", async (req, res) => {
     const { name, category, contest } = req.query;
     
     const query = {};
-    if(id) query.id = id;
     if(name) query.name = name;
     if(category) query.category = category;
     if(contest) query.contest = contest;
 
-    if(Object.keys(query).length === 0){
-      // find all problems
-      const result = await problemManager.findProblems({});
-      return res.status(200).json(result);
-    }
     // find problems
     const result = await problemManager.findProblems(query);
     res.status(200).json(result);
@@ -50,7 +44,7 @@ router.post('/submission', async (req, res) => {
     }
 
     // find contest
-    const contestResult = await contestManager.findContests({ id: contest });
+    const contestResult = await contestManager.findContests({ name : contest });
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
       return;
@@ -80,7 +74,7 @@ router.post('/submission', async (req, res) => {
     }
 
     // find problems
-    const problemResult = await problemManager.findProblems({ id: problem });
+    const problemResult = await problemManager.findProblems({ name : problem });
     if (problemResult instanceof APIError) {
       res.status(200).json(problemResult);
       return;
