@@ -9,10 +9,6 @@ const problemSchema = require('./modules/schema/problem');
 const contestSchema = require('./modules/schema/contest');
 const profileSchema = require('./modules/schema/profile');
 const scoreboardSchema = require('./modules/schema/scoreboard');
-const countSchema = require('./modules/schema/count')([
-  'problem',
-  'contest',
-]);
 
 const ProblemManager = require('./modules/manager/problem');
 const ContestManager = require('./modules/manager/contest');
