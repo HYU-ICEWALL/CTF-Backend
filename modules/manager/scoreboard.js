@@ -13,7 +13,7 @@ class ScoreboardManager {
         begin_at: begin_at,
         end_at: end_at,
         duration: duration,
-        solved: [],
+        submissions: [],
       };
 
       const result = await this.database.insertData(this.modelName, scoreboard);
@@ -52,12 +52,12 @@ class ScoreboardManager {
     }
   }
 
-  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, solved: solved}) {
+  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, sumbissions: submissions}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
       if(duration) change.duration = duration;
-      if(solved) change.solved = solved;
+      if(submissions) change.submissions = submissions;
       
       const result = await this.database.updateData(this.modelName, { contest: contest }, change);
       if (result instanceof APIError) {
@@ -71,10 +71,10 @@ class ScoreboardManager {
     }
   }
 
-  async addSolved({contest: contest, solved: solved}) {
+  async addSubmission({contest: contest, submission: submission}) {
     try {
       // $push
-      const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { solved: solved } });
+      const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { submissions: submission } });
       if (result instanceof APIError) {
         return result;
       }
@@ -82,7 +82,7 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(540, 'Failed to add solved : ' + id);
+      return new APIError(540, 'Failed to add submission : ' + submission);
     }
   }
 
@@ -93,26 +93,28 @@ class ScoreboardManager {
     } else if (result.data.length > 1) {
       return new APIError(512, 'Scoreboard is duplicated : ' + key);
     }    
-    const { solved } = result.data[0];
-    result.data.solved = this.processSovled(solved);
+    const { submissions } = result.data[0];
+    result.data.submissions = this.processSubmissions(submissions);
     return result;
   }
 
-  processSovled(solved){
+  processSubmissions(submissions){
     const processed = {};
-    for (let i = 0; i < solved.length; i++) {
-      const accountId = solved[i].account;
+    for (let i = 0; i < submissions.length; i++) {
+      const accountId = submissions[i].account;
+
       if (processed[accountId] == undefined) {
         processed[accountId] = {
           total: 0,
           timestamps: []
         };
       }
-      processed[accountId].total += solved[i].score;
+      processed[accountId].total += submissions[i].type == 1 ? submissions[i].score : 0;
       processed[accountId].timestamps.push({
-        problem: solved[i].problem,
-        timestamp: solved[i].timestamp,
+        problem: submissions[i].problem,
+        timestamp: submissions[i].timestamp,
         score: processed[accountId].total,
+        type: submissions[i].type,
       });
     }
     return processed;
