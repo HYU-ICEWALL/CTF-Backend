@@ -115,6 +115,7 @@ router.get('/auth', async (req, res) => {
 router.get('/logout', async (req, res) => {
   try {
     // check session valid
+    console.log("Session logout : " + req.session.data);
     const sessionResult = await sessionManager.checkValidSession(req.session);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -126,6 +127,7 @@ router.get('/logout', async (req, res) => {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
+      console.log("Session destroyed : " + req.session.data);
       res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
