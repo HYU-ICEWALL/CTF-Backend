@@ -45,6 +45,7 @@ class Mongoose extends Database {
       return new APIError(700, 'Failed to insert data');
     }
   }
+
   async findData() {
     try {
       const [model, key] = arguments;
@@ -55,6 +56,7 @@ class Mongoose extends Database {
       return new APIError(710, 'Failed to find data');
     }
   }
+
   async updateData() {
     try {
       const [model, key, value] = arguments;
@@ -70,6 +72,7 @@ class Mongoose extends Database {
       return new APIError(720, 'Failed to update data');
     }
   }
+  
   async deleteData() {
     try {
       const [model, key] = arguments;
