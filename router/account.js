@@ -1,4 +1,4 @@
-require('dotenv').config(); 
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { accountManager, sessionManager, profileManager } = require('../instances');
@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
     if (!id || !password) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
-    }    
+    }
 
     // find account with password
     const result = await accountManager.findAccountWithPassword({
@@ -87,13 +87,13 @@ router.post('/login', async (req, res) => {
         return;
       }
       console.log("Session created : " + req.session.data);
-      return res.status(200).json(new APIResponse(0, { id: id }));
+      return res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(811, 'Account login failed'));
   }
-  
+
 });
 
 router.get('/auth', async (req, res) => {
@@ -104,8 +104,8 @@ router.get('/auth', async (req, res) => {
       res.status(200).json(sessionResult);
       return;
     }
-    res.status(200).json(new APIResponse(0, { id: req.session.data.id }));
-  }catch(err){
+    res.status(200).json(new APIResponse(0, {}));
+  } catch (err) {
     console.error(err);
     res.status(200).json(new APIError(816, 'Account auth failed'));
   }
@@ -180,21 +180,15 @@ router.delete('/', async (req, res) => {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
-    
-    // check permission
-    const accountResult = await accountManager.findAccountWithPassword({
-      id: id,
-      password: password,
-    });
 
-    if (accountResult instanceof APIError) {
-      res.status(200).json(accountResult);
-      return;
+    // check permission
+    if(id !=  req.session.data.id){
+      res.status(200).json(new APIError(603, 'Not allowed'));
     }
-    
+
     // delete session
     req.session.destroy(async (err) => {
-      if(err){
+      if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
@@ -263,7 +257,7 @@ router.put('/', async (req, res) => {
         password: password,
         newPassword: newPassword,
       });
-      if(result instanceof APIError){
+      if (result instanceof APIError) {
         res.status(200).json(result);
         return;
       }

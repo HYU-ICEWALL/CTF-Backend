@@ -32,20 +32,12 @@ router.put('/', async (req, res) => {
     }
 
     // check parameters
-    const { id, name, organization, department } = req.body;
+    const { name, organization, department } = req.body;
     
-    if (req.session.data.id != id){
-      res.status(200).json(new APIError(801, 'Permission denied'));
-      return;
-    }
-
-    if (id == undefined){
-      res.status(200).json(new APIError(800, 'Invalid parameters'));
-      return;
-    }
     const query = {
-      id: id,
+      id: req.session.data.id,
     };
+    
     if (name != undefined) query.name = name;
     if (organization != undefined) query.organization = organization;
     if (department != undefined) query.department = department;

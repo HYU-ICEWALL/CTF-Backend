@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
 
 });
 
-router.post('/submission', async (req, res) => {
+router.post('/submit', async (req, res) => {
   try{
     // session check
     const sessionResult = await sessionManager.checkValidSession(req.session);
