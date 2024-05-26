@@ -6,10 +6,9 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { _id, name, category, contest } = req.query;
+    const { name, category, contest } = req.query;
     
     const query = {};
-    if(_id) query._id = _id;
     if(name) query.name = name;
     if(category) query.category = category;
     if(contest) query.contest = contest;
@@ -38,14 +37,14 @@ router.post('/submission', async (req, res) => {
     const id = req.session.data.id;
     
     // parameter check
-    const { _id, flag } = req.body;
-    if (_id == undefined || flag == undefined) {
+    const { name, flag } = req.body;
+    if (name == undefined || flag == undefined) {
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
 
     // find problems
-    const problemResult = await problemManager.findProblems({ _id: _id});
+    const problemResult = await problemManager.findProblems({ name: name });
     if (problemResult instanceof APIError) {
       res.status(200).json(problemResult);
       return;
@@ -58,12 +57,13 @@ router.post('/submission', async (req, res) => {
     }
 
     // find contest from problem
-    const contest_id = problemResult.data[0].contest;
+    const contestName = problemResult.data[0].contest;
 
     // find contest
     const contestResult = await contestManager.findContests({
-      _id: contest_id
+      name: contestName
     });
+
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
       return;
@@ -75,6 +75,12 @@ router.post('/submission', async (req, res) => {
       return;
     }
 
+    // find participant in contest
+    if(contestResult.data[0].participants.indexOf(id) == -1){
+      res.status(200).json(new APIError(835, "Not in contest participants"));
+      return;
+    }
+    
     // check contest time
     // YYYY-MM-DD HH:MM:SS
     const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -83,13 +89,6 @@ router.post('/submission', async (req, res) => {
 
     if (time < begin || time > end) {
       res.status(200).json(new APIError(836, "Contest is not in progress"));
-      return;
-    }
-
-
-    // find participant in contest
-    if(contestResult.data[0].participants.indexOf(id) == -1){
-      res.status(200).json(new APIError(835, "Participant not found"));
       return;
     }
 
@@ -110,7 +109,7 @@ router.post('/submission', async (req, res) => {
 
     // add submission in scoreboard
     const result = await scoreboardManager.addSubmission({
-      contest: contest_id, 
+      contest: contestName, 
       submission: {
         problem: problem,
         score: problemResult.data[0].score,

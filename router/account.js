@@ -32,7 +32,6 @@ router.post('/', async (req, res) => {
       return;
     }
 
-
     // create profile
     const profileResult = await profileManager.createProfile({
       id: id,
@@ -47,7 +46,7 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    res.status(200).json(new APIResponse(0, { id: id }));
+    res.status(200).json(new APIResponse(0, {}));
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(810, 'Account register failed'));
@@ -128,6 +127,7 @@ router.get('/logout', async (req, res) => {
         return;
       }
       console.log("Session destroyed : " + req.session.data);
+      res.clearCookie('connect.sid');
       res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
@@ -182,9 +182,13 @@ router.delete('/', async (req, res) => {
     }
     
     // check permission
-    const permissionResult = await accountManager.checkAuthority(req);
-    if (permissionResult instanceof APIError) {
-      res.status(200).json(permissionResult);
+    const accountResult = await accountManager.findAccountWithPassword({
+      id: id,
+      password: password,
+    });
+
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
       return;
     }
     

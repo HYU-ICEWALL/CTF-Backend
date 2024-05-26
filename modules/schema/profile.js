@@ -6,7 +6,8 @@ const profileSchema = new Schema({
   name: { type: String, required: true },
   organization: { type: String, required: true },
   department: { type: String, required: true },
-  solved: { type: [String], default: [] },
+  solved: { type: [Schema.ObjectId], default: [] },
+  test: { type: Boolean, required: true, default: false },
 });
 
 /*

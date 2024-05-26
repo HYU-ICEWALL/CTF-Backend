@@ -24,6 +24,7 @@ class SessionManager{
     if (!data.id || !data.token) {
       return new APIError(604, 'Session data not found');
     }
+    return new APIResponse(0, {});
   }
 }
 

@@ -6,7 +6,7 @@ class ScoreboardManager {
     this.modelName = modelName;
   }
 
-  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at, duration: duration}) {
+  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at, duration: duration}, test = false) {
     try {
       const scoreboard = {
         contest: contest,
@@ -14,6 +14,7 @@ class ScoreboardManager {
         end_at: end_at,
         duration: duration,
         submissions: [],
+        test: test,
       };
 
       const result = await this.database.insertData(this.modelName, scoreboard);
