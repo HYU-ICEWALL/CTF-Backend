@@ -66,7 +66,6 @@ class ProblemManager {
       if(category) change.category = category;
       if(contest) change.contest = contest;
 
-
       const result = await this.database.updateData(this.modelName, {name: name}, change);
       if(result instanceof APIError){
         return result;

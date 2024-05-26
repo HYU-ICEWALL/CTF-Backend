@@ -59,10 +59,6 @@ router.get("/", async (req, res) => {
   try {
     // check parameters
     const { name, problems = false, scoreboards = false } = req.query;
-    if (keyword == undefined) {
-      res.status(200).json(new APIError(800, "Invalid parameters"));
-      return;
-    }
     
     const query = {};
     if (name) query.name = name;
