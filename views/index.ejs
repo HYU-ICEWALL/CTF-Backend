@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICEWALL CTF Platform</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+
+    <style>
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body style="background-color: #c6c6c6; ">
+    <!-- common headers -->
+    <%- include("./common/header.ejs") %>
+
+    <!-- partial body -->
+    <!-- TODO: 상단에 스코어보드 띄우기 -->
+    <div class="container mt-5" style="width: 60%;">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="score-board"></canvas>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            </div>
+        </div>
+    </div>
+
+    <!-- TODO: 현재 contest 확인하기 : 문제 별 solver 확인 가능하게끔? + 새 contest 만들기, contest 중지하기 -->
+
+    <!-- 아래쪽에는 두 개로 나눠서 user 정보 보기, 문제 설정하기로 이동할 수 있게 -->
+    <div class="d-flex justify-content-center align-item-center" style="margin-top: 10vh; margin-bottom: 10vh;">
+        <div style="width: fit-content;">
+            <a href="/admin/problems">
+                <div class="card text-bg-light me-3" style="max-width: 18rem;">
+                    <div class="card-header">Problems</div>
+
+                    <div class="card-body">
+                        <h5 class="card-title">문제 출제/수정</h5>
+                        <p class="card-text">새로운 문제를 출제하고, 기존 문제를 수정합니다.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div style="width: fit-content;">
+            <a href="/admin/contests">
+                <div class="card text-bg-light ms-3 me-3" style="max-width: 18rem;">
+                    <div class="card-header">Contests</div>
+
+                    <div class="card-body">
+                        <h5 class="card-title">대회 생성/중지</h5>
+                        <p class="card-text">새로운 대회를 생성하고, 시작/중지합니다.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div style="width: fit-content;">
+            <a href="/admin/users">
+                <div class="card text-bg-light ms-3" style="max-width: 18rem;">
+                    <div class="card-header">Users</div>
+
+                    <div class="card-body">
+                        <h5 class="card-title">사용자 정보 확인</h5>
+                        <p class="card-text">해당 탭으로 이동해서 사용자 정보를 확인합니다.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var xValues = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+
+        var data1 = [12, 3, 4, 2, 12, 3, 4, 17, 22, 34, 54, 67];
+        var data2 = [3, 9, 12, 14, 22, 32, 45, 12, 67, 45, 55, 7];
+        var data3 = [23, 19, 11, 134, 242, 352, 435, 22, 637, 445, 555, 57];
+
+        new Chart(document.getElementById('score-board'),
+            {
+                type: "line",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        data: data1,
+                        borderColor: "red",
+                        fill: true
+                    }, {
+                        data: data2,
+                        borderColor: "green",
+                        fill: true
+                    }, {
+                        data: data3,
+                        borderColor: "blue",
+                        fill: true
+                    }]
+                },
+                options: {
+                    legend: { display: true }
+                }
+            });
+    </script>
+</body>
+
+</html>
