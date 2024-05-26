@@ -31,11 +31,9 @@ const sessionManager = new SessionManager(redisSessionDB, {
   store: new RedisStore({ client: redisSessionDB.client }),
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    secure: false,
-    httpOnly: true,
-    ttl: parseInt(process.env.SESSION_EXPIRED)
+    domain: ".icewall.org"
   }
 });
 
@@ -59,6 +57,7 @@ const scoreboardManager = new ScoreboardManager(mongoDB, "scoreboard");
 
 const run = async () => {
   await mongoDB.connect();
+  await redisSessionDB.connect();
 }
 
 module.exports = {

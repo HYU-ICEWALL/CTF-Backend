@@ -1,10 +1,11 @@
+const { APIResponse, APIError } = require('../response');
 const Database = require('./database');
 const mongoose = require('mongoose');
 
 class Mongoose extends Database {
-  constructor(name, schemaObj, url) {
+  constructor(name, schemas, url) {
     super(name);
-    this.schemaObj = schemaObj;
+    this.schemas = schemas;
     this.url = url;
   }
   
@@ -23,8 +24,8 @@ class Mongoose extends Database {
       console.error(err);
     });  
     this.model = {};
-    Object.keys(this.schemaObj).map((key, index) => {
-      this.model[key] = this.client.model(key, this.schemaObj[key]);
+    Object.keys(this.schemas).map((key, index) => {
+      this.model[key] = this.client.model(key, this.schemas[key]);
     });
   }
 
@@ -35,21 +36,49 @@ class Mongoose extends Database {
   }
 
   async insertData() {
-    const [model, value] = arguments;
-    console.log(value);
-    return await this.model[model].create(value);
+    try{
+      const [model, value] = arguments;
+      const result = await this.model[model].create(value);
+      return new APIResponse(0, result);
+    }catch(err){
+      console.error(err);
+      return new APIError(700, 'Failed to insert data');
+    }
   }
   async findData() {
-    const [model, key] = arguments;
-    return await this.model[model].find(key);
+    try {
+      const [model, key] = arguments;
+      const result = await this.model[model].find(key);
+      return new APIResponse(0, result);
+    } catch (err) {
+      console.error(err);
+      return new APIError(710, 'Failed to find data');
+    }
   }
   async updateData() {
-    const [model, key, value] = arguments;
-    return await this.model[model].updateOne(key, value);
+    try {
+      const [model, key, value] = arguments;
+      // console.log(value);
+      const result = await this.model[model].updateOne(key, value);
+      if (result.matchedCount == 0){
+        return new APIError(721, 'No matched data to update');
+      }
+
+      return new APIResponse(0, result);
+    } catch (err) {
+      console.error(err);
+      return new APIError(720, 'Failed to update data');
+    }
   }
   async deleteData() {
-    const [model, key] = arguments;
-    return await this.model[model].deleteOne(key);
+    try {
+      const [model, key] = arguments;
+      const result = await this.model[model].deleteOne(key);
+      return new APIResponse(0, result);
+    } catch (err) {
+      console.error(err);
+      return new APIError(730, 'Failed to delete data');
+    }
   }
 }
 

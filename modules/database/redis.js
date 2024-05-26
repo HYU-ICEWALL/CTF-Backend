@@ -7,6 +7,9 @@ class RedisDatabase extends Database {
     this.clientOptions = clientOptions;
     
     this.client = redis.createClient(this.clientOptions);
+  }
+
+  async connect(){
     this.client.connect().then(() => {
       console.log(`Redis database ${this.name} connected...`);
     }).catch((error) => {
@@ -21,7 +24,6 @@ class RedisDatabase extends Database {
     this.client.on('reconnecting', () => {
       console.log('Reconnecting to Redis database...');
     });
-
   }
 
   async insertData(){

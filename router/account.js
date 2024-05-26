@@ -1,234 +1,271 @@
+require('dotenv').config(); 
 const express = require('express');
 const router = express.Router();
-const { accountManager, sessionManager } = require('../instances');
-const { APIResponse } = require('../modules/response');
+const { accountManager, sessionManager, profileManager } = require('../instances');
+const { APIResponse, APIError } = require('../modules/response');
 
-router.post('/register', async (req, res) => {
-  // TODO : 회원가입
-  // 1. 이메일 or 전화번호 중복 체크
+router.post('/', async (req, res) => {
   try {
-    const { email, id, password } = req.body;
-    const account = await accountManager.findAccount(id, password);
-    if(account !== undefined){
-      console.log('Account already exists');
-      res.status(400).json(APIResponse(400, 'Account already exists', null));
+    // check session exist
+    if (!!req.session && !!req.session.data && !!req.session.data.id && !!req.session.data.token) {
+      res.status(200).json(new APIError(601, 'Session found'));
       return;
     }
-    // 2. 회원가입
-    const newAccount = await accountManager.createAccount(email, id, password);
-    if(newAccount === undefined || newAccount === null){
-      console.log('Failed to create account');
-      throw new Error('Failed to create account');
+
+    // check parameter
+    const { email, id, password, name, organization, department } = req.body;
+    if (!email || !id || !password || !name || !organization || !department) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      return;
     }
 
-    console.log('Account created');
-    res.status(200).json(APIResponse(200, 'Account created', {id: newAccount.id}));
+    // create account
+    const accountResult = await accountManager.createAccount({
+      email: email,
+      id: id,
+      password: password,
+      authority: 0,
+    }, process.env.SALT_SIZE);
+
+    if (accountResult instanceof APIError) {
+      res.status(200).json(accountResult);
+      return;
+    }
+
+
+    // create profile
+    const profileResult = await profileManager.createProfile({
+      id: id,
+      email: email,
+      name: name,
+      organization: organization,
+      department: department,
+    });
+
+    if (profileResult instanceof APIError) {
+      res.status(200).json(profileResult);
+      return;
+    }
+
+    res.status(200).json(new APIResponse(0, { id: id }));
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(810, 'Account register failed'));
   }
 });
 
 router.post('/login', async (req, res) => {
-  // TODO : 로그인
-  // 1. 이메일 or 전화번호 체크
-  // 2. 비밀번호 확인
   try {
-    
+    // check parameter
     const { id, password } = req.body;
-    const account = await accountManager.findAccount(id, password);
-    if (account == undefined) {
-      console.log('Account not found');
-      res.status(400).json(APIResponse(400, 'Account not found', null));
+    if (!id || !password) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
-    }
-    if(!!req.session && !!req.session.id && !!req.session.token && req.session.token == req.cookies.token){
-      console.log('Already logged in');
-      res.status(400).json(APIResponse(400, 'Already logged in', null));
-      return;
-    }
-    
-    // 3. 토큰 확인 및 발급
-    const token = sessionManager.createSessionToken();
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'none'
+    }    
+
+    // find account with password
+    const result = await accountManager.findAccountWithPassword({
+      id: id,
+      password: password,
     });
-    req.session.token = token;
-    req.session.id = account.id;
+
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
+
+    // create session
+    const token = sessionManager.createSessionToken();
+
+    req.session.data = JSON.stringify({
+      id: id,
+      token: token,
+    });
 
     req.session.save((err) => {
       if (err) {
-        console.log('Session save failed');
-        throw new Error('Session save failed');
+        res.status(200).json(new APIError(603, 'Session save failed'));
+        return;
       }
-      // 4. 로그인 완료
-      console.log('Login success');
-      res.status(200).json(APIResponse(200, 'Login success', {id: account.id}));
+      console.log("Session created : " + req.session.data);
+      return res.status(200).json(new APIResponse(0, { id: id }));
     });
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(811, 'Account login failed'));
   }
   
 });
 
-router.get('/logout', (req, res) => {
-  // TODO : 로그아웃
-  // 1. 토큰 삭제
+router.get('/auth', async (req, res) => {
   try {
-    const token = req.session.token;
-    if (!token) {
-      console.log('Not logged in');
-      res.status(400).json(APIResponse(400, 'Not logged in', null));
+    console.log("Session auth : " + req.session.data);
+    const sessionResult = await sessionManager.checkValidSession(req.session);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
-    res.clearCookie('token');
-    // 2. 세션 삭제
+    res.status(200).json(new APIResponse(0, { id: req.session.data.id }));
+  }catch(err){
+    console.error(err);
+    res.status(200).json(new APIError(816, 'Account auth failed'));
+  }
+})
+
+router.get('/logout', async (req, res) => {
+  try {
+    // check session valid
+    const sessionResult = await sessionManager.checkValidSession(req.session);
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
+      return;
+    }
+
     req.session.destroy((err) => {
       if (err) {
-        console.log('Session destroy failed');
-        res.status(400).json(APIResponse(400, 'Session destroy failed', null));
+        res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      console.log('Session destroyed');
-      // 3. 로그아웃 완료
-      res.status(200).json(APIResponse(200, 'Logout success', null));
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(812, 'Account logout failed'));
   }
 });
 
-router.get('/refresh', (req, res) => {
-  // TODO : 토큰 갱신
-  // 1. 토큰 갱신
+router.get('/refresh', async (req, res) => {
   try {
-    if (!req.session || !req.session.token || !req.session.id) {
-      console.log('Session Not found');
-      res.status(400).json(APIResponse(400, 'Session Not found', null));
+    // check session valid
+    const sessionResult = await sessionManager.checkValidSession(req.session);
+
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
-    if(req.session.token != req.cookies.token){
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Token not matched', null));
-      return;
-    }
-    
+    // refresh session
+    const token = sessionManager.createSessionToken();
+    req.session.data.token = token;
+
     req.session.touch();
     req.session.save((err) => {
       if (err) {
-        console.log('Session save failed');
-        res.status(400).json(APIResponse(400, 'Session save failed', null));
+        res.status(200).json(new APIError(605, 'Session refresh failed'));
         return;
       }
-      // 2. 갱신 완료
-      console.log('Session refresh success');
-      res.status(200).json(APIResponse(200, 'Session refresh success', null));
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(813, 'Account refresh failed'));
   }
 });
 
-router.post('/verify', (req, res) => {
-  // TODO : 이메일 or 전화번호 인증
-  // 1. 이메일 or 전화번호 인증
-  // 2. 인증 완료
-  res.send('not implemented');
-});
-
-router.post('/withdraw', async (req, res) => {
-  // TODO : 회원 탈퇴
-  // 1. 회원 탈퇴
+router.delete('/', async (req, res) => {
   try {
-    if(!req.session || !req.session.token || !req.session.id){
-      console.log('Session not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-    if(req.session.token != req.cookies.token){
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
+    // check session valid
+    const sessionResult = await sessionManager.checkValidSession(req.session);
+
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
+    // check parameter
     const { id, password } = req.body;
-    const account = await accountManager.deleteAccount(id, password);
-    if (account === undefined) {
-      console.log('Failed to delete account');
-      throw new Error('Failed to delete account');
+    if (!id || !password) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      return;
     }
-
-    req.session.destroy((err) => {
+    
+    // check permission
+    const permissionResult = await accountManager.checkAuthority(req);
+    if (permissionResult instanceof APIError) {
+      res.status(200).json(permissionResult);
+      return;
+    }
+    
+    // delete session
+    req.session.destroy(async (err) => {
       if(err){
-        console.log('Session destroy failed');
-        throw new Error('Session destroy failed');
+        res.status(200).json(new APIError(604, 'Session destroy failed'));
+        return;
       }
-      // 2. 탈퇴 완료
-      console.log('Withdraw success');
-      res.status(200).json(APIResponse(200, 'Withdraw success', null));
+
+      // delete profile
+      const profileResult = await profileManager.deleteProfiles({
+        id: id,
+      });
+      if (profileResult instanceof APIError) {
+        res.status(200).json(profileResult);
+        return;
+      }
+
+      // delete account
+      const accountResult = await accountManager.deleteAccounts({
+        id: id,
+        password: password,
+      });
+
+      if (accountResult instanceof APIError) {
+        res.status(200).json(accountResult);
+        return;
+      }
+
+      res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
-    res.status(500).send('Internal Server Error');
     console.error(error);
+    res.status(200).json(new APIError(814, 'Account withdraw failed'));
   }
 });
 
-router.post('/change-password', async (req, res) => {
-  // TODO : 비밀번호 변경
+router.put('/', async (req, res) => {
   try {
-    // 1. 비밀번호 변경
-    const {id, password, newPassword} = req.body;
+    // check session valid
+    const sessionResult = await sessionManager.checkValidSession(req.session);
 
-    const account = await accountManager.changePassword(id, password, newPassword);
-    if(account == undefined){
-      console.log('Account not found or password not matched');
-      res.status(400).json(APIResponse(400, 'Account not found or password not matched', null));
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
       return;
     }
 
-    
+    // check parameter
+    const { id, password, newPassword } = req.body;
+    if (!id || !password || !newPassword) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      return;
+    }
 
-    req.session.destroy((err) => {
-      if(err){
-        console.log('Session destroy failed');
-        throw new Error('Session destroy failed');
+    // check permission
+    const permissionResult = await accountManager.checkAuthority(req);
+    if (permissionResult instanceof APIError) {
+      res.status(200).json(permissionResult);
+      return;
+    }
+
+    // delete session
+    req.session.destroy(async (err) => {
+      if (err) {
+        res.status(200).json(new APIError(604, 'Session destroy failed'));
+        return;
       }
-      // 2. 변경 완료
-      console.log('Change password success');
-      res.status(200).json(APIResponse(200, 'Change password success', null));
-    })
-
+      // update account password
+      const result = await accountManager.updateAccountPassword({
+        id: id,
+        password: password,
+        newPassword: newPassword,
+      });
+      if(result instanceof APIError){
+        res.status(200).json(result);
+        return;
+      }
+      res.status(200).json(new APIResponse(0, {}));
+    });
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
-  }
-});
-
-router.get('/validate', (req, res) => {
-  try {
-    if(!req.cookies.token || !req.session || !req.session.token || !req.session.id){
-      console.log('Session not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    if(req.cookies.token != req.session.token){
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    console.log('Authorized');
-    res.status(200).json(APIResponse(200, 'Authorized', {id: req.session.id}));
-  } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
-    console.error(error); 
+    res.status(200).json(new APIError(815, 'Account change password failed'));
   }
 });
 

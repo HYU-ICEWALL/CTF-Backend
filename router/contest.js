@@ -1,209 +1,153 @@
 const express = require('express');
-const { contestManager } = require('../instances');
-const { APIResponse } = require('../modules/response');
+const { contestManager, scoreboardManager, accountManager, problemManager } = require('../instances');
+const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
+
+router.get("/recent", async (req, res) => {
+  try{
+    const { count } = req.query;
+    if(count == 0){
+      res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
+    }
+
+    const contestResult = await contestManager.findContests({});
+    if (contestResult instanceof APIError) {
+      res.status(200).json(contestResult);
+      return;
+    }
+
+    // find recent contest
+    const contests = contestResult.data;
+    const data = {
+      recent : undefined,
+      upcoming : undefined,
+      inProgress : undefined,
+      ended : undefined,
+    };
+
+    for(let i = 0; i < contests.length; i++){
+      const contest = contests[i];
+      const begin_at = new Date(contest.begin_at);
+      const end_at = new Date(contest.end_at);
+      const now = new Date();
+
+      if (begin_at > now){
+        data.upcoming.push(contest);
+      } else if (end_at < now){
+        data.ended.push(contest);
+      } else {
+        data.inProgress.push(contest);
+      }
+    }
+
+    data.recent = data.inProgress[0];
+    if(!!count){
+      data.upcoming = data.upcoming.slice(0, count);
+      data.inProgress = data.inProgress.slice(0, count);
+      data.ended = data.ended.slice(0, count);
+    }
+
+    res.status(200).json(contestResult);
+  }catch(err){
+    console.error(err);
+    res.status(200).json(new APIError(800, "Recent contest find failed"));
+  }
+});
 
 router.get("/", async (req, res) => {
   try {
-    const { id, name, manager } = req.query;
-    const query = {};
-    if (id != undefined) {
-      query.id = id;
-    }
-    if (name != undefined) {
-      query.name = name;
-    }
-    if (manager != undefined) {
-      query.manager = manager;
+    // check parameters
+    const { name, problems = false, scoreboards = false } = req.query;
+    if (keyword == undefined) {
+      res.status(200).json(new APIError(800, "Invalid parameters"));
+      return;
     }
     
+    const query = {};
+    if (name) query.name = name;
+
     if (Object.keys(query).length === 0) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+      res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
-    const contests = await contestManager.findContests(query);
-    if (contests == undefined) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
+
+    // find contests
+    const result = await contestManager.findContests(query);
+    
+    if (result instanceof APIError) {
+      res.status(200).json(result);
       return;
     }
-    console.log('Contest found');
-    res.status(200).json(APIResponse(200, 'Contest found', contests));
+    if (!problems && !scoreboards){
+      res.status(200).json(result);
+      return;
+    }
+    const contests = result.data.map(async contest => {
+      const temp = {
+        contest: contest,
+      };
+      // find problems in contest problems
+      if (problems){
+        const problems = await problemManager.findProblems({contest: contest._id});
+        if (problems instanceof APIError) {
+          temp.problems = undefined;
+        } else {
+          temp.problems = problems.data;
+        }
+      }
+      // find scoreboard in contest
+      if (scoreboards){
+        const scoreboard = await scoreboardManager.findScoreboards({contest: contest._id});
+        if (scoreboard instanceof APIError) {
+          temp.scoreboard = undefined;
+        } else {
+          temp.scoreboard = scoreboard.data;
+        }
+      }
+      return temp;
+    });
+    result.data = contests;
+
+    return res.status(200).json(result);
   } catch (error) {
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(821, "Contest find failed"));
   }
 });
-
-router.post("/", async (req, res) => {
-  try {
-    // session check
-    const { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
-    // console.log(req.body);
-    if(problems == undefined){
-      problems = [];
-    }
-
-    if(participants == undefined){
-      participants = [];
-    }
-
-
-    if(id == undefined ||
-       name == undefined || 
-       description == undefined || 
-       manager == undefined || 
-       begin_at == undefined || 
-       duration == undefined || 
-       problems == undefined || 
-       participants == undefined)
-    {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
-      return;
-    }
-
-    if (req.session.token == undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    const newContest = await contestManager.createContest(id, name, description, manager, begin_at, duration, problems, participants);
-    if (newContest == undefined) {
-      console.log('Contest creation failed');
-      res.status(500).json(APIResponse(500, 'Contest creation failed', null));
-      return;
-    }
-
-    res.status(200).send(newContest);
-  } catch (error) {
-    res.status(500).send('Internal Server Error');
-    console.error(error);
-  }
-});
-
-router.delete('/', async (req, res) => {
-  try {
-    // session check
-    if (req.session.token === undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    const { id } = req.body;
-    if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
-      return;
-    }
-
-    const contest = await contestManager.findContests({ id: id });
-    if (Object.keys(contest).length === 0) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
-      return;
-    }
-
-    const result = await contestManager.deleteContest(id);
-    if(result === false){
-      console.log('Failed to delete contest');
-      res.status(500).json(APIResponse(500, 'Failed to delete contest', null));
-      return;
-    }
-
-    console.log('Contest deleted');
-    res.status(200).json(APIResponse(200, 'Contest deleted', null));
-  } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
-    console.error(error);
-  }
-});
-
-router.put('/', async (req, res) => {
-  try {
-    // session check
-    if (req.session.token == undefined) {
-      console.log('Token not found');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    if (req.session.token != req.cookies.token) {
-      console.log('Token not matched');
-      res.status(401).json(APIResponse(401, 'Unauthorized', null));
-      return;
-    }
-
-    const { id, name, description, manager, begin_at, duration, problems, participants } = req.body;
-
-    if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
-      return;
-    }
-
-    const contests = await contestManager.findContests({ id: id });
-    if (Object.keys(contests).length === 0) {
-      console.log('Contest not found');
-      res.status(400).json(APIResponse(400, 'Contest not found', null));
-      return;
-    }
-
-    const newContest = await contestManager.updateContest(id, name, description, manager, begin_at, duration, problems, participants);
-    if (newContest == undefined || newContest == null) {
-      console.log('Contest update failed');
-      res.status(500).json(APIResponse(500, 'Contest update failed', null));
-      return;
-    }
-
-    console.log('Contest updated');
-    res.status(200).json(APIResponse(200, 'Contest updated', newContest));
-  } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
-    console.error(error);
-  }
-});
-
 
 router.get('/scoreboard', async (req, res) => {
   try {
-    const { id } = req.query;
-    if (id == undefined) {
-      console.log('Invalid parameters');
-      res.status(400).json(APIResponse(400, 'Invalid parameters', null));
+    // check parameters
+    const { contest } = req.query;
+    if (contest == undefined) {
+      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
       return;
     }
 
-    const scoreboard = await contestManager.findScoreboard(id);
-    if (scoreboard == undefined) {
-      console.log('Scoreboard not found');
-      res.status(400).json(APIResponse(400, 'Scoreboard not found', null));
+    // find contest
+    const contestResult = await contestManager.findContests({ name : contest });
+    if (contestResult instanceof APIError) {
+      res.status(200).json(contestResult);
       return;
     }
 
-    console.log('Scoreboard found');
-    res.status(200).json(APIResponse(200, 'Scoreboard found', scoreboard));
+    if (contestResult.data.length != 1){
+      res.status(200).json(new APIError(822, 'Contest not found'));
+      return;
+    }
+
+    // find scoreboard with contest object id
+    const result = await scoreboardManager.findProcessedScoreboard({ contest: contestResult.data[0]._id });
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
+
+    res.status(200).json(result);
   } catch (error) {
-    console.log('Internal Server Error');
-    res.status(500).json(APIResponse(500, 'Internal Server Error', null));
     console.error(error);
+    res.status(200).json(new APIError(825, 'Failed to find scoreboard'));
   }
 });
 

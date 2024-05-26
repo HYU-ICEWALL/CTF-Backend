@@ -1,178 +1,279 @@
-# Auth Server
+# CTF-Backend README
 
-## API Route
+## API Endpoints
 
-### /api/account
+### Account
 
-|URL|Method|Response Format|Description| 
-|---|---|---|---|
-|`/api/account/register`|POST|JSON|Create account.|
-|`/api/account/login`|POST|JSON|Login account.|
-|`/api/account/logout`|POST|JSON|Logout account. Delete session.|
-|`/apiaccount/refresh`|POST|JSON|Refresh session token|
-|`/api/account/withdraw`|POST|JSON|Delete account.|
-|`/api/account/change-password`|POST|JSON|Change account password into new password.|
+#### POST `/api/account`
+Create a new `account` and `profile`. The `account` is used to login to the server and the `profile` is used to store additional information about the user.
 
-### POST /account/register
+- Request Body
+<!-- table -->  
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+| `password` | `string` | Account password. |
+| `email` | `string` | Account email. |
+| `name` | `string` | Profile name. |
+| `organization` | `string` | Profile organization. |
+| `department` | `string` | Profile department. |
+
+- Response
 ```json
-body{
-    "id": "test",
-    "password" : "testpassword",
-    "email" : "test@example.com"
+{
+    "code": 0,
+    "data": {"id": "exampleId"}
 }
 ```
 
-### POST /account/login
+#### POST `/api/account/login`
+Login to the `account`. If the login is successful, the server will set `session` and `cookie` that can be used to access the protected resources.
+
+- Request Body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+| `password` | `string` | Account password. |
+
+- Response
 ```json
-body{
-    "id": "test",
-    "password" : "testpassword",
+{
+    "code": 0,
+    "data": {"id": "exampleId"}
 }
 ```
-### POST /account/logout
+
+#### GET `/api/account/logout`
+Logout from the `account`. The server will invalidate the `cookie` and the client will no longer be able to access the protected resources.
+
+- Response
 ```json
-body{
-    
+{
+    "code": 0,
+    "data": {}
 }
 ```
-### POST /account/refresh
+
+#### GET `/api/account/refresh`
+Refresh the `token`. The server will return a new `token` in `cookie` that can be used to access the protected resources.
+
+- Response
 ```json
-body{
-    
+{
+    "code": 0,
+    "data": {}
 }
 ```
-### POST /account/withdraw
+
+#### PUT `/api/account`
+Update the password of the `account`.
+
+- Request Body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+| `password` | `string` | Account password. |
+| `newPassword` | `string` | Account new password. |
+
+- Response
 ```json
-body{
-    "id": "test",
-    "password" : "testpassword",
+{
+    "code": 0,
+    "data": {}
 }
 ```
-### POST /account/change-password
+
+#### DELETE `/api/account`
+Delete the `account` and `profile`. The server will remove `session` and `cookie`.
+
+- Request Body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+| `password` | `string` | Account password. |
+
+- Response
 ```json
-body{
-    "id": "test",
-    "password" : "testpassword",
-    "newPassword" : "newtestpassword"
+{
+    "code": 0,
+    "data": {}
 }
 ```
 
-## Schema
-0. Session : User direct access NOT allowed
-```ts
-interface Session{ 
-    token : string,         // String from SessionManager.createSessionToken()
-    account : Account,       // Account object
+### Contest
+
+#### GET `/api/contest`
+Get the list of `contest`.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Contest id. |
+| `name` | `string` | Contest name. |
+
+- Response
+```json
+{
+    "code": 0,
+    "data": [
+        {
+            "id": "exampleId",
+            "name": "exampleName",
+            "description": "exampleDescription",
+            "problems": [
+                "...",
+            ],
+            "begin_at": "YYYY-MM-DD HH:MM:SS",
+            "end_at": "YYYY-MM-DD HH:MM:SS",
+            "participants": [
+                "...",
+            ]
+        }
+    ]
 }
 ```
 
-1. Account : User direct access NOT allowed
-```ts
-interface Account {
-    _id: ObjectId,          // Id created from mongo DB
-    id: string,             // Account id
-    password: string,       // Password must be encrypted with salt
-    salt: string,           // String from createSalt() in encrypt.js
-    uuid: string,           // String from AccountManager.createUuid()
-    email: string, 
-    verified: boolean,      // Default : false
-    authority : number      // 0 : User, 1 : Admin
+#### GET `/api/contest/scoreboard`
+Get the `scoreboard` of the `contest`.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Contest id. |
+
+- Response
+```json
+{
+    "code": 0,
+    "data": [
+        { 
+            "contest": "contestId",
+            "begin_at": "YYYY-MM-DD HH:MM:SS",
+            "end_at": "YYYY-MM-DD HH:MM:SS",
+            "solved": {
+                "accountId" : [
+                    "...",
+                ],
+                "...": [
+                    "...",
+                ]
+            }
+        }
+    ]
 }
 ```
 
-2. Profile
-```ts
-interface Profile{
-    _id : ObjectId,         // Id created from mongo DB
-    id : string,            // Account id
-    email : string,         // Account email
-    name: string,           // User name
-    organization: string,   // User organization (ex. University, Company)
-    department: string,     // User department (ex. major, division)
+### Problem
+#### GET `/api/problem`
+Get the list of `problem`.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Problem id. |
+| `name` | `string` | Problem name. |
+| `category` | `string` | Problem category. |
+| `contest` | `string` | Contest id that the problem belongs to. |
+
+- Response
+```json
+{
+    "code": 0,
+    "data": [
+        {
+            "id": "exampleId",
+            "name": "exampleName",
+            "description": "exampleDescription",
+            "source": "exampleSource",
+            "flag": "exampleFlag",
+            "link": "exampleLink",
+            "score": "exampleScore",
+            "category": "exampleCategory",
+            "contest": "exampleContest"
+        }
+    ]
 }
 ```
 
-3. Problem
-```ts
-interface Problem{
-    _id : ObjectId,         // Id created from mongo DB
-    id: number,             // Problem id
-    name : string,          // Problem name
-    description: string,    // Problem description
-    source : string,           // Problem source (download)
-    flag : string,          // Problem flag (answer)
-    link : string,          // Problem link (ex. web, pwn)
-    score: number,          // Problem score
-    category : number       // 0 : Web, 1 : Pwn, 2 : Reversing, 3 : Forensic, 4 : Misc...
+#### POST `/api/problem/flag`
+Submit the `flag` of the `problem`. If the `flag` is correct, the server saves the information to `scoreboard`.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `contest` | `string` | Contest id. |
+| `problem` | `string` | Problem id. |
+| `flag` | `string` | Problem flag. |
+
+- Response (Correct)
+```json
+{
+    "code": 0,
+    "data": {
+        "result": true
+    }
+}
+```
+- Response (Incorrect)
+```json
+{
+    "code": 0,
+    "data": {
+        "result": false
+    }
 }
 ```
 
-4. Contest
-```ts
-interface Contest{
-    _id : ObjectId,         // Id created from mongo DB
-    id : number,            // Contest id
-    name : string,          // Contest name
-    description: string,    // Contest description
-    manager: string,        // Contest manager (account id)
-    begin_at: String,       // Contest begin time
-    duration: number,       // Contest duration (minute)
-    problems: number[],     // Contest problems (problem id)
-    participants: string[],  // Contest participants (account id)
-    scoreboard: number,     // Contest scoreboard (scoreboard id)
+### Profile
+
+#### GET `/api/profile`
+Get the `profile` information of the `account`.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+
+- Response
+```json
+{
+    "code": 0,
+    "data": {
+        "id": "exampleId",
+        "email": "exampleEmail",
+        "name": "exampleName",
+        "organization": "exampleOrganization",
+        "department": "exampleDepartment"
+    }
 }
 ```
 
-5. Scoreboard
-```ts
-interface Scoreboard{
-    _id : ObjectId,         // Id created from mongo DB
-    id : number,            // Contest id
-    solved : Score[],       // Solved problems
+#### PUT `/api/profile`
+Update the `profile` information of the `account` with id.
+
+- Request body
+<!-- table -->
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Account id. |
+| `name` | `string` | Profile name. |
+| `organization` | `string` | Profile organization. |
+| `department` | `string` | Profile department. |
+
+- Response
+```json
+{
+    "code": 0,
+    "data": {
+        "id": "exampleId",
+    }
 }
 ```
-
-6. Score
-```ts
-interface Score{
-    _id : ObjectId,         // Id created from mongo DB
-    account : string,       // Account id
-    problem: number,        // Problem id
-    score: number,          // Problem score
-    timestamp: string,      // Problem solved time
-}
-```
-
-
-### Architecture
-
-1. Database Module
-- database.js
-    - insert : Insert data.
-    - find : Find data.
-    - update : Update data.
-    - delete : Delete data.
-2. Manager Module
-- accountManager.js
-    - createAccount : Create account with id and password. Insert account into dbms. Return account if success, null if fail.
-    - findAccountWithId : Find account with id. Return account id to object if success, null if fail.
-    - findAccount : Find account with id and password. Return account if success, null if fail.
-    - updateAccount : Create new account with id and new password and update. Return new account if success, null if fail.
-    - deleteAccount : Delete account with id and password. Return true if success, false if fail.
-- profileManager.js
-    - createProfile : Create profile with id and email. Insert profile into dbms. Return profile if success, null if fail.
-    - findProfiles : Find profiles with `{key : value}`. Return profile if success, null if fail.
-    - updateProfile : Create new profile with id and update. Return new profile if success, null if fail.
-    - deleteProfile : Delete profile with id. Return true if success, false if fail.
-- problemManager.js
-    - createProblem : Create problem. Insert problem into dbms. Return problem if success, null if fail.
-    - findProblems : Find problems with `{key : value}`. Return problem if success, null if fail.
-    - updateProblem : Create new problem and update. Return new problem if success, null if fail.
-    - deleteProblem : Delete problem with id. Return true if success, false if fail.
-- contestManager.js
-    - createContest : Create contest. Insert contest into dbms. Return contest if success, null if fail.
-    - findContests : Find contests with `{key : value}`. Return contest if success, null if fail.
-    - updateContest : Create new contest and update. Return new contest if success, null if fail.
-    - deleteContest : Delete contest with id. Return true if success, false if fail.
-
-3. Router Module
