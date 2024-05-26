@@ -1,51 +1,163 @@
 # CTF-Backend README
 
+## Schema
+
+### Account
+```js
+const accountSchema = new Schema({
+  id: { type: String, unique: true, required: true},
+  password: { type: String, required: true},
+  salt: { type: String, required: true},
+  email: { type: String, unique: true, required: true},
+  verified: { type: Boolean, required: true, default: false },
+  authority: { type: Number, required: true, default: 0 },
+  test: { type: Boolean, required: true, default: false },
+});
+
+module.exports = accountSchema;
+```
+
+### Contest
+```js
+const contestSchema = new Schema({
+  name: { type: String, unique: true, required: true },
+  description: { type: String },
+  problems: { type: [String], required: true},  // problem name
+  begin_at: { type: String, required: true },
+  end_at: { type: String, required: true },
+  participants: { type: [String], required: true }, // account id
+  state: { type: String, required: true, default: '0' }, // 0 : upcoming, 1 : in progress, 2 : ended, 3 : suspended
+  test: { type: Boolean, required: true, default: false },
+});
+```
+
+### Problem
+```js
+const problemSchema = new Schema({
+  name: { type: String, unique: true, required: true },
+  description: { type: String },
+  file: { type: String },
+  flag: { type: String },
+  url: {type: String},
+  port: {type: String},
+  score: { type: String, required: true },
+  domain: { type: String, required: true }, // pwn, web, forensic, reverse, misc
+  contest: { type: String }, // contest name
+  test: { type: Boolean, required: true, default: false },
+});
+```
+
+### Profile
+```js
+const profileSchema = new Schema({
+  id: { type: String, unique: true, required: true },
+  email: { type: String, unique: true, required: true},
+  name: { type: String, required: true },
+  organization: { type: String, required: true },
+  department: { type: String, required: true },
+  solved: { type: [Schema.ObjectId], default: [] },
+  test: { type: Boolean, required: true, default: false },
+});
+
+/*
+solved : [
+  {
+    problem : problem id,
+    score : problem score,
+    account : account id,
+    time : time (YYYY-MM-DD HH:MM:SS)
+  }
+]
+*/
+```
+
+### Scoreboard
+```js
+const scoreboardSchema = new Schema({
+  contest: { type: String, unique: true, required: true }, // contest name
+  begin_at: { type: String, required: true },
+  end_at: { type: String, required: true },
+  sumbissions: { type: [Object], default: [] },
+  test: { type: Boolean, required: true, default: false }
+});
+
+/*
+submission : [
+  {
+    problem : problem _id,
+    score : problem score,
+    account : account _id,
+    type : true / false,
+    time : time (YYYY-MM-DD HH:MM:SS)
+  }
+]
+*/
+```
+
+
 ## API Endpoints
 
 ### Account
 
 #### POST `/api/account`
-Create a new `account` and `profile`. The `account` is used to login to the server and the `profile` is used to store additional information about the user.
+- 계정 생성 후 프로필 생성을 한다.
+- 세션이 있으면 실패한다.
 
 - Request Body
-<!-- table -->  
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Account id. |
-| `password` | `string` | Account password. |
-| `email` | `string` | Account email. |
-| `name` | `string` | Profile name. |
-| `organization` | `string` | Profile organization. |
-| `department` | `string` | Profile department. |
+```json
+{
+    "id": "exampleId",
+    "password": "examplePassword",
+    "email": "exampleEmail",
+    "name": "exampleName",
+    "organization": "exampleOrganization",
+    "department": "exampleDepartment"
+}
+```
 
 - Response
 ```json
 {
     "code": 0,
-    "data": {"id": "exampleId"}
+    "data": {}
 }
 ```
 
 #### POST `/api/account/login`
-Login to the `account`. If the login is successful, the server will set `session` and `cookie` that can be used to access the protected resources.
+- 계정 로그인을 한다.
+- 세션을 생성하고 쿠키에 저장한다.
+- 세션에는 ID와 Token이 저장된다.
 
 - Request Body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Account id. |
-| `password` | `string` | Account password. |
+```json
+{
+    "id": "exampleId",
+    "password": "examplePassword"
+}
+```
 
 - Response
 ```json
 {
     "code": 0,
-    "data": {"id": "exampleId"}
+    "data": {}
+}
+```
+
+#### GET `/api/account/auth`
+- 유효한 세션인지 확인한다.
+
+- Response
+```json
+{
+    "code": 0,
+    "data": {}
 }
 ```
 
 #### GET `/api/account/logout`
-Logout from the `account`. The server will invalidate the `cookie` and the client will no longer be able to access the protected resources.
+- 계정 로그아웃을 한다.
+- 세션을 제거하고 쿠키를 제거한다.
 
 - Response
 ```json
@@ -56,7 +168,7 @@ Logout from the `account`. The server will invalidate the `cookie` and the clien
 ```
 
 #### GET `/api/account/refresh`
-Refresh the `token`. The server will return a new `token` in `cookie` that can be used to access the protected resources.
+- 계정 토큰을 갱신한다.
 
 - Response
 ```json
@@ -67,15 +179,17 @@ Refresh the `token`. The server will return a new `token` in `cookie` that can b
 ```
 
 #### PUT `/api/account`
-Update the password of the `account`.
+- 유효한 세션인지 확인한다.
+- 계정 비밀번호를 변경한다.
 
 - Request Body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Account id. |
-| `password` | `string` | Account password. |
-| `newPassword` | `string` | Account new password. |
+```json
+{
+    "id": "exampleId",
+    "password": "examplePassword",
+    "newPassword": "exampleNewPassword"
+}
+```
 
 - Response
 ```json
@@ -86,14 +200,16 @@ Update the password of the `account`.
 ```
 
 #### DELETE `/api/account`
-Delete the `account` and `profile`. The server will remove `session` and `cookie`.
+- 유효한 세션인지 확인한다.
+- 계정과 프로필을 삭제한다.
 
 - Request Body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Account id. |
-| `password` | `string` | Account password. |
+```json
+{
+    "id": "exampleId",
+    "password": "examplePassword"
+}
+```
 
 - Response
 ```json
@@ -105,46 +221,86 @@ Delete the `account` and `profile`. The server will remove `session` and `cookie
 
 ### Contest
 
-#### GET `/api/contest`
-Get the list of `contest`.
+#### GET `/api/contest/recent`
+- 최근에 진행된 `contest`를 `count`만큼 가져온다.
 
-- Request body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Contest id. |
-| `name` | `string` | Contest name. |
+- Parameters
+```json
+{
+    "count": 5
+}
+```
 
 - Response
 ```json
 {
     "code": 0,
+    "data": {
+        "recent" : [...],
+        "upcoming" : [...],
+        "inprogress" : [...],
+        "ended" : [...]
+    }
+}
+```
+
+#### GET `/api/contest`
+- `contest`의 정보를 가져온다.
+- `name`이 있으면 해당 이름을 가진 `contest`를 가져온다.
+- `name`이 있고 세션이 유효하며 `contest`의 `participants`에 속하면 `problems`나 `scoreboards`를 가져올 수 있다.
+
+- Parameters
+```json
+{
+    "name": "exampleContest",
+    "problems": true,
+    "scoreboards": true
+}
+```
+
+- Response
+```json
+// no params
+{
+    "code": 0,
     "data": [
-        {
-            "id": "exampleId",
-            "name": "exampleName",
-            "description": "exampleDescription",
-            "problems": [
-                "...",
-            ],
-            "begin_at": "YYYY-MM-DD HH:MM:SS",
-            "end_at": "YYYY-MM-DD HH:MM:SS",
-            "participants": [
-                "...",
-            ]
-        }
+        // contests
     ]
+}
+
+// only name
+{
+    "code": 0,
+    "data": {
+        // contest info
+    }
+}
+
+// problems or scoreboards
+{
+    "code": 0,
+    "data": {
+        // contest info
+        "problems": [
+            // problems
+        ],
+        "scoreboards": [
+            // scoreboards
+        ]
+    }
 }
 ```
 
 #### GET `/api/contest/scoreboard`
-Get the `scoreboard` of the `contest`.
+- `contest`의 `scoreboard`를 가져온다.
+- 세션이 유효하며 `contest`의 `participants`에 속하면 가져올 수 있다.
 
-- Request body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Contest id. |
+- Parameters
+```json
+{
+    "name": "exampleContest"
+}
+```
 
 - Response
 ```json
@@ -152,10 +308,10 @@ Get the `scoreboard` of the `contest`.
     "code": 0,
     "data": [
         { 
-            "contest": "contestId",
+            "contest": "exampleContest",
             "begin_at": "YYYY-MM-DD HH:MM:SS",
             "end_at": "YYYY-MM-DD HH:MM:SS",
-            "solved": {
+            "submissions": {
                 "accountId" : [
                     "...",
                 ],
@@ -170,59 +326,50 @@ Get the `scoreboard` of the `contest`.
 
 ### Problem
 #### GET `/api/problem`
-Get the list of `problem`.
+- 문제 목록을 가져온다.
 
-- Request body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Problem id. |
-| `name` | `string` | Problem name. |
-| `category` | `string` | Problem category. |
-| `contest` | `string` | Contest id that the problem belongs to. |
+- Parameters
+```json
+{
+    "name": "exampleName",
+    "category": "exampleCategory",
+    "contest": "exampleContest"
+}
+```
 
 - Response
 ```json
 {
     "code": 0,
     "data": [
-        {
-            "id": "exampleId",
-            "name": "exampleName",
-            "description": "exampleDescription",
-            "source": "exampleSource",
-            "flag": "exampleFlag",
-            "link": "exampleLink",
-            "score": "exampleScore",
-            "category": "exampleCategory",
-            "contest": "exampleContest"
-        }
+        // problems
     ]
 }
 ```
 
-#### POST `/api/problem/flag`
-Submit the `flag` of the `problem`. If the `flag` is correct, the server saves the information to `scoreboard`.
+#### POST `/api/problem/submit`
+- 문제의 `flag`를 제출한다.
+- 세션이 유효하며 `contest`의 `participants`에 속하면 제출할 수 있다.
+- `flag`가 맞으면 `scoreboard`와 프로필의 `solved`에 추가한다.
 
-- Request body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `contest` | `string` | Contest id. |
-| `problem` | `string` | Problem id. |
-| `flag` | `string` | Problem flag. |
+- Request Body
+```json
+{
+    "name": "exampleProblem",
+    "flag": "exampleFlag"
+}
+```
 
 - Response (Correct)
 ```json
+// solved
 {
     "code": 0,
     "data": {
         "result": true
     }
 }
-```
-- Response (Incorrect)
-```json
+// not solved
 {
     "code": 0,
     "data": {
@@ -256,24 +403,43 @@ Get the `profile` information of the `account`.
 }
 ```
 
-#### PUT `/api/profile`
-Update the `profile` information of the `account` with id.
+#### GET `/api/profile`
+- 프로필 정보를 가져온다.
 
-- Request body
-<!-- table -->
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Account id. |
-| `name` | `string` | Profile name. |
-| `organization` | `string` | Profile organization. |
-| `department` | `string` | Profile department. |
+- Parameters
+```json
+{
+    "id": "exampleId"
+}
+```
 
 - Response
 ```json
 {
     "code": 0,
     "data": {
-        "id": "exampleId",
+        // profile info
     }
+}
+```
+
+#### PUT `/api/profile`
+- 유효한 세션인지 확인한다.
+- 프로필을 수정한다.
+
+- Request body
+```json
+{
+    "name": "exampleName",
+    "organization": "exampleOrganization",
+    "department": "exampleDepartment"
+}
+```
+
+- Response
+```json
+{
+    "code": 0,
+    "data": {}
 }
 ```

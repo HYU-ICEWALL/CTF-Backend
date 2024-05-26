@@ -14,7 +14,7 @@ submission : [
     problem : problem _id,
     score : problem score,
     account : account _id,
-    type : type (0 : submit, 1 : correct, 2 : incorrect),
+    type : true / false,
     time : time (YYYY-MM-DD HH:MM:SS)
   }
 ]
