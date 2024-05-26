@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/recent", async (req, res) => {
   try{
     const { count } = req.query;
-    if(count == 0){
+    if(count <= 0){
       res.status(200).json(new APIError(800, "Invalid parameters"));
       return;
     }
@@ -58,9 +58,10 @@ router.get("/recent", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { name, problems = false, scoreboards = false } = req.query;
+    const { _id, name, problems = false, scoreboards = false } = req.query;
     
     const query = {};
+    if (_id) query._id = _id;
     if (name) query.name = name;
 
     if (Object.keys(query).length === 0 && (problems || scoreboards)) {
@@ -115,14 +116,17 @@ router.get("/", async (req, res) => {
 router.get('/scoreboard', async (req, res) => {
   try {
     // check parameters
-    const { contest } = req.query;
+    const { _id } = req.query;
     if (contest == undefined) {
       res.status(200).json(new APIResponse(800, 'Invalid parameters'));
       return;
     }
 
+    const query = {};
+    if(_id) query._id = _id;
+
     // find contest
-    const contestResult = await contestManager.findContests({ name : contest });
+    const contestResult = await contestManager.findContests(query);
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
       return;

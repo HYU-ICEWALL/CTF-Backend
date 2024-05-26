@@ -20,24 +20,8 @@ router.get('/', async (req, res) => {
 
 router.get('/problems', async (req, res) => {
     // TODO: get problem sets from current contest
-    const contest = {name: "Test Contest"};
-    const problems = [
-        {
-            domain: "pwn",
-            name: "test1",
-            num: "1"
-        },
-        {
-            domain: "web",
-            name: "test2",
-            num: "2"
-        },
-        {
-            domain: "forensic",
-            name: "test3",
-            num: "3"
-        },
-    ]
+    const contest = await contestManager.findContests({}).data[0];
+    const problems = await problemManager.findProblems({}).data.filter(problem => problem.contest === contest[0]._id);
 
     res.render('problems', {contest: contest, problems: problems});
 });
