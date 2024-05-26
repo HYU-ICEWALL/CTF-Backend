@@ -20,8 +20,8 @@ router.get('/', async (req, res) => {
 
 router.get('/problems', async (req, res) => {
     // TODO: get problem sets from current contest
-    contest = {name: "Test Contest"};
-    problems = [
+    const contest = {name: "Test Contest"};
+    const problems = [
         {
             domain: "pwn",
             name: "test1",
@@ -79,6 +79,31 @@ router.get('/contests', async(req, res) => {
 
 router.get('/upload/problem', async (req, res) => {
     res.render('upload_problem');
+})
+
+router.get('/upload/contest', async (req, res) => {
+    const problems = [
+        {
+            id: "123",
+            domain: "pwn",
+            name: "test1",
+            difficult: "1"
+        },
+        {
+            id: "1234",
+            domain: "web",
+            name: "test2",
+            difficult: "2"
+        },
+        {
+            id: "12345",
+            domain: "forensic",
+            name: "test3",
+            difficult: "3"
+        },
+    ]
+
+    res.render('upload_contest', {problems: problems});
 })
 
 
