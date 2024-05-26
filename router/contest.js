@@ -20,10 +20,10 @@ router.get("/recent", async (req, res) => {
     // find recent contest
     const contests = contestResult.data;
     const data = {
-      recent : undefined,
-      upcoming : undefined,
-      inProgress : undefined,
-      ended : undefined,
+      recent : [],
+      upcoming : [],
+      inProgress : [],
+      ended : [],
     };
 
     for(let i = 0; i < contests.length; i++){
