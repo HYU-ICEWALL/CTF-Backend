@@ -6,17 +6,20 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem({name: name, description: description, source: source, flag: flag, url: url, port: port, score: score, category: category}) {
+  async createProblem({name: name, description: description, file: source, flag: flag, url: url, port: port, score: score, domain: domain}, test=false) {
     try {
       const problem = {
         name: name,
         description: description,
-        source: source,
+        file: source,
         flag: flag,
         url: url,
         port: port,
         score: score,
-        category: category,
+        domain: domain,
+
+        test: test,
+
       }
 
       const result = await this.database.insertData(this.modelName, problem);

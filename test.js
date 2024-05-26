@@ -46,7 +46,7 @@ const createRandomAccount = () => {
     password: password,
     email: email,
     verified: false,
-    authority: 2
+    authority: 0,
   }
   return account;
 }
@@ -58,22 +58,22 @@ const createRandomProfile = (account) => {
     name: Math.random().toString(36).substring(2, 10),
     organization: Math.random().toString(36).substring(2, 10),
     department: Math.random().toString(36).substring(2, 10),
-    solved: []
+    solved: [],
   }
   return profile;
 }
 
 const createRandomProblem = () => {
   const problem = {
-    id: Math.random().toString(36).substring(2, 10),
     name: Math.random().toString(36).substring(2, 10),
     description: Math.random().toString(36).substring(2, 10),
-    source: Math.random().toString(36).substring(2, 10),
+    file: Math.random().toString(36).substring(2, 10),
     flag: Math.random().toString(36).substring(2, 10),
-    link: Math.random().toString(36).substring(2, 10),
+    url: Math.random().toString(36).substring(2, 10),
+    port: Math.random().toString(36).substring(2, 10),
     score: Math.floor(Math.random() * 100) + 1,
-    category: Math.random().toString(36).substring(2, 10),
-    contest: Math.random().toString(36).substring(2, 10)
+    domain: Math.random().toString(36).substring(2, 10),
+    contest: Math.random().toString(36).substring(2, 10),
   }
   return problem;
 }
@@ -87,16 +87,17 @@ const createRandomContest = () => {
     begin_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
     end_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
     participants: [],
+    state: '0',
   }
   return contest;
 }
 
 const createRandomScoreboard = (contest) => {
   const scoreboard = {
-    contest: contest.id,
+    contest: contest.name,
     begin_at: contest.begin_at,
     end_at: contest.end_at,
-    solved: []
+    submissions: [],
   }
   return scoreboard;
 }
@@ -107,9 +108,11 @@ let problems = [];
 let contests = [];
 let scoreboards = [];
 
-const accountCount = 50;
+const accountCount = 100;
 const contestCount = 1;
 const problemCount = 10;
+
+console.log("create dummy dataset");
 
 for (let i = 0; i < accountCount; i++) {
   const account = createRandomAccount();
@@ -130,23 +133,6 @@ for (let i = 0; i < problemCount; i++) {
   problems.push(problem);
 }
 
-// if (!fs.existsSync('test.json')) {
-//   fs.writeFileSync('test.json', JSON.stringify({
-//     accounts: accounts,
-//     profiles: profiles,
-//     problems: problems,
-//     contests: contests,
-//     scoreboards: scoreboards
-//   }));
-// }else{
-//   const data = JSON.parse(fs.readFileSync('test.json'));
-//   accounts = data.accounts;
-//   profiles = data.profiles;
-//   problems = data.problems;
-//   contests = data.contests;
-//   scoreboards = data.scoreboards;
-// }
-
 const testWrapper = async (func) => {
   console.log('Start test : ' + func.name);
   try{
@@ -163,13 +149,15 @@ const testWrapper = async (func) => {
 }
 
 
+console.log("dummy dataset created");
+
 const createTest = async () => {
 
   const accountCreateTest = async () => {
     let flag = true;
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
-      const accountResult = await accountManager.createAccount(account, process.env.SALT_SIZE);
+      const accountResult = await accountManager.createAccount(account, process.env.SALT_SIZE, test = true);
       if(accountResult.code != 0){
         flag = false;
         console.log(accountResult);
@@ -177,7 +165,7 @@ const createTest = async () => {
       }
 
       const profile = profiles[i];
-      const profileResult = await profileManager.createProfile(profile);
+      const profileResult = await profileManager.createProfile(profile, test = true);
       if (profileResult.code != 0) {
         flag = false;
         console.log(profileResult);
@@ -191,7 +179,7 @@ const createTest = async () => {
     for (let i = 0; i < contests.length; i++) {
       const contest = contests[i];
 
-      const result = await contestManager.createContest(contest);
+      const result = await contestManager.createContest(contest, test = true);
       if (result.code != 0) {
         flag = false;
         console.log(result);
@@ -199,7 +187,7 @@ const createTest = async () => {
       }
 
       const scoreboard = scoreboards[i];
-      const scoreboardResult = await scoreboardManager.createScoreboard(scoreboard);
+      const scoreboardResult = await scoreboardManager.createScoreboard(scoreboard, test = true);
       if (scoreboardResult.code != 0) {
         console.log(scoreboardResult);
       }
@@ -212,7 +200,7 @@ const createTest = async () => {
     for (let i = 0; i < problems.length; i++) {
       const problem = problems[i];
 
-      const result = await problemManager.createProblem(problem);
+      const result = await problemManager.createProblem(problem, test = true);
       if (result.code != 0) {
         flag = false;
         console.log(result);
@@ -227,104 +215,64 @@ const createTest = async () => {
 }
 
 const deleteAll = async () => {
-  for (let i = 0; i < accounts.length; i++) {
-    const account = accounts[i];
-    const result = await accountManager.deleteAccounts({id: account.id});
-    if (result.code != 0) {
-      console.log(result);
-    }
-  }
-
-  for(let i = 0; i < profiles.length; i++){
-    const profile = profiles[i];
-    const result = await profileManager.deleteProfiles({id: profile.id});
-    if (result.code != 0) {
-      console.log(result);
-    }
-  }
-
-  for (let i = 0; i < contests.length; i++) {
-    const contest = contests[i];
-    const result = await contestManager.deleteContests({id: contest.id});
-    if (result.code != 0) {
-      console.log(result);
-    }
-  }
-
-  for (let i = 0; i < problems.length; i++) {
-    const problem = problems[i];
-    const result = await problemManager.deleteProblems({id: problem.id});
-    if (result.code != 0) {
-      console.log(result);
-    }
-  }
-
-  for (let i = 0; i < scoreboards.length; i++) {
-    const scoreboard = scoreboards[i];
-    const result = await scoreboardManager.deleteScoreboards({contest: scoreboard.contest});
-    if (result.code != 0) {
-      console.log(result);
-    }
-  }
-
+  // delete test dummy data
+  await accountManager.deleteAccounts({test: true});
+  await profileManager.deleteProfiles({test: true});
+  await problemManager.deleteProblems({test: true});
+  await contestManager.deleteContests({test: true});
+  await scoreboardManager.deleteScoreboards({test: true});  
   return;
 }
 
 
 const updateTest = async () => {
-  const accountUpdateTest = async () => {
-    // for (let i = 0; i < accounts.length; i++) {
-    //   const account = accounts[i];
-    //   const accountResult = await accountManager.updateContest({id: account.id, verified: true});
-    //   if (accountResult.code != 0) {
-    //     console.log(accountResult);
-    //   }
-    // }
-  }
-
-  const addContestProblemsTest = async () => {
+  const addProblemToContestTest = async () => {
     let flag = true;
-
-    for(let i = 0; i < problems.length; i++){
+    for (let i = 0; i < problems.length; i++) {
+      const contest = contests[i % contests.length];
       const problem = problems[i];
-      problems[i].contest = contests[i % contests.length].id;
-      contests[i % contests.length].problems.push(problem.id);
+      contest.problems.push(problem.name); 
+    
+      const result = await problemManager.updateProblem({
+        name: problem.name, 
+        contest: contest.name
+      });
 
-      const result = await problemManager.updateProblem(problem);
-      if(result.code != 0){
+      if (result.code != 0) {
         flag = false;
         console.log(result);
       }
     }
 
-    for(let i = 0; i < contests.length; i++){
+    for (let i = 0; i < contests.length; i++) {
       const contest = contests[i];
-      const result = await contestManager.updateProblems({
-        id: contest.id,
+      const result = await contestManager.updateContest({
+        name: contest.name,
         problems: contest.problems
       });
-      if(result.code != 0){
+      if (result.code != 0) {
         flag = false;
         console.log(result);
       }
     }
     return flag;
-  }
+  }  
 
-  const addContestParticipantsTest = async () => {
+  const addParticipantToContestTest = async () => {
     let flag = true;
-    for(let i = 0; i < accounts.length; i++){
+    for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
-      contests[i % contests.length].participants.push(account.id);
+      const contest = contests[i % contests.length];
+      contest.participants.push(account.id);
     }
 
-    for(let i = 0; i < contests.length; i++){
+    for (let i = 0; i < contests.length; i++) {
       const contest = contests[i];
-      const result = await contestManager.updateParticipants({
-        id: contest.id,
+      const result = await contestManager.updateContest({
+        name: contest.name,
         participants: contest.participants
       });
-      if(result.code != 0){
+      if (result.code != 0) {
         flag = false;
         console.log(result);
       }
@@ -332,40 +280,8 @@ const updateTest = async () => {
     return flag;
   }
 
-  const addSolvedTest = async () => {
-    let flag = true;
-    for(let i = 0; i < contests.length; i++){
-      const contest = contests[i];
-      for(let j = 0; j < accounts.length; j++){
-        const account = accounts[j];
-        const solved = {
-          problem: problems[j % problems.length].id,
-          score: problems[j % problems.length].score,
-          account: account.id,
-          time: new Date().toISOString().slice(0, 19).replace('T', ' ')
-        }
-        const result = await scoreboardManager.addSolved({contest: contest.id, solved: solved});
-        if(result.code != 0){
-          flag = false;
-          console.log(result);
-        }
-
-        const profile = profiles[j];
-        profile.solved.push(solved);
-        const profileResult = await profileManager.updateProfile(profile);
-        if(profileResult.code != 0){
-          flag = false;
-          console.log(profileResult);
-        }
-      }
-    }
-    return flag;
-  }
-  
-  // await testWrapper(accountUpdateTest);
-  await testWrapper(addContestProblemsTest);
-  await testWrapper(addContestParticipantsTest);
-  await testWrapper(addSolvedTest);
+  await testWrapper(addProblemToContestTest);
+  await testWrapper(addParticipantToContestTest);
 }
 
 const findTest = async () => {
@@ -380,12 +296,13 @@ const findTest = async () => {
         continue;
       }
 
-
-      if (result.data.lenght == 0) {
-        flag = false;
-        console.log(result);
-        continue;
-      }
+      Object.keys(account).forEach(key => {
+        if(key == 'password') return;
+        if (account[key] instanceof String && account[key] != result.data[key]) {
+          flag = false;
+          console.log(account, result.data);
+        }
+      });
     }
     return flag;
   }
@@ -406,11 +323,13 @@ const findTest = async () => {
         console.log(result);
         continue;
       }
-
-      if(profile.id != result.data[0].id){
-        flag = false;
-        console.log(profile, result.data[0]);
-      }
+      
+      Object.keys(profile).forEach(key => {
+        if (profile[key] instanceof String && profile[key] != result.data[0][key]) {
+          flag = false;
+          console.log(profile, result.data[0]);
+        }
+      });
     }
 
     return flag;
@@ -420,7 +339,7 @@ const findTest = async () => {
     flag = true;
     for (let i = 0; i < problems.length; i++) {
       const problem = problems[i];
-      const result = await problemManager.findProblems({id: problem.id});
+      const result = await problemManager.findProblems({name: problem.name});
       if (result.code != 0) {
         flag = false;
         console.log(result);
@@ -433,10 +352,13 @@ const findTest = async () => {
         continue;
       }
 
-      if(problem.id != result.data[0].id){
-        flag = false;
-        console.log(problem, result.data[0]);
-      }
+
+      Object.keys(problem).forEach(key => {
+        if(problem[key] instanceof String && problem[key] != result.data[0][key]){
+          flag = false;
+          console.log(problem, result.data[0]);
+        }
+      });
     }
     return flag;
   }
@@ -457,11 +379,13 @@ const findTest = async () => {
         console.log(result);
         continue;
       }
-
-      if(contest.id != result.data[0].id){
-        flag = false;  
-        console.log(contest, result.data[0]);
-      }
+      
+      Object.keys(contest).forEach(key => {
+        if (contest[key] instanceof String && contest[key] != result.data[0][key]) {
+          flag = false;
+          console.log(contest, result.data[0]);
+        }
+      });
     }
     return flag;
   }
@@ -483,10 +407,12 @@ const findTest = async () => {
         continue;
       }
 
-      if(scoreboard.contest != result.data[0].contest){
-        flag = false;
-        console.log(scoreboard, result.data[0]);
-      }
+      Object.keys(scoreboard).forEach(key => {
+        if (scoreboard[key] instanceof String && scoreboard[key] != result.data[0][key]) {
+          flag = false;
+          console.log(scoreboard, result.data[0]);
+        }
+      });
     }
     return flag;
   }

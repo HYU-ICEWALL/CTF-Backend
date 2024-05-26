@@ -68,7 +68,7 @@ app.listen(port, async () => {
     id: process.env.ADMIN_ID
   });
 
-  if(profileResult.code == 0){
+  if(profileResult.data.length > 0){
     console.log('Admin profile already exists');
   }
   else{

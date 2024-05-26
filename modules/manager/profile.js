@@ -6,7 +6,7 @@ class ProfileManager {
     this.modelName = modelName;
   }
 
-  async createProfile({id: id, email: email, name: name, organization: organization, department: department}) {
+  async createProfile({id: id, email: email, name: name, organization: organization, department: department}, test=false) {
     try {
       const profile = {
         id: id,
@@ -14,6 +14,8 @@ class ProfileManager {
         name: name,
         organization: organization,
         department: department,
+        solved: [],
+        test: test,
       }
 
       const result = await this.database.insertData(this.modelName, profile);

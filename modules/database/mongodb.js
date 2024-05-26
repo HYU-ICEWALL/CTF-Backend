@@ -28,13 +28,7 @@ class Mongoose extends Database {
       this.model[key] = this.client.model(key, this.schemas[key]);
     });
   }
-
-  keyToObj(key){
-    const query = {};
-    query[Object.keys({ key })[0]] = key;
-    return query;
-  }
-
+  
   async insertData() {
     try{
       const [model, value] = arguments;
