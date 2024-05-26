@@ -8,6 +8,7 @@ const contestSchema = new Schema({
   begin_at: { type: String, required: true },
   end_at: { type: String, required: true },
   participants: { type: [Schema.ObjectId], required: true },
+  state: { type: Number, required: true, default: 0 } // 0: upcoming, 1: in progress, 2: ended, 3: suspended
 });
 
 module.exports = contestSchema;
