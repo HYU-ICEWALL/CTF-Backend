@@ -77,5 +77,9 @@ router.get('/contests', async(req, res) => {
     res.render('contests', {contests: contests});
 })
 
+router.get('/upload/problem', async (req, res) => {
+    res.render('upload_problem');
+})
+
 
 module.exports = router;
