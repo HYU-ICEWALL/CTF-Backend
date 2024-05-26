@@ -6,14 +6,15 @@ class ProblemManager {
     this.modelName = modelName;
   }
 
-  async createProblem({name: name, description: description, source: source, flag: flag, link: link, score: score, category: category}) {
+  async createProblem({name: name, description: description, source: source, flag: flag, url: url, port: port, score: score, category: category}) {
     try {
       const problem = {
         name: name,
         description: description,
         source: source,
         flag: flag,
-        link: link,
+        url: url,
+        port: port,
         score: score,
         category: category,
       }
@@ -53,13 +54,14 @@ class ProblemManager {
     }
   }
 
-  async updateProblem({name: name, desc: desc, src: src, flag: flag, link: link, score: score, category: category, contest: contest}){
+  async updateProblem({name: name, desc: desc, src: src, flag: flag, url: url, port: port, score: score, category: category, contest: contest}){
     try {
       const change = {}
       if(desc) change.description = desc;
       if(src) change.source = src;
       if(flag) change.flag = flag;
-      if(link) change.link = link;
+      if(url) change.url = url;
+      if(port) change.port = port;
       if(score) change.score = score;
       if(category) change.category = category;
       if(contest) change.contest = contest;

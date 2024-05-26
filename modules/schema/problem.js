@@ -6,7 +6,8 @@ const problemSchema = new Schema({
   description: { type: String },
   source: { type: String },
   flag: { type: String },
-  link: { type: String },
+  url: {type: String},
+  port: {type: String},
   score: { type: String, required: true },
   category: { type: String, required: true },
   contest: { type: Schema.ObjectId }
