@@ -17,6 +17,7 @@ router.get("/recent", async (req, res) => {
       return;
     }
 
+
     // find recent contest
     const contests = contestResult.data;
     const data = {
@@ -47,6 +48,8 @@ router.get("/recent", async (req, res) => {
       data.inProgress = data.inProgress.slice(0, count);
       data.ended = data.ended.slice(0, count);
     }
+
+    contestResult.data = data;
 
     res.status(200).json(contestResult);
   }catch(err){
