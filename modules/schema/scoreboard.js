@@ -4,7 +4,7 @@ const scoreboardSchema = new Schema({
   contest: { type: String, unique: true, required: true }, // contest name
   begin_at: { type: String, required: true },
   end_at: { type: String, required: true },
-  sumbissions: { type: [Object], default: [] },
+  submissions: { type: [Object], default: [] },
   test: { type: Boolean, required: true, default: false }
 });
 

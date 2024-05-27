@@ -23,8 +23,8 @@ class LocalStorage{
   async insertData() {
     try{
       const [value] = arguments;
-      
-
+      const data = JSON.stringify(value);
+      return fs.writeFile(this.path, data, 'utf8');
     }catch(err){
       console.error(err);
       return new APIError(700, 'Failed to insert data');
