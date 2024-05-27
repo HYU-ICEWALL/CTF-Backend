@@ -37,7 +37,6 @@ const sessionManager = new SessionManager(redisSessionDB, {
   }
 });
 
-
 const mongoDBURL = process.env.MONGO_DB_URL;
 const mongoDBName = 'mongodb';
 const mongoDB = new Mongoose(mongoDBName, {

@@ -120,8 +120,10 @@ router.get('/scoreboard', async (req, res) => {
 
     // find contest
     const contestResult = await contestManager.findContests({
-      name: name,
     });
+
+    console.log(contestResult.data);
+
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
       return;
@@ -139,7 +141,7 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     const contest = contestResult.data[0];
-    if(contest.participants.includes(req.session.data.id) === false){
+    if(contest.participants.includes(req.session.data.id)){
       return res.status(200).json(new APIError(823, "Not in contest participants"));
     }
 
