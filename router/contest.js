@@ -5,11 +5,6 @@ const router = express.Router();
 
 router.get("/recent", async (req, res) => {
   try{
-    const { count } = req.query;
-    if(count <= 0){
-      res.status(200).json(new APIError(800, "Invalid parameters"));
-      return;
-    }
 
     const contestResult = await contestManager.findContests({});
     if (contestResult instanceof APIError) {
@@ -17,36 +12,41 @@ router.get("/recent", async (req, res) => {
       return;
     }
 
-
     // find recent contest
-    const contests = contestResult.data;
+    const contests = contestResult.data.sort((a, b) => {
+      return new Date(b.begin_at) - new Date(a.begin_at);
+    });
+
     const data = {
-      recent : [],
-      upcoming : [],
-      inProgress : [],
-      ended : [],
-    };
+      recent: null,
+      upcoming: [],
+      inProgress: [],
+      ended: []
+    }    
 
     for(let i = 0; i < contests.length; i++){
       const contest = contests[i];
       const begin_at = new Date(contest.begin_at);
       const end_at = new Date(contest.end_at);
       const now = new Date();
-
-      if (begin_at > now){
-        data.upcoming.push(contest);
-      } else if (end_at < now){
-        data.ended.push(contest);
-      } else {
-        data.inProgress.push(contest);
+      
+      if(now < begin_at){
+        data.upcoming.push(contest.name);
+      }else if(now >= begin_at && now <= end_at){
+        data.inProgress.push(contest.name);
+      }else if(now > end_at){
+        data.ended.push(contest.name);
       }
     }
-
-    data.recent = data.inProgress[0];
-    if(!!count){
-      data.upcoming = data.upcoming.slice(0, count);
-      data.inProgress = data.inProgress.slice(0, count);
-      data.ended = data.ended.slice(0, count);
+    
+    if(data.inProgress.length > 0){
+      data.recent = data.inProgress[0];
+    }else if(data.ended.length > 0){
+      data.recent = data.ended[0];
+    }else if(data.upcoming.length > 0){
+      data.recent = data.upcoming[0];
+    }else{
+      data.recent = null;
     }
 
     contestResult.data = data;
@@ -134,15 +134,15 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     // const sessionResult = await sessionManager.checkValidSession(req.session);
-    // if (sessionResult instanceof APIError) {
-    //   res.status(200).json(sessionResult);
-    //   return;
-    // }
+    if (sessionResult instanceof APIError) {
+      res.status(200).json(sessionResult);
+      return;
+    }
 
     const contest = contestResult.data[0];
-    // if(contest.participants.includes(req.session.data.id)){
-    //   return res.status(200).json(new APIError(823, "Not in contest participants"));
-    // }
+    if(contest.participants.includes(req.session.data.id)){
+      return res.status(200).json(new APIError(823, "Not in contest participants"));
+    }
 
     const scoreboardResult = await scoreboardManager.findProcessedScoreboard({ contest: contest.name });
     res.status(200).json(scoreboardResult);

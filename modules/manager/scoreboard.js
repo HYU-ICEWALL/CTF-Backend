@@ -53,7 +53,7 @@ class ScoreboardManager {
     }
   }
 
-  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, sumbissions: submissions}) {
+  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, submissions: submissions}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
@@ -75,6 +75,24 @@ class ScoreboardManager {
   async addSubmission({contest: contest, submission: submission}) {
     try {
       // $push
+      const scoreboardResult = await this.findScoreboards({contest: contest});
+      if (scoreboardResult instanceof APIError) {
+        return scoreboardResult;
+      }
+
+      const scoreboard = scoreboardResult.data[0];
+      const accountId = submission.account;
+      const problemId = submission.problem;
+
+      for(let i = 0; i < scoreboard.submissions.length; i++){
+        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId){
+          return new APIError(531, 'Submission is duplicated : ' + submission);
+        }
+      }
+
+      scoreboard.submissions.push(submission);
+
+
       const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { submissions: submission } });
       if (result instanceof APIError) {
         return result;
