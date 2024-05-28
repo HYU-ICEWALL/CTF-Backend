@@ -99,6 +99,7 @@ router.get("/", async (req, res) => {
         return res.status(200).json(problemResult);
       }
       console.log("Problems : " + problemResult.data);
+      console.log(typeof problemResult.data);
       contest.problems = problemResult.data;
     }
 
