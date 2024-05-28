@@ -127,7 +127,6 @@ router.get('/logout', async (req, res) => {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
-      console.log("Session destroyed : " + req.session.data);
       res.clearCookie('connect.sid');
       res.status(200).json(new APIResponse(0, {}));
     });
