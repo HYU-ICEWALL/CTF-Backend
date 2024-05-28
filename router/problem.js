@@ -34,7 +34,7 @@ router.post('/submit', async (req, res) => {
     }
     
     // find id from session
-    const id = req.session.data.id;
+    const id = JSON.parse(data.id).id;
     
     // parameter check
     const { name, flag } = req.body;
@@ -84,7 +84,7 @@ router.post('/submit', async (req, res) => {
     console.log("Check contest participants");
 
     // find participant in contest
-    if(contestResult.data[0].participants.includes(id) == false){
+    if(!contestResult.data[0].participants.includes(id)){
       res.status(200).json(new APIError(835, "Not in contest participants"));
       return;
     }
