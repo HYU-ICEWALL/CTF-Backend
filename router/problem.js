@@ -51,7 +51,6 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
-    console.log(problemResult);
 
     // check problem length 1
     if (problemResult.data.length != 1) {
@@ -62,6 +61,8 @@ router.post('/submit', async (req, res) => {
     console.log("Find contest");
     // find contest from problem
     const contestName = problemResult.data[0].contest;
+
+    console.log(contestName);
 
     // find contest
     const contestResult = await contestManager.findContests({
