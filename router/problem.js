@@ -51,6 +51,8 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
+    console.log(problemResult);
+
     // check problem length 1
     if (problemResult.data.length != 1) {
       res.status(200).json(new APIError(833, "Problem not found"));
