@@ -103,11 +103,10 @@ router.get("/", async (req, res) => {
 
     console.log("Find contest problems and scoreboards");
     if(problems){
-      const problemResult = await problemManager.findProblems({ contest: contest.name });
+      const problemResult = await problemManager.findProblems({ contest: contest.name }, false);
       if(problemResult instanceof APIError){
         return res.status(200).json(problemResult);
       }
-      // return res.status(200).json(new APIResponse(0, { contest: contest, problems: problemResult.data }));
       contest.problems = problemResult.data;
     }
 

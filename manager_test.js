@@ -353,7 +353,7 @@ const findTest = async () => {
     flag = true;
     for (let i = 0; i < problems.length; i++) {
       const problem = problems[i];
-      const result = await problemManager.findProblems({name: problem.name});
+      const result = await problemManager.findProblems({name: problem.name}, true);
       if (result.code != 0) {
         flag = false;
         console.log(result);

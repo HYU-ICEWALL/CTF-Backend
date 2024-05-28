@@ -34,7 +34,7 @@ class ProblemManager {
     }
   }
 
-  async findProblems(key){
+  async findProblems(key, flag=true){
     try {
       const result = await this.database.findData(this.modelName, key);
 
@@ -42,8 +42,10 @@ class ProblemManager {
         return result;
       }
 
-      for(let i = 0; i < result.data.length; i++){
-        result.data[i].flag = undefined;
+      if(!flag){
+        for(let i = 0; i < result.data.length; i++){
+          result.data[i].flag = undefined;
+        }
       }
 
       return result;

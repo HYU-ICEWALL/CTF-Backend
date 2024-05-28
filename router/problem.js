@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 
     // find problems
     console.log("Find problems");
-    const result = await problemManager.findProblems(query);
+    const result = await problemManager.findProblems(query, false);
 
     res.status(200).json(result);
   } catch (error) {
