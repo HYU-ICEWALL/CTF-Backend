@@ -7,13 +7,14 @@ router.get("/", async (req, res) => {
   try {
     // check parameters
     const { name, category, contest } = req.query;
-    
+
     const query = {};
     if(name) query.name = name;
     if(category) query.category = category;
     if(contest) query.contest = contest;
 
     // find problems
+    console.log("Find problems");
     const result = await problemManager.findProblems(query);
     res.status(200).json(result);
   } catch (error) {
@@ -43,6 +44,7 @@ router.post('/submit', async (req, res) => {
     }
 
     // find problems
+    console.log("Find problems");
     const problemResult = await problemManager.findProblems({ name: name });
     if (problemResult instanceof APIError) {
       res.status(200).json(problemResult);
@@ -55,6 +57,7 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
+    console.log("Find contest");
     // find contest from problem
     const contestName = problemResult.data[0].contest;
 
@@ -68,14 +71,17 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
+    console.log(contestResult);
     // check contest length 1
     if (contestResult.data.length != 1) {
       res.status(200).json(new APIError(834, "Contest not found"));
       return;
     }
 
+    console.log("Check contest participants");
+
     // find participant in contest
-    if(contestResult.data[0].participants.indexOf(id) == -1){
+    if(contestResult.data[0].participants.includes(id) == false){
       res.status(200).json(new APIError(835, "Not in contest participants"));
       return;
     }
