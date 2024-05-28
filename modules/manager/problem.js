@@ -43,7 +43,7 @@ class ProblemManager {
       }
 
       for(let i = 0; i < result.data.length; i++){
-        delete result.data[i].flag;
+        result.data[i].flag = undefined;
       }
 
       return result;
