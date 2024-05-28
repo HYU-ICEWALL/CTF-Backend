@@ -72,7 +72,6 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
-    console.log(contestResult);
     // check contest length 1
     if (contestResult.data.length != 1) {
       res.status(200).json(new APIError(834, "Contest not found"));

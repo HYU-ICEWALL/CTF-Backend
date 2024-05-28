@@ -119,7 +119,6 @@ router.get("/", async (req, res) => {
       contest.scoreboard = scoreboardResult.data[0];
     }
     
-    console.log(contest);
     
     return res.status(200).json(new APIResponse(0, contest));
   } catch (error) {
