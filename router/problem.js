@@ -50,7 +50,7 @@ router.post('/submit', async (req, res) => {
     }
 
     // check problem length 1
-    if (problemResult.data.length !== 1) {
+    if (problemResult.data.length != 1) {
       res.status(200).json(new APIError(833, "Problem not found"));
       return;
     }
@@ -69,7 +69,7 @@ router.post('/submit', async (req, res) => {
     }
 
     // check contest length 1
-    if (contestResult.data.length !== 1) {
+    if (contestResult.data.length != 1) {
       res.status(200).json(new APIError(834, "Contest not found"));
       return;
     }
@@ -86,10 +86,10 @@ router.post('/submit', async (req, res) => {
     const begin = contestResult.data[0].begin_at;
     const end = contestResult.data[0].end_at;
 
-    if (time < begin || time > end) {
-      res.status(200).json(new APIError(836, "Contest is not in progress"));
-      return;
-    }
+    // if (time < begin || time > end) {
+    //   res.status(200).json(new APIError(836, "Contest is not in progress"));
+    //   return;
+    // }
 
     // add problem id in profile if solved
     if(problemResult.data[0].flag == flag){
