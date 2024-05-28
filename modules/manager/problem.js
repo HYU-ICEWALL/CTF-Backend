@@ -37,6 +37,15 @@ class ProblemManager {
   async findProblems(key){
     try {
       const result = await this.database.findData(this.modelName, key);
+
+      if(result instanceof APIError){
+        return result;
+      }
+
+      for(let i = 0; i < result.data.length; i++){
+        delete result.data[i].flag;
+      }
+
       return result;
     } catch (error) {
       console.error(error);

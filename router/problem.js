@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
     // find problems
     console.log("Find problems");
     const result = await problemManager.findProblems(query);
+
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
@@ -60,8 +61,6 @@ router.post('/submit', async (req, res) => {
     console.log("Find contest");
     // find contest from problem
     const contestName = problemResult.data[0].contest;
-
-    console.log(contestName);
 
     // find contest
     const contestResult = await contestManager.findContests({
@@ -120,7 +119,7 @@ router.post('/submit', async (req, res) => {
       submission: {
         problem: name,
         score: problemResult.data[0].score,
-        account: req.session.data.id,
+        account: data.id,
         type: problemResult.data[0].flag == flag ? 1 : 2,
         time: time,
       }

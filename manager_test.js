@@ -281,8 +281,21 @@ const updateTest = async () => {
     return flag;
   }
 
+  
   await testWrapper(addProblemToContestTest);
   await testWrapper(addParticipantToContestTest);
+  
+  contests[0].participants.push("test");
+  contests[0].participants.push("qwe123");
+
+  const result = await contestManager.updateContest({
+    name: contests[0].name,
+    participants: contests[0].participants
+  });
+
+  if (result.code != 0) {
+    console.log(result);
+  }
 }
 
 const findTest = async () => {
