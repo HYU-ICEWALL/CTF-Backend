@@ -64,10 +64,6 @@ router.get("/", async (req, res) => {
   try {
     // check parameters
     const { name, problems, scoreboards } = req.query;
-    console.log("Name : " + name
-      + " Problems : " + problems
-      + " Scoreboards : " + scoreboards
-    );
     const query = {};
     if(name) query.name = name;
     console.log("Find contests");
@@ -83,7 +79,7 @@ router.get("/", async (req, res) => {
       return;
     }
 
-    if(result.data.length != 0){
+    if(result.data.length != 1){
       return res.status(200).json(new APIError(820, "Contest not found"));
     }
 
