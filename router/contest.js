@@ -106,6 +106,7 @@ router.get("/", async (req, res) => {
       if(scoreboardResult instanceof APIError){
         return res.status(200).json(scoreboardResult);
       }
+      console.log(scoreboardResult.data);
       contest.scoreboard = scoreboardResult.data;
     }
     
