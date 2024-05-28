@@ -1,5 +1,5 @@
 const express = require('express');
-const { problemManager, scoreboardManager, contestManager, profileManager } = require('../instances');
+const { problemManager, scoreboardManager, contestManager, profileManager, sessionManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
@@ -20,7 +20,6 @@ router.get("/", async (req, res) => {
     console.error(error);
     res.status(200).json(new APIError(831, "Problem find failed"));
   }
-
 });
 
 router.post('/submit', async (req, res) => {
