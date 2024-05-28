@@ -37,6 +37,7 @@ class ProblemManager {
   async findProblems(key){
     try {
       const result = await this.database.findData(this.modelName, key);
+      console.log(result);
       return result;
     } catch (error) {
       console.error(error);
