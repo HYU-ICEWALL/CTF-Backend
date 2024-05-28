@@ -74,7 +74,6 @@ class ScoreboardManager {
 
   async addSubmission({contest: contest, submission: submission}) {
     try {
-      // $push
       const scoreboardResult = await this.findScoreboards({contest: contest});
       if (scoreboardResult instanceof APIError) {
         return scoreboardResult;
@@ -85,7 +84,7 @@ class ScoreboardManager {
       const problemId = submission.problem;
 
       for(let i = 0; i < scoreboard.submissions.length; i++){
-        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId){
+        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId && scoreboard.submissions[i].type == submission.type){
           return new APIError(531, 'Submission is duplicated : ' + submission);
         }
       }
@@ -120,6 +119,8 @@ class ScoreboardManager {
   processSubmissions(submissions){
     const processed = {};
     for (let i = 0; i < submissions.length; i++) {
+      if(submissions[i].type == 0) continue;
+      
       const accountId = submissions[i].account;
 
       if (processed[accountId] == undefined) {
