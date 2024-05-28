@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/recent", async (req, res) => {
   try{
-
+    console.log("Find contests");
     const contestResult = await contestManager.findContests({});
     if (contestResult instanceof APIError) {
       res.status(200).json(contestResult);
@@ -13,6 +13,7 @@ router.get("/recent", async (req, res) => {
     }
 
     // find recent contest
+    console.log("Sort contest");
     const contests = contestResult.data.sort((a, b) => {
       return new Date(b.begin_at) - new Date(a.begin_at);
     });
@@ -39,6 +40,7 @@ router.get("/recent", async (req, res) => {
       }
     }
     
+    console.log("Find recent contest");
     if(data.inProgress.length > 0){
       data.recent = data.inProgress[0];
     }else if(data.ended.length > 0){
@@ -62,9 +64,13 @@ router.get("/", async (req, res) => {
   try {
     // check parameters
     const { name, problems, scoreboards } = req.query;
-    
+    console.log("Name : " + name
+      + " Problems : " + problems
+      + " Scoreboards : " + scoreboards
+    );
     const query = {};
     if(name) query.name = name;
+    console.log("Find contests");
     const result = await contestManager.findContests(query);
     if(!name || (!!name && !problems && !scoreboards)){
       return res.status(200).json(result);
@@ -77,15 +83,17 @@ router.get("/", async (req, res) => {
       return;
     }
 
-    if(result.data.length === 0){
+    if(result.data.length != 0){
       return res.status(200).json(new APIError(820, "Contest not found"));
     }
 
     const contest = result.data[0];
+    console.log("Check contest participants");
     if(contest.participants.includes(req.session.data.id) === false){
       return res.status(200).json(new APIError(821, "Not in contest participants"));
     }
 
+    console.log("Find contest problems and scoreboards");
     if(problems){
       const problemResult = await problemManager.findProblems({ contest: contest.name });
       if(problemResult instanceof APIError){
