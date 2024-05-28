@@ -100,19 +100,19 @@ router.post('/submit', async (req, res) => {
     // }
 
     // add problem id in profile if solved
-    if(problemResult.data[0].flag == flag){
-      const profileResult = await profileManager.addSolved({ id: data.id, solved: {
-        problem: name,
-        score: problemResult.data[0].score,
-        account: req.session.data.id,
-        time: time,
-      }});
+    // if(problemResult.data[0].flag == flag){
+    //   const profileResult = await profileManager.addSolved({ id: data.id, solved: {
+    //     problem: name,
+    //     score: problemResult.data[0].score,
+    //     account: req.session.data.id,
+    //     time: time,
+    //   }});
   
-      if (profileResult instanceof APIError) {
-        res.status(200).json(profileResult);
-        return;
-      }
-    }
+    //   if (profileResult instanceof APIError) {
+    //     res.status(200).json(profileResult);
+    //     return;
+    //   }
+    // }
 
     // add submission in scoreboard
     const result = await scoreboardManager.addSubmission({

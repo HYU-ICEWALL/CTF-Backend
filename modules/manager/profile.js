@@ -72,28 +72,28 @@ class ProfileManager {
     }
   }
 
-  async addSolved({id: id, solved: solved}){
-    try {
-      const profileResult = await this.findProfiles({id: id});
-      if(profileResult instanceof APIError){
-        return profileResult;
-      }
+  // async addSolved({id: id, solved: solved}){
+  //   try {
+  //     const profileResult = await this.findProfiles({id: id});
+  //     if(profileResult instanceof APIError){
+  //       return profileResult;
+  //     }
 
-      const profile = profileResult.data[0];
-      for(let i = 0; i < profile.solved.length; i++){
-        if(profile.solved[i].problem == solved.problem){
-          return new APIResponse(0, {});
-        }
-      }
+  //     const profile = profileResult.data[0];
+  //     for(let i = 0; i < profile.solved.length; i++){
+  //       if(profile.solved[i].problem == solved.problem){
+  //         return new APIResponse(0, {});
+  //       }
+  //     }
 
-      profile.solved.push(solved);
-      const result = await this.database.updateData(this.modelName, {id: id}, {solved: profile.solved});
-      return result;
-    } catch (error) {
-      console.error(error);
-      return new APIError(440, 'Failed to add solved : ' + id);
-    }
-  }
+  //     profile.solved.push(solved);
+  //     const result = await this.database.updateData(this.modelName, {id: id}, {solved: profile.solved});
+  //     return result;
+  //   } catch (error) {
+  //     console.error(error);
+  //     return new APIError(440, 'Failed to add solved : ' + id);
+  //   }
+  // }
 }
 
 module.exports = ProfileManager;
