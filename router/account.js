@@ -183,6 +183,7 @@ router.delete('/', async (req, res) => {
 
     // check permission
     if(id !=  req.session.data.id){
+      console.log(id, req.session.data.id);
       res.status(200).json(new APIError(603, 'Not allowed'));
     }
 
@@ -202,10 +203,15 @@ router.delete('/', async (req, res) => {
         return;
       }
 
+      const account = await accountManager.findAccountWithPassword({ id: id, password: password });
+      if (account instanceof APIError) {
+        res.status(200).json(account);
+        return;
+      }
+
       // delete account
       const accountResult = await accountManager.deleteAccounts({
         id: id,
-        password: password,
       });
 
       if (accountResult instanceof APIError) {
