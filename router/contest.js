@@ -86,7 +86,6 @@ router.get("/", async (req, res) => {
     }
 
     const contest = result.data[0];
-    contest.scoreboard = null;
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
     if(!contest.participants.includes(data.id)){
