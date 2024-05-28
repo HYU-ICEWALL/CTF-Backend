@@ -69,6 +69,8 @@ router.get("/", async (req, res) => {
     console.log("Find contests");
     const result = await contestManager.findContests(query);
     if(!name || (!!name && !problems && !scoreboards)){
+      delete result.data[0].problems;
+      delete result.data[0].participants;
       return res.status(200).json(result);
     }
 
