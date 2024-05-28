@@ -232,6 +232,7 @@ const updateTest = async () => {
       const contest = contests[i % contests.length];
       const problem = problems[i];
       contest.problems.push(problem.name); 
+      problems.contest = contest.name;
     
       const result = await problemManager.updateProblem({
         name: problem.name, 

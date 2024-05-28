@@ -55,7 +55,7 @@ class Mongoose extends Database {
     try {
       const [model, key, value] = arguments;
       // console.log(value);
-      const result = await this.model[model].updateOne(key, value);
+      const result = await this.model[model].update(key, value);
       if (result.matchedCount == 0){
         return new APIError(721, 'No matched data to update');
       }
@@ -70,7 +70,7 @@ class Mongoose extends Database {
   async deleteData() {
     try {
       const [model, key] = arguments;
-      const result = await this.model[model].deleteOne(key);
+      const result = await this.model[model].deleteMany(key);
       return new APIResponse(0, result);
     } catch (err) {
       console.error(err);
