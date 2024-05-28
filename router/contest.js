@@ -98,7 +98,7 @@ router.get("/", async (req, res) => {
       if(problemResult instanceof APIError){
         return res.status(200).json(problemResult);
       }
-      contest.problems = problemResult.data;
+      contest.problems = JSON.parse(JSON.stringify(problemResult.data));
       console.log(contest.problems);
     }
 
