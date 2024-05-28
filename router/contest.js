@@ -99,7 +99,7 @@ router.get("/", async (req, res) => {
         return res.status(200).json(problemResult);
       }
       console.log("Problems : " + problemResult.data);
-      contest.problems = JSON.parse(problemResult.data);
+      contest.problems = problemResult.data;
     }
 
     if(scoreboards){
