@@ -85,7 +85,9 @@ router.get("/", async (req, res) => {
       return res.status(200).json(new APIError(820, "Contest not found"));
     }
 
-    const contest = result.data[0];
+    const contest = {
+      ...result.data[0]
+    };
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
     if(!contest.participants.includes(data.id)){
@@ -99,7 +101,7 @@ router.get("/", async (req, res) => {
         return res.status(200).json(problemResult);
       }
 
-      return res.status(200).json(new APIResponse(0, { contest: contest, problems: problemResult.data }));
+      // return res.status(200).json(new APIResponse(0, { contest: contest, problems: problemResult.data }));
       console.log(problemResult.data);
       contest.problems = problemResult.data;
       console.log(contest.problems);
