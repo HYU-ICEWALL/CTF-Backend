@@ -63,12 +63,12 @@ router.get("/recent", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { name, problems, scoreboards } = req.query;
+    const { name, problems, scoreboard } = req.query;
     const query = {};
     if(name) query.name = name;
     console.log("Find contests");
     const result = await contestManager.findContests(query);
-    if(!name || (!!name && !problems && !scoreboards)){
+    if(!name || (!!name && !problems && !scoreboard)){
       delete result.data[0].problems;
       delete result.data[0].participants;
       return res.status(200).json(result);
@@ -86,6 +86,7 @@ router.get("/", async (req, res) => {
     }
 
     const contest = result.data[0];
+    contest.scoreboard = null;
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
     if(!contest.participants.includes(data.id)){
@@ -98,18 +99,15 @@ router.get("/", async (req, res) => {
       if(problemResult instanceof APIError){
         return res.status(200).json(problemResult);
       }
-      console.log("Problems : " + problemResult.data);
-      console.log(typeof problemResult.data);
       contest.problems = problemResult.data;
     }
 
-    if(scoreboards){
+    if(scoreboard){
       const scoreboardResult = await scoreboardManager.findProcessedScoreboard({ contest: contest.name });
       if(scoreboardResult instanceof APIError){
         return res.status(200).json(scoreboardResult);
       }
-      console.log("Scoreboards : " + scoreboardResult.data);
-      contest.scoreboards = scoreboardResult.data;
+      contest.scoreboard = scoreboardResult.data;
     }
     
     return res.status(200).json(new APIResponse(0, contest));
