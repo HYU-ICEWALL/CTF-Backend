@@ -89,7 +89,7 @@ router.get("/", async (req, res) => {
       ...result.data[0]
     };
 
-    console.log(result);
+    console.log(result.data[0]);
     
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
