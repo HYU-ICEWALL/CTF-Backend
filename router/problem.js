@@ -118,7 +118,7 @@ router.post('/submit', async (req, res) => {
     const result = await scoreboardManager.addSubmission({
       contest: contestName, 
       submission: {
-        problem: problem,
+        problem: name,
         score: problemResult.data[0].score,
         account: req.session.data.id,
         type: problemResult.data[0].flag == flag ? 1 : 2,
