@@ -33,8 +33,7 @@ router.post('/submit', async (req, res) => {
       return;
     }
     
-    // find id from session
-    const id = JSON.parse(data.id).id;
+    const data = JSON.parse(req.session.data);
     
     // parameter check
     const { name, flag } = req.body;
@@ -84,7 +83,7 @@ router.post('/submit', async (req, res) => {
     console.log("Check contest participants");
 
     // find participant in contest
-    if(!contestResult.data[0].participants.includes(id)){
+    if(!contestResult.data[0].participants.includes(data.id)){
       res.status(200).json(new APIError(835, "Not in contest participants"));
       return;
     }
@@ -102,7 +101,7 @@ router.post('/submit', async (req, res) => {
 
     // add problem id in profile if solved
     if(problemResult.data[0].flag == flag){
-      const profileResult = await profileManager.addSolved({ id: req.session.data.id, solved: {
+      const profileResult = await profileManager.addSolved({ id: data.id, solved: {
         problem: problem,
         score: problemResult.data[0].score,
         account: req.session.data.id,
