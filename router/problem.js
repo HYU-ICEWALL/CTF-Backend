@@ -117,7 +117,7 @@ router.post('/submit', async (req, res) => {
       contest: contestName, 
       submission: {
         problem: name,
-        score: problemResult.data[0].score,
+        score: problemResult.data[0].flag == flag ? problemResult.data[0].score : 0,
         account: data.id,
         type: problemResult.data[0].flag == flag ? 1 : 2,
         time: time,

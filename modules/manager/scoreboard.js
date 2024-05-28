@@ -84,8 +84,10 @@ class ScoreboardManager {
       const problemId = submission.problem;
 
       for(let i = 0; i < scoreboard.submissions.length; i++){
-        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId && scoreboard.submissions[i].type == submission.type){
-          return new APIError(531, 'Submission is duplicated : ' + submission);
+        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId){
+          if(scoreboard.submissions[i].type == 1){
+            return new APIResponse(0, {});
+          }
         }
       }
 
