@@ -55,7 +55,7 @@ class Mongoose extends Database {
     try {
       const [model, key, value] = arguments;
       // console.log(value);
-      const result = await this.model[model].update(key, value);
+      const result = await this.model[model].updateMany(key, value);
       if (result.matchedCount == 0){
         return new APIError(721, 'No matched data to update');
       }
