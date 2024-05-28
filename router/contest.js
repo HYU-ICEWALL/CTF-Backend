@@ -98,8 +98,8 @@ router.get("/", async (req, res) => {
       if(problemResult instanceof APIError){
         return res.status(200).json(problemResult);
       }
-      console.log(problemResult.data);
       contest.problems = problemResult.data;
+      console.log(contest.problems);
     }
 
     if(scoreboard){
@@ -108,6 +108,7 @@ router.get("/", async (req, res) => {
         return res.status(200).json(scoreboardResult);
       }
       contest.scoreboard = scoreboardResult.data[0];
+      console.log(contest.scoreboard);
     }
     
     console.log(contest);
