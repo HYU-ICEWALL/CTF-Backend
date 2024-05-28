@@ -86,8 +86,9 @@ router.get("/", async (req, res) => {
     }
 
     const contest = result.data[0];
+    const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
-    if(contest.participants.includes(req.session.data.id) === false){
+    if(!contest.participants.includes(data.id)){
       return res.status(200).json(new APIError(821, "Not in contest participants"));
     }
 
@@ -146,7 +147,8 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     const contest = contestResult.data[0];
-    if(contest.participants.includes(req.session.data.id)){
+    const data = JSON.parse(req.session.data);
+    if(contest.participants.includes(data.id)){
       return res.status(200).json(new APIError(823, "Not in contest participants"));
     }
 
