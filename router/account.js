@@ -183,7 +183,7 @@ router.delete('/', async (req, res) => {
 
     // check permission
     if(id !=  req.session.data.id){
-      console.log(id, req.session.data.id);
+      console.log(id, req.session.data);
       res.status(200).json(new APIError(603, 'Not allowed'));
     }
 
