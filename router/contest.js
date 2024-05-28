@@ -98,12 +98,9 @@ router.get("/", async (req, res) => {
       if(problemResult instanceof APIError){
         return res.status(200).json(problemResult);
       }
+      console.log(problemResult.data);
       contest.problems = problemResult.data;
-
-      for(let i = 0; i < contest.problems.length; i++){
-        contest.problems[i] = JSON.parse(contest.problems[i])
-        delete contest.problems[i].flag;
-      }
+      console.log(contest.problems)
     }
 
     if(scoreboard){
