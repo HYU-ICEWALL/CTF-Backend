@@ -125,7 +125,7 @@ router.get('/logout', async (req, res) => {
       return;
     }
 
-    console.log("Delete Session : " + req.session.data.id);
+    console.log("Delete Session : " + req.session.data);
     req.session.destroy((err) => {
       if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
@@ -185,9 +185,10 @@ router.delete('/', async (req, res) => {
       return;
     }
 
-    console.log("Check permission : " + id + " " + req.session.data.id);
+    const data = JSON.parse(req.session.data);
+    console.log("Check permission : " + id + " " + data.id);
     // check permission
-    if(id != req.session.data.id){
+    if(id != data.id){
       return res.status(200).json(new APIError(603, 'Not allowed'));
     }
 
@@ -251,8 +252,9 @@ router.put('/', async (req, res) => {
       return;
     }
 
+    const data = JSON.parse(req.session.data);
     // check permission
-    console.log("Check permission : " + id + " " + req.session.data.id);
+    console.log("Check permission : " + id + " " + data.id);
     const permissionResult = await accountManager.checkAuthority(req);
     if (permissionResult instanceof APIError) {
       res.status(200).json(permissionResult);
@@ -260,7 +262,7 @@ router.put('/', async (req, res) => {
     }
 
     // delete session
-    console.log("Delete Session : " + req.session.data.id);
+    console.log("Delete Session : " + data.id);
     req.session.destroy(async (err) => {
       if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
