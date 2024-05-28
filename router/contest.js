@@ -86,10 +86,14 @@ router.get("/", async (req, res) => {
     }
 
     const contest = {
-      ...result.data[0]
+      name: result.data[0].name,
+      description: result.data[0].description,
+      begin_at: result.data[0].begin_at,
+      end_at: result.data[0].end_at,
+      problems: [],
+      participants: result.data[0].participants,
+      scoreboard: null
     };
-
-    console.log(result.data[0]);
     
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
