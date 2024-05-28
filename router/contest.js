@@ -149,7 +149,7 @@ router.get('/scoreboard', async (req, res) => {
 
     const contest = contestResult.data[0];
     const data = JSON.parse(req.session.data);
-    if(contest.participants.includes(data.id)){
+    if(!contest.participants.includes(data.id)){
       return res.status(200).json(new APIError(823, "Not in contest participants"));
     }
 
