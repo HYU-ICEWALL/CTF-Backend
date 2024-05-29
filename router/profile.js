@@ -33,9 +33,9 @@ router.put('/', async (req, res) => {
 
     // check parameters
     const { name, organization, department } = req.body;
-    
+    const data = JSON.parse(req.session.data);
     const query = {
-      id: req.session.data.id,
+      id: data.id,
     };
     
     if (name != undefined) query.name = name;
