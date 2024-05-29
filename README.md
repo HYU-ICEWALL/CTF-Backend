@@ -419,7 +419,10 @@ Get the `profile` information of the `account`.
 - Parameters
 ```json
 {
-    "id": "exampleId"
+    "id": "exampleId",
+    "name": "exampleName",
+    "organization": "exampleOrganization",
+    "department": "exampleDepartment"
 }
 ```
 
