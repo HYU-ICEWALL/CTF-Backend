@@ -133,7 +133,7 @@ class ScoreboardManager {
       processed[accountId].total += submissions[i].score;
       processed[accountId].timestamps.push({
         problem: submissions[i].problem,
-        timestamp: submissions[i].timestamp,
+        time: submissions[i].time,
         score: processed[accountId].total,
         type: submissions[i].type,
       });
