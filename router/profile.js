@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
     if (department) query.department = department;
     
     // find profile
-    const result = await profileManager.findProfiles({ id: id });
+    const result = await profileManager.findProfiles(query);
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
