@@ -80,10 +80,8 @@ class ProfileManager {
       }
 
       const profile = profileResult.data[0];
-      for(let i = 0; i < profile.solved.length; i++){
-        if(profile.solved[i].problem == solved.problem){
-          return new APIResponse(0, {});
-        }
+      if(profile.solved.includes(solved)){
+        return new APIResponse(0, {});
       }
 
       profile.solved.push(solved);
