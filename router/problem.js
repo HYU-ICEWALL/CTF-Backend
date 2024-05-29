@@ -15,9 +15,9 @@ router.get("/", async (req, res) => {
 
     // find problems
     console.log("Find problems");
-    const result = await problemManager.findProblems(query, false);
+    const problemResult = await problemManager.findProblems(query, false);
 
-    res.status(200).json(result);
+    res.status(200).json(problemResult);
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(831, "Problem find failed"));
@@ -51,12 +51,23 @@ router.post('/submit', async (req, res) => {
       return;
     }
 
-
     // check problem length 1
     if (problemResult.data.length != 1) {
       res.status(200).json(new APIError(833, "Problem not found"));
       return;
     }
+
+    console.log("Add solved problem in profile");
+    const flagResult = (problemResult.data[0].flag == flag);
+    // add problem id in profile if solved
+    if(flagResult){
+      const profileResult = await profileManager.addSolved({ id: data.id, solved: name });
+  
+      if (profileResult instanceof APIError) {
+        res.status(200).json(profileResult);
+        return;
+      }
+    }  
 
     console.log("Find contest");
     // find contest from problem
@@ -81,42 +92,27 @@ router.post('/submit', async (req, res) => {
     console.log("Check contest participants");
 
     // find participant in contest
-    if(!contestResult.data[0].participants.includes(data.id)){
-      res.status(200).json(new APIError(835, "Not in contest participants"));
+    if (!contestResult.data[0].participants.includes(data.id)) {
+      console.log("Not in contest participants : " + data.id);
+      res.status(200).json(new APIResponse(0, { result: flagResult }));
       return;
     }
-    
+
     // check contest time
     // YYYY-MM-DD HH:MM:SS
     const time = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const begin = contestResult.data[0].begin_at;
     const end = contestResult.data[0].end_at;
 
-    // if (time < begin || time > end) {
-    //   res.status(200).json(new APIError(836, "Contest is not in progress"));
-    //   return;
-    // }
+    if (time < begin || time > end) {
+      console.log("Not in contest time : " + time);
+      res.status(200).json(new APIResponse(0, { result: flagResult }));
+      return;
+    }
 
-    // add problem id in profile if solved
-    // if(problemResult.data[0].flag == flag){
-    //   const profileResult = await profileManager.addSolved({ id: data.id, solved: {
-    //     problem: name,
-    //     score: problemResult.data[0].score,
-    //     account: req.session.data.id,
-    //     time: time,
-    //   }});
-  
-    //   if (profileResult instanceof APIError) {
-    //     res.status(200).json(profileResult);
-    //     return;
-    //   }
-    // }  
-
-    console.log("Add submission in scoreboard");
-    console.log("Flag : " + flag + " / Problem Flag : " + problemResult.data[0].flag);
-    console.log("Result : " + (problemResult.data[0].flag == flag));
+    console.log("Add submission in scoreboard : " + (name, data.id));
     // add submission in scoreboard
-    const result = await scoreboardManager.addSubmission({
+    const scoreboardResult = await scoreboardManager.addSubmission({
       contest: contestName, 
       submission: {
         problem: name,
@@ -127,8 +123,8 @@ router.post('/submit', async (req, res) => {
       }
     });
 
-    if (result instanceof APIError) {
-      res.status(200).json(result);
+    if (scoreboardResult instanceof APIError) {
+      res.status(200).json(flagResult);
       return;
     }
 

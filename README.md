@@ -355,9 +355,12 @@ submission : [
 ```
 
 #### POST `/api/problem/submit`
-- 문제의 `flag`를 제출한다.
-- 세션이 유효하며 `contest`의 `participants`에 속하면 제출할 수 있다.
-- `flag`가 맞으면 `scoreboard`와 프로필의 `solved`에 추가한다.
+- 세션이 유효한지 확인한다
+- `flag`를 확인한다.
+- `profile`의 `solved`에 추가한다.
+- `contest`의 시간이 `begin_at`과 `end_at` 사이인지 확인한다.
+- `contest`의 `participants`에 속하는지 확인한다.
+- `contest`의 `scoreboard`에 추가한다.
 
 - Request Body
 ```json
@@ -448,5 +451,25 @@ Get the `profile` information of the `account`.
 {
     "code": 0,
     "data": {}
+}
+```
+
+### GET `/api/profile/solved`
+- 프로필의 `solved`를 가져온다.
+
+- Parameters
+```json
+{
+    "id": "exampleId"
+}
+```
+
+- Response
+```json
+{
+    "code": 0,
+    "data": [
+        // solved
+    ]
 }
 ```

@@ -56,4 +56,33 @@ router.put('/', async (req, res) => {
   }
 });
 
+router.get('/solved', async (req, res) => {
+  try {
+    // check parameters
+    const { id } = req.query;
+    if (id == undefined) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      return;
+    }
+
+    // find profile
+    const profileResult = await profileManager.findProfiles({ id: id });
+    if (profileResult instanceof APIError) {
+      res.status(200).json(profileResult);
+      return;
+    }
+
+    if (profileResult.data.length != 1) {
+      res.status(200).json(new APIError(842, 'Profile not found'));
+      return;
+    }
+    const solved = profileResult.data[0].solved;
+    
+    res.status(200).json(new APIResponse(0, solved));
+  } catch (error) {
+    console.error(error);
+    res.status(200).json(new APIError(844, 'Profile solved find failed'));
+  }
+});
+
 module.exports = router;
