@@ -306,30 +306,28 @@ submission : [
 ```json
 {
     "code": 0,
-    "data": [
-        { 
-            "contest": "exampleContest",
-            "begin_at": "YYYY-MM-DD HH:MM:SS",
-            "end_at": "YYYY-MM-DD HH:MM:SS",
-            "submissions": [
-                {
-                    "accountId" : {
-                        "total": 0,
-                        "timestamp": [
-                            {
-                                "problem": "exampleProblem",
-                                "score": 0,
-                                "type": true,
-                                "time": "YYYY-MM-DD HH:MM:SS"
-                            },
-                            ...
-                        ]
-                    },
-                    ...
-                }
-            ]
-        }
-    ]
+    "data": { 
+        "contest": "exampleContest",
+        "begin_at": "YYYY-MM-DD HH:MM:SS",
+        "end_at": "YYYY-MM-DD HH:MM:SS",
+        "submissions": [
+            {
+                "accountId" : {
+                    "total": 0,
+                    "timestamp": [
+                        {
+                            "problem": "exampleProblem",
+                            "score": 0,
+                            "type": true,
+                            "time": "YYYY-MM-DD HH:MM:SS"
+                        },
+                        ...
+                    ]
+                },
+                ...
+            }
+        ]
+    }
 }
 ```
 
