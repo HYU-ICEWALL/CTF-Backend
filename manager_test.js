@@ -64,11 +64,12 @@ const createRandomProfile = (account) => {
 }
 
 const createRandomProblem = () => {
+  const flag = Math.random().toString(36).substring(2, 10);
   const problem = {
-    name: Math.random().toString(36).substring(2, 10),
+    name: flag,
     description: Math.random().toString(36).substring(2, 10),
     file: Math.random().toString(36).substring(2, 10),
-    flag: Math.random().toString(36).substring(2, 10),
+    flag: flag,
     url: Math.random().toString(36).substring(2, 10),
     port: Math.random().toString(36).substring(2, 10),
     score: Math.floor(Math.random() * 100) + 1,

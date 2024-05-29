@@ -110,8 +110,11 @@ router.post('/submit', async (req, res) => {
     //     res.status(200).json(profileResult);
     //     return;
     //   }
-    // }
+    // }  
 
+    console.log("Add submission in scoreboard");
+    console.log("Flag : " + flag + " / Problem Flag : " + problemResult.data[0].flag);
+    console.log("Result : " + (problemResult.data[0].flag == flag));
     // add submission in scoreboard
     const result = await scoreboardManager.addSubmission({
       contest: contestName, 
