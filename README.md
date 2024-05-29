@@ -427,9 +427,9 @@ Get the `profile` information of the `account`.
 ```json
 {
     "code": 0,
-    "data": {
-        // profile info
-    }
+    "data": [
+        // profiles
+    ]
 }
 ```
 

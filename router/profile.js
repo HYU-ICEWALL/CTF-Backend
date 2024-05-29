@@ -6,12 +6,13 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { id } = req.query;
-    if (id == undefined) {
-      res.status(200).json(new APIError(800, "Invalid parameters"));
-      return;
-    }
-
+    const { id, name, organization, department } = req.query;
+    const query = {};
+    if (id) query.id = id;
+    if (name) query.name = name;
+    if (organization) query.organization = organization;
+    if (department) query.department = department;
+    
     // find profile
     const result = await profileManager.findProfiles({ id: id });
     res.status(200).json(result);
