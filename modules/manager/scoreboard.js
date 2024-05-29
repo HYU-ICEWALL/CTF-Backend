@@ -122,16 +122,14 @@ class ScoreboardManager {
     const processed = {};
     for (let i = 0; i < submissions.length; i++) {
       if(submissions[i].type == 0) continue;
-      
       const accountId = submissions[i].account;
-
       if (processed[accountId] == undefined) {
         processed[accountId] = {
           total: 0,
           timestamps: []
         };
       }
-      processed[accountId].total += submissions[i].type == 1 ? submissions[i].score : 0;
+      processed[accountId].total += submissions[i].score;
       processed[accountId].timestamps.push({
         problem: submissions[i].problem,
         timestamp: submissions[i].timestamp,

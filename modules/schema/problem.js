@@ -7,7 +7,7 @@ const problemSchema = new Schema({
   flag: { type: String },
   url: {type: String},
   port: {type: String},
-  score: { type: String, required: true },
+  score: { type: Number, required: true },
   domain: { type: String, required: true }, // pwn, web, forensic, reverse, misc
   contest: { type: String }, // contest name
   test: { type: Boolean, required: true, default: false },
