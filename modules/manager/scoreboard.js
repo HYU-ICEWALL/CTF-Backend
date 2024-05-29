@@ -115,6 +115,7 @@ class ScoreboardManager {
     }    
     const processed = this.processSubmissions(result.data[0].submissions);
     result.data[0].submissions = processed;
+    result.data = result.data[0];
     return result;
   }
 
