@@ -284,9 +284,9 @@ submission : [
         "problems": [
             // problems
         ],
-        "scoreboards": [
-            // scoreboards
-        ]
+        "scoreboard": {
+            // scoreboard
+        }
     }
 }
 ```
