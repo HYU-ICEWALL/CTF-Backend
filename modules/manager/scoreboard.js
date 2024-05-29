@@ -113,8 +113,8 @@ class ScoreboardManager {
     } else if (result.data.length > 1) {
       return new APIError(512, 'Scoreboard is duplicated : ' + key);
     }    
-    const { submissions } = result.data[0];
-    result.data.submissions = this.processSubmissions(submissions);
+    const processed = this.processSubmissions(result.data[0].submissions);
+    result.data[0].submissions = processed;
     return result;
   }
 
