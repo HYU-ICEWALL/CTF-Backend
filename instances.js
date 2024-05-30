@@ -16,7 +16,7 @@ const AccountManager = require('./modules/manager/account');
 const ProfileManager = require('./modules/manager/profile');
 const ScoreboardManager = require('./modules/manager/scoreboard');
 
-const redisSessionDBName = 'redisSessionDB';
+const redisSessionDBName = process.env.REDIS;
 const redisSessionDB = new RedisDatabase(redisSessionDBName, {
   socket: {
     port: process.env.REDIS_PORT,
@@ -29,6 +29,7 @@ const redisSessionDB = new RedisDatabase(redisSessionDBName, {
 
 const sessionManager = new SessionManager(redisSessionDB, {
   store: new RedisStore({ client: redisSessionDB.client }),
+  name: process.env.SESSION_NAME,
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -38,7 +39,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
 });
 
 const mongoDBURL = process.env.MONGO_DB_URL;
-const mongoDBName = 'mongodb';
+const mongoDBName = process.env.MONGO_DB_NAME;
 const mongoDB = new Mongoose(mongoDBName, {
   "account": accountSchema,
   "problem": problemSchema,

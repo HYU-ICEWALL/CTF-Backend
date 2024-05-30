@@ -6,7 +6,7 @@ class Mongoose extends Database {
   constructor(name, schemas, url) {
     super(name);
     this.schemas = schemas;
-    this.url = url;
+    this.url = url + '/' + name;
   }
   
   async connect(){

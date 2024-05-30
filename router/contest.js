@@ -74,7 +74,7 @@ router.get("/", async (req, res) => {
       return res.status(200).json(result);
     }
 
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -150,7 +150,7 @@ router.get('/scoreboard', async (req, res) => {
       return;
     }
 
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;

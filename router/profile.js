@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
