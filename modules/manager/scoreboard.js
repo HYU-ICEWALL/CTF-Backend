@@ -145,7 +145,7 @@ class ScoreboardManager {
       processed.push(processedObj[key]);
     }
 
-    return processedObj;
+    return processed;
   }
 }
 
