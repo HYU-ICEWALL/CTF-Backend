@@ -3,19 +3,62 @@ const router = express.Router();
 
 const { accountManager, profileManager, scoreboardManager, contestManager, problemManager } = require('../instances');
 const { APIError } = require('../modules/response');
-const admin_ip = process.env.ADMIN || false;
+const ADMIN_CHK = process.env.ADMIN_CHK;
 
-const chkIp = async (req, res, next) => {
-    if(admin_ip && admin_ip !== req.ip) next();
+const { sessionManager } = require('../instances');
+
+const multer = require('multer');
+const md5 = require('md5');
+const path = require('path');
+
+///// define upload logic /////
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        console.log(file);
+        cb(null, '/workspace/problems/');
+    },
+    filename: (req, file, cb) => {
+        const filename = md5(Date.now());
+        const extension = path.extname(file.originalname);
+        cb(null, filename + extension);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const filetypes = '/zip/';
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb(new Error('ZIP 파일만 업로드할 수 있습니다.'));
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    // fileFilter: fileFilter
+});
+///// defining upload finished /////
+
+///// middleware : check if request is admin /////
+const chkAdmin = async (req, res, next) => {
+    const session = await sessionManager.checkValidSession(req);
+    if(session instanceof APIError){
+        return res.status(200).json(session);
+    }
+
+    if(req.session.data !== ADMIN_CHK){
+        return res.status(400).json({msg: "invalid admin checking"});
+    }
 
     next();
 };
 
-router.get('/', async (req, res) => {
-    // if(!req.session || req.session.id == {ADMIN ID}){
-    //     res.render('login');
-    // }
 
+/// routings ///
+router.get('/', async (req, res) => {
     res.render('index');
 });
 
@@ -107,28 +150,23 @@ router.get('/upload/contest', async (req, res) => {
     res.render('upload_contest', {problems: problems});
 });
 
-router.post('/upload/problem', async (req, res) => {
-    const { name: name, description: description, source: source, flag: flag, url: url, port: port, score: score, category: category } = req.body;
-    // if(!name || !description || !source || !flag || !url || !port || !score || !category){
-    //     res.status(200).json(new APIError(800, "Invalid parameters"));
-    //     return;
-    // }
-
-    console.log(req.body);
-    return res.send("success")
+router.post('/upload/problem', upload.single('source'), async (req, res) => {
+    const {domain, name, flag, score, difficulty, url, port, description } = req.body;
     
-    const problemResult = await problemManager.createProblem({
+    problemManager.createProblem({
         name: name,
         description: description,
-        source: source,
+        source: req.file.filename,
         flag: flag,
         url: url,
         port: port,
         score: score,
-        category: category
-    });
-
-    res.status(200).json(problemResult);
+        category: domain
+    })
+    .then(response => {
+        if(response instanceof APIError) console.log(`file upload error: ${response.message}`);
+        return res.redirect('/admin/problems');
+    })
 });
 
 

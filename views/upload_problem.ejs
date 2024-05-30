@@ -22,14 +22,14 @@
         <div class="card w-50">
             <h5 class="card-header">Upload New Problem</h5>
             <div class="card-body">
-                <form action="/admin/upload/problem" method="post">
+                <form action="/admin/upload/problem" method="post" enctype="multipart/form-data">
                     <select class="form-select mb-3 mt-3" aria-label="Default select example" name="domain" required>
                         <option selected>Select domain</option>
-                        <option value="1">Web</option>
-                        <option value="2">Pwnable</option>
-                        <option value="3">Reversing</option>
-                        <option value="4">Forensic</option>
-                        <option value="5">Crypto</option>
+                        <option value="web">Web</option>
+                        <option value="pwnable">Pwnable</option>
+                        <option value="reversing">Reversing</option>
+                        <option value="forensic">Forensic</option>
+                        <option value="crypto">Crypto</option>
                     </select>
 
                     <div class="input-group mb-3 mt-3">
@@ -68,7 +68,7 @@
 
                     <div class="mt-3 mb-3">
                         <label for="file-form" class="form-label">upload file</label>
-                        <input class="form-control" type="file" id="file-form" name="source" />
+                        <input class="form-control" type="file" id="file-form" name="source">
                     </div>
 
                     <div class="mt-3 mb-3 d-flex justify-content-end align-items-center">
