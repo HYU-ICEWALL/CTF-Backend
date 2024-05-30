@@ -3,3 +3,4 @@ node_modules
 db/account.json
 test.json
 api_test.sh
+problems/
