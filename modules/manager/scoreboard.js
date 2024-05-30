@@ -120,26 +120,32 @@ class ScoreboardManager {
   }
 
   processSubmissions(submissions){
-    const processed = {};
+    const processedObj = {};
     for (let i = 0; i < submissions.length; i++) {
       if(submissions[i].type == 0) continue;
       const accountId = submissions[i].account;
-      if (processed[accountId] == undefined) {
-        processed[accountId] = {
+      if (processedObj[accountId] == undefined) {
+        processedObj[accountId] = {
           account: accountId,
           total: 0,
           timestamps: []
         };
       }
-      processed[accountId].total += submissions[i].score;
-      processed[accountId].timestamps.push({
+      processedObj[accountId].total += submissions[i].score;
+      processedObj[accountId].timestamps.push({
         problem: submissions[i].problem,
         time: submissions[i].time,
-        score: processed[accountId].total,
+        score: processedObj[accountId].total,
         type: submissions[i].type,
       });
     }
-    return processed;
+    
+    const processed = [];
+    for (const key in processedObj) {
+      processed.push(processedObj[key]);
+    }
+
+    return processedObj;
   }
 }
 
