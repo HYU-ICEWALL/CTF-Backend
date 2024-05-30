@@ -25,6 +25,20 @@ app.use(sessionManager.session);
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
+app.use((req, res, next) => {
+  const time = new Date().toLocaleString();
+  const ip = req.ip;
+  const method = req.method;
+  const path = req.path;
+  
+  if(method == 'GET'){
+    console.log(`[${time}] ${ip} ${method} ${path}`);
+  }else{
+    console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.body)}`);
+  }
+  next();
+});
+
 app.use('/api/account', accountRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/contest', contestRouter);
@@ -68,7 +82,7 @@ app.listen(port, async () => {
     id: process.env.ADMIN_ID
   });
 
-  if(profileResult.code == 0){
+  if(profileResult.data.length > 0){
     console.log('Admin profile already exists');
   }
   else{

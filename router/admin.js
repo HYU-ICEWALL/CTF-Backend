@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { accountManager, profileManager, scoreboardManager, contestManager, problemManager } = require('../instances');
+const { APIError } = require('../modules/response');
 const admin_ip = process.env.ADMIN || false;
 
 const chkIp = async (req, res, next) => {
@@ -19,27 +20,27 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/problems', async (req, res) => {
-    // TODO: get problem sets from current contest
-    const contest = {name: "Test Contest"};
-    const problems = [
-        {
-            domain: "pwn",
-            name: "test1",
-            num: "1"
-        },
-        {
-            domain: "web",
-            name: "test2",
-            num: "2"
-        },
-        {
-            domain: "forensic",
-            name: "test3",
-            num: "3"
-        },
-    ]
+    const contestResult = await contestManager.findContests({});
+    if(contestResult instanceof APIError){
+        res.status(200).json(contestResult);
+        return;
+    }
 
-    res.render('problems', {contest: contest, problems: problems});
+    const contests = contestResult.data;
+    const contest = contests[0];
+
+    const problemResult = await problemManager.findProblems({contest : contest._id});
+    if(problemResult instanceof APIError){
+        res.status(200).json(problemResult);
+        return;
+    }
+
+    const problems = problemResult.data;
+
+    console.log(contest, problems);
+    res.json({contest: contest, problems: problems})
+
+    // res.render('problems', {contest: contest, problems: problems});
 });
 
 router.get('/users', async(req, res) => {
@@ -104,7 +105,31 @@ router.get('/upload/contest', async (req, res) => {
     ]
 
     res.render('upload_contest', {problems: problems});
-})
+});
+
+router.post('/upload/problem', async (req, res) => {
+    const { name: name, description: description, source: source, flag: flag, url: url, port: port, score: score, category: category } = req.body;
+    // if(!name || !description || !source || !flag || !url || !port || !score || !category){
+    //     res.status(200).json(new APIError(800, "Invalid parameters"));
+    //     return;
+    // }
+
+    console.log(req.body);
+    return res.send("success")
+    
+    const problemResult = await problemManager.createProblem({
+        name: name,
+        description: description,
+        source: source,
+        flag: flag,
+        url: url,
+        port: port,
+        score: score,
+        category: category
+    });
+
+    res.status(200).json(problemResult);
+});
 
 
 module.exports = router;

@@ -27,7 +27,7 @@ class AccountManager{
     return Object.keys(result).length === 0 ? true : result;
   }
 
-  async createAccount({email: email, id: id, password: password, authority: authority}, saltSize){
+  async createAccount({email: email, id: id, password: password, authority: authority}, saltSize, test=false){
     try {
       // const valid = this.checkValidAccount(id, password, email);
       // if(valid != true){
@@ -43,7 +43,8 @@ class AccountManager{
         salt: salt,
         email: email,
         verified: false,
-        authority: authority
+        authority: authority,
+        test : test
       }
     
       const result = await this.database.insertData(this.modelName, account);

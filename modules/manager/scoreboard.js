@@ -6,7 +6,7 @@ class ScoreboardManager {
     this.modelName = modelName;
   }
 
-  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at, duration: duration}) {
+  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at, duration: duration}, test = false) {
     try {
       const scoreboard = {
         contest: contest,
@@ -14,6 +14,7 @@ class ScoreboardManager {
         end_at: end_at,
         duration: duration,
         submissions: [],
+        test: test,
       };
 
       const result = await this.database.insertData(this.modelName, scoreboard);
@@ -52,7 +53,7 @@ class ScoreboardManager {
     }
   }
 
-  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, sumbissions: submissions}) {
+  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, submissions: submissions}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
@@ -73,7 +74,26 @@ class ScoreboardManager {
 
   async addSubmission({contest: contest, submission: submission}) {
     try {
-      // $push
+      const scoreboardResult = await this.findScoreboards({contest: contest});
+      if (scoreboardResult instanceof APIError) {
+        return scoreboardResult;
+      }
+
+      const scoreboard = scoreboardResult.data[0];
+      const accountId = submission.account;
+      const problemId = submission.problem;
+
+      for(let i = 0; i < scoreboard.submissions.length; i++){
+        if(scoreboard.submissions[i].account == accountId && scoreboard.submissions[i].problem == problemId){
+          if(scoreboard.submissions[i].type == 1){
+            return new APIResponse(0, {});
+          }
+        }
+      }
+
+      scoreboard.submissions.push(submission);
+
+
       const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { submissions: submission } });
       if (result instanceof APIError) {
         return result;
@@ -93,30 +113,37 @@ class ScoreboardManager {
     } else if (result.data.length > 1) {
       return new APIError(512, 'Scoreboard is duplicated : ' + key);
     }    
-    const { submissions } = result.data[0];
-    result.data.submissions = this.processSubmissions(submissions);
+    const processed = this.processSubmissions(result.data[0].submissions);
+    result.data[0].submissions = processed;
+    result.data = result.data[0];
     return result;
   }
 
   processSubmissions(submissions){
-    const processed = {};
+    const processedObj = {};
     for (let i = 0; i < submissions.length; i++) {
+      if(submissions[i].type == 0) continue;
       const accountId = submissions[i].account;
-
-      if (processed[accountId] == undefined) {
-        processed[accountId] = {
+      if (processedObj[accountId] == undefined) {
+        processedObj[accountId] = {
+          account: accountId,
           total: 0,
           timestamps: []
         };
       }
-      processed[accountId].total += submissions[i].type == 1 ? submissions[i].score : 0;
-      processed[accountId].timestamps.push({
+      processedObj[accountId].total += submissions[i].score;
+      processedObj[accountId].timestamps.push({
         problem: submissions[i].problem,
-        timestamp: submissions[i].timestamp,
-        score: processed[accountId].total,
-        type: submissions[i].type,
+        time: submissions[i].time,
+        score: processedObj[accountId].total,
       });
     }
+    
+    const processed = [];
+    for (const key in processedObj) {
+      processed.push(processedObj[key]);
+    }
+
     return processed;
   }
 }

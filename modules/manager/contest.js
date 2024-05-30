@@ -6,7 +6,7 @@ class ContestManager{
     this.modelName = modelName;
   }
 
-  async createContest({name: name, description: description, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants}){
+  async createContest({name: name, description: description, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants}, test=false){
     try {
       if(problems === undefined){
         problems = [];
@@ -22,7 +22,9 @@ class ContestManager{
         end_at: end_at,
         duration: duration,
         problems: problems,
-        participants: participants
+        participants: participants,
+        state: '0',
+        test: test,
       }
 
       const result = await this.database.insertData(this.modelName, contest);
@@ -59,13 +61,15 @@ class ContestManager{
     }
   }
 
-  async updateContest({name: name, begin_at: begin_at, duration: duration, problems: problems, participants: participants}){
+  async updateContest({name: name, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants, state: state}){
     try {
       const change = {}
       if(begin_at) change.begin_at = begin_at;
+      if(end_at) change.end_at = end_at;
       if(duration) change.duration = duration;
       if(problems) change.problems = problems;
       if(participants) change.participants = participants;
+      if(state) change.state = state;
 
       const result = await this.database.updateData(this.modelName, {name: name}, change);
       if(result instanceof APIError){

@@ -1,20 +1,20 @@
 const { Schema, SchemaType } = require('mongoose');
 
 const scoreboardSchema = new Schema({
-  contest: { type: Schema.ObjectId, required: true },
+  contest: { type: String, unique: true, required: true }, // contest name
   begin_at: { type: String, required: true },
   end_at: { type: String, required: true },
-  // solved: { type: [Object], default: [] },
-  sumbissions: { type: [Object], default: [] },
+  submissions: { type: [Object], default: [] },
+  test: { type: Boolean, required: true, default: false }
 });
 
 /*
 submission : [
   {
-    problem : problem id,
+    problem : problem _id,
     score : problem score,
-    account : account id,
-    type : type (0 : submit, 1 : correct, 2 : incorrect),
+    account : account _id,
+    type : true / false,
     time : time (YYYY-MM-DD HH:MM:SS)
   }
 ]

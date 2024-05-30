@@ -6,7 +6,7 @@ class ProfileManager {
     this.modelName = modelName;
   }
 
-  async createProfile({id: id, email: email, name: name, organization: organization, department: department}) {
+  async createProfile({id: id, email: email, name: name, organization: organization, department: department}, test=false) {
     try {
       const profile = {
         id: id,
@@ -14,6 +14,8 @@ class ProfileManager {
         name: name,
         organization: organization,
         department: department,
+        solved: [],
+        test: test,
       }
 
       const result = await this.database.insertData(this.modelName, profile);
@@ -72,11 +74,19 @@ class ProfileManager {
 
   async addSolved({id: id, solved: solved}){
     try {
-      const result = await this.database.updateData(this.modelName, {id: id}, { $push: { solved: solved } });
-      if(result instanceof APIError){
-        return result;
+      const profileResult = await this.findProfiles({id: id});
+      if(profileResult instanceof APIError){
+        return profileResult;
       }
-      return new APIResponse(0, {});
+
+      const profile = profileResult.data[0];
+      if(profile.solved.includes(solved)){
+        return new APIResponse(0, {});
+      }
+
+      profile.solved.push(solved);
+      const result = await this.database.updateData(this.modelName, {id: id}, {solved: profile.solved});
+      return result;
     } catch (error) {
       console.error(error);
       return new APIError(440, 'Failed to add solved : ' + id);

@@ -9,6 +9,7 @@ class SessionManager{
     this.database = database;
     this.option = option;
     this.session = session(this.option);
+    this.connect_ip = {}
   }
   
   createSessionToken = () => {
@@ -16,7 +17,8 @@ class SessionManager{
     return token[2] + token[1] + token[0] + token[3] + token[4];
   }
 
-  checkValidSession = async (session) => {
+  checkValidSession = async (req) => {
+    const session = req.session;
     if (!session || !session.data) {
       return new APIError(603, 'Session not found');
     }
@@ -24,6 +26,10 @@ class SessionManager{
     if (!data.id || !data.token) {
       return new APIError(604, 'Session data not found');
     }
+  
+    this.connect_ip[data.id] = req.ip; 
+
+    return new APIResponse(0, {});
   }
 }
 

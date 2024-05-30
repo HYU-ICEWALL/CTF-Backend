@@ -1,4 +1,4 @@
-require('dotenv').config(); 
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const { accountManager, sessionManager, profileManager } = require('../instances');
@@ -6,19 +6,21 @@ const { APIResponse, APIError } = require('../modules/response');
 
 router.post('/', async (req, res) => {
   try {
+    console.log("Session Check");
     // check session exist
     if (!!req.session && !!req.session.data && !!req.session.data.id && !!req.session.data.token) {
       res.status(200).json(new APIError(601, 'Session found'));
       return;
     }
-
+    
     // check parameter
     const { email, id, password, name, organization, department } = req.body;
     if (!email || !id || !password || !name || !organization || !department) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
-
+    
+    console.log("Create account : " + id);
     // create account
     const accountResult = await accountManager.createAccount({
       email: email,
@@ -32,7 +34,7 @@ router.post('/', async (req, res) => {
       return;
     }
 
-
+    console.log("Create profile : " + id);
     // create profile
     const profileResult = await profileManager.createProfile({
       id: id,
@@ -47,7 +49,7 @@ router.post('/', async (req, res) => {
       return;
     }
 
-    res.status(200).json(new APIResponse(0, { id: id }));
+    res.status(200).json(new APIResponse(0, {}));
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(810, 'Account register failed'));
@@ -61,8 +63,9 @@ router.post('/login', async (req, res) => {
     if (!id || !password) {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
-    }    
+    }
 
+    console.log("Find account : " + id);
     // find account with password
     const result = await accountManager.findAccountWithPassword({
       id: id,
@@ -74,6 +77,7 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+    console.log("Create session : " + id);
     // create session
     const token = sessionManager.createSessionToken();
 
@@ -88,25 +92,25 @@ router.post('/login', async (req, res) => {
         return;
       }
       console.log("Session created : " + req.session.data);
-      return res.status(200).json(new APIResponse(0, { id: id }));
+      return res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(811, 'Account login failed'));
   }
-  
+
 });
 
 router.get('/auth', async (req, res) => {
   try {
-    console.log("Session auth : " + req.session.data);
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    console.log("Auth Session : " + req.session.data);
+    const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
-    res.status(200).json(new APIResponse(0, { id: req.session.data.id }));
-  }catch(err){
+    res.status(200).json(new APIResponse(0, {}));
+  } catch (err) {
     console.error(err);
     res.status(200).json(new APIError(816, 'Account auth failed'));
   }
@@ -115,17 +119,19 @@ router.get('/auth', async (req, res) => {
 router.get('/logout', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
       return;
     }
 
+    console.log("Delete Session : " + req.session.data);
     req.session.destroy((err) => {
       if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
+      res.clearCookie('connect.sid');
       res.status(200).json(new APIResponse(0, {}));
     });
   } catch (error) {
@@ -137,7 +143,7 @@ router.get('/logout', async (req, res) => {
 router.get('/refresh', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -145,9 +151,9 @@ router.get('/refresh', async (req, res) => {
     }
 
     // refresh session
+    console.log("Refresh Session : " + req.session.data.id);
     const token = sessionManager.createSessionToken();
     req.session.data.token = token;
-
     req.session.touch();
     req.session.save((err) => {
       if (err) {
@@ -165,7 +171,7 @@ router.get('/refresh', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -178,22 +184,24 @@ router.delete('/', async (req, res) => {
       res.status(200).json(new APIError(800, 'Invalid parameters'));
       return;
     }
-    
+
+    const data = JSON.parse(req.session.data);
+    console.log("Check permission : " + id + " " + data.id);
     // check permission
-    const permissionResult = await accountManager.checkAuthority(req);
-    if (permissionResult instanceof APIError) {
-      res.status(200).json(permissionResult);
-      return;
+    if(id != data.id){
+      return res.status(200).json(new APIError(603, 'Not allowed'));
     }
-    
+
+    console.log("Delete Account : " + id);
     // delete session
     req.session.destroy(async (err) => {
-      if(err){
+      if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
         return;
       }
 
       // delete profile
+      console.log("Delete Profile : " + id);
       const profileResult = await profileManager.deleteProfiles({
         id: id,
       });
@@ -202,10 +210,16 @@ router.delete('/', async (req, res) => {
         return;
       }
 
+      console.log("Delete Account : " + id);
+      const account = await accountManager.findAccountWithPassword({ id: id, password: password });
+      if (account instanceof APIError) {
+        res.status(200).json(account);
+        return;
+      }
+
       // delete account
       const accountResult = await accountManager.deleteAccounts({
         id: id,
-        password: password,
       });
 
       if (accountResult instanceof APIError) {
@@ -224,7 +238,7 @@ router.delete('/', async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session valid
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -238,7 +252,9 @@ router.put('/', async (req, res) => {
       return;
     }
 
+    const data = JSON.parse(req.session.data);
     // check permission
+    console.log("Check permission : " + id + " " + data.id);
     const permissionResult = await accountManager.checkAuthority(req);
     if (permissionResult instanceof APIError) {
       res.status(200).json(permissionResult);
@@ -246,6 +262,7 @@ router.put('/', async (req, res) => {
     }
 
     // delete session
+    console.log("Delete Session : " + data.id);
     req.session.destroy(async (err) => {
       if (err) {
         res.status(200).json(new APIError(604, 'Session destroy failed'));
@@ -257,7 +274,7 @@ router.put('/', async (req, res) => {
         password: password,
         newPassword: newPassword,
       });
-      if(result instanceof APIError){
+      if (result instanceof APIError) {
         res.status(200).json(result);
         return;
       }

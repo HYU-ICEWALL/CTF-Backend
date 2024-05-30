@@ -7,6 +7,7 @@ const profileSchema = new Schema({
   organization: { type: String, required: true },
   department: { type: String, required: true },
   solved: { type: [String], default: [] },
+  test: { type: Boolean, required: true, default: false },
 });
 
 /*

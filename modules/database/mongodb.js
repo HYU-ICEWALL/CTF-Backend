@@ -6,7 +6,7 @@ class Mongoose extends Database {
   constructor(name, schemas, url) {
     super(name);
     this.schemas = schemas;
-    this.url = url;
+    this.url = url + '/' + name;
   }
   
   async connect(){
@@ -28,13 +28,7 @@ class Mongoose extends Database {
       this.model[key] = this.client.model(key, this.schemas[key]);
     });
   }
-
-  keyToObj(key){
-    const query = {};
-    query[Object.keys({ key })[0]] = key;
-    return query;
-  }
-
+  
   async insertData() {
     try{
       const [model, value] = arguments;
@@ -45,6 +39,7 @@ class Mongoose extends Database {
       return new APIError(700, 'Failed to insert data');
     }
   }
+
   async findData() {
     try {
       const [model, key] = arguments;
@@ -55,11 +50,12 @@ class Mongoose extends Database {
       return new APIError(710, 'Failed to find data');
     }
   }
+
   async updateData() {
     try {
       const [model, key, value] = arguments;
       // console.log(value);
-      const result = await this.model[model].updateOne(key, value);
+      const result = await this.model[model].updateMany(key, value);
       if (result.matchedCount == 0){
         return new APIError(721, 'No matched data to update');
       }
@@ -70,10 +66,11 @@ class Mongoose extends Database {
       return new APIError(720, 'Failed to update data');
     }
   }
+  
   async deleteData() {
     try {
       const [model, key] = arguments;
-      const result = await this.model[model].deleteOne(key);
+      const result = await this.model[model].deleteMany(key);
       return new APIResponse(0, result);
     } catch (err) {
       console.error(err);

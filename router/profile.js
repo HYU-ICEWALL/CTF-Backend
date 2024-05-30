@@ -6,14 +6,15 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     // check parameters
-    const { id } = req.query;
-    if (id == undefined) {
-      res.status(200).json(new APIError(800, "Invalid parameters"));
-      return;
-    }
-
+    const { id, name, organization, department } = req.query;
+    const query = {};
+    if (id) query.id = id;
+    if (name) query.name = name;
+    if (organization) query.organization = organization;
+    if (department) query.department = department;
+    
     // find profile
-    const result = await profileManager.findProfiles({ id: id });
+    const result = await profileManager.findProfiles(query);
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
@@ -24,7 +25,7 @@ router.get("/", async (req, res) => {
 router.put('/', async (req, res) => {
   try {
     // check session
-    const sessionResult = await sessionManager.checkValidSession(req.session);
+    const sessionResult = await sessionManager.checkValidSession(req);
 
     if (sessionResult instanceof APIError) {
       res.status(200).json(sessionResult);
@@ -32,20 +33,12 @@ router.put('/', async (req, res) => {
     }
 
     // check parameters
-    const { id, name, organization, department } = req.body;
-    
-    if (req.session.data.id != id){
-      res.status(200).json(new APIError(801, 'Permission denied'));
-      return;
-    }
-
-    if (id == undefined){
-      res.status(200).json(new APIError(800, 'Invalid parameters'));
-      return;
-    }
+    const { name, organization, department } = req.body;
+    const data = JSON.parse(req.session.data);
     const query = {
-      id: id,
+      id: data.id,
     };
+    
     if (name != undefined) query.name = name;
     if (organization != undefined) query.organization = organization;
     if (department != undefined) query.department = department;
@@ -61,6 +54,35 @@ router.put('/', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(200).json(new APIError(843, 'Profile update failed'));
+  }
+});
+
+router.get('/solved', async (req, res) => {
+  try {
+    // check parameters
+    const { id } = req.query;
+    if (id == undefined) {
+      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      return;
+    }
+
+    // find profile
+    const profileResult = await profileManager.findProfiles({ id: id });
+    if (profileResult instanceof APIError) {
+      res.status(200).json(profileResult);
+      return;
+    }
+
+    if (profileResult.data.length != 1) {
+      res.status(200).json(new APIError(842, 'Profile not found'));
+      return;
+    }
+    const solved = profileResult.data[0].solved;
+    
+    res.status(200).json(new APIResponse(0, solved));
+  } catch (error) {
+    console.error(error);
+    res.status(200).json(new APIError(844, 'Profile solved find failed'));
   }
 });
 

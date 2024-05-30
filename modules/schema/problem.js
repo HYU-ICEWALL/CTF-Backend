@@ -1,15 +1,16 @@
 const { Schema } = require('mongoose');
 
 const problemSchema = new Schema({
-  // id: { type: String, unique: true, required: true },
   name: { type: String, unique: true, required: true },
   description: { type: String },
-  source: { type: String },
+  file: { type: String },
   flag: { type: String },
-  link: { type: String },
-  score: { type: String, required: true },
-  category: { type: String, required: true },
-  contest: { type: Schema.ObjectId }
+  url: {type: String},
+  port: {type: String},
+  score: { type: Number, required: true },
+  domain: { type: String, required: true }, // pwn, web, forensic, reverse, misc
+  contest: { type: String }, // contest name
+  test: { type: Boolean, required: true, default: false },
 });
 
 module.exports = problemSchema;
