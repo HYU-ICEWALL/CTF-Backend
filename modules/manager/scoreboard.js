@@ -136,7 +136,6 @@ class ScoreboardManager {
         problem: submissions[i].problem,
         time: submissions[i].time,
         score: processedObj[accountId].total,
-        type: submissions[i].type,
       });
     }
     
