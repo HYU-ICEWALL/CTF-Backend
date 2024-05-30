@@ -126,6 +126,7 @@ class ScoreboardManager {
       const accountId = submissions[i].account;
       if (processed[accountId] == undefined) {
         processed[accountId] = {
+          account: accountId,
           total: 0,
           timestamps: []
         };

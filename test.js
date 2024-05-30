@@ -1,23 +1,11 @@
-const ob = {
-  t: [],
-};
 
-const t = [
-  {
-    a: 1,
-    b: 2,
-  },
-  {
-    a: 3,
-    b: 4,
-  },
-  {
-    a: 5,
-    b: 6,
-  },
-]
-console.log(ob.t);
+const date = new Date();
+const year = date.getFullYear();
+const month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
+const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+const hour = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+const minute = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+const second = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+const time = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
 
-ob.t = t;
-
-console.log(ob.t);
+console.log(time);

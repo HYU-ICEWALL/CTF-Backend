@@ -85,8 +85,8 @@ const createRandomContest = () => {
     name: Math.random().toString(36).substring(2, 10),
     description: Math.random().toString(36).substring(2, 10),
     problems: [],
-    begin_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    end_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    begin_at: new Date("2000-01-01").toISOString().slice(0, 19).replace('T', ' '),
+    end_at: new Date("2030-01-01").toISOString().slice(0, 19).replace('T', ' '),
     participants: [],
     state: '0',
   }
