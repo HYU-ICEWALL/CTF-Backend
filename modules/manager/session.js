@@ -26,10 +26,7 @@ class SessionManager{
     if (!data.id || !data.token) {
       return new APIError(604, 'Session data not found');
     }
-    const re1 = await this.database.client.keys("sess:*");
-    const re2 = await this.database.client.get("sess:*");
-
-    console.log(re1 ,re2);
+  
     this.connect_ip[data.id] = req.ip; 
 
     return new APIResponse(0, {});

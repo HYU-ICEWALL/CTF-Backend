@@ -26,6 +26,13 @@ class RedisDatabase extends Database {
     });
   }
 
+
+  async findKeys() {
+    const [pattern] = arguments;
+    return await this.client.keys(pattern);
+  }
+
+  
   async insertData(){
     const [key, value] = arguments;
     return await this.client.set(key, value);
