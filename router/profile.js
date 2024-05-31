@@ -18,7 +18,7 @@ router.get("/", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(841, "Profile find failed"));
+    res.status(200).json(new APIError(400, "Profile find failed"));
   }
 });
 
@@ -44,7 +44,7 @@ router.put('/', async (req, res) => {
     if (department != undefined) query.department = department;
 
     if (Object.keys(query).length == 1){
-      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      res.status(200).json(new APIError(411, 'Invalid parameters'));
       return;
     }
 
@@ -53,7 +53,7 @@ router.put('/', async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(843, 'Profile update failed'));
+    res.status(200).json(new APIError(410, 'Profile update failed'));
   }
 });
 
@@ -62,7 +62,7 @@ router.get('/solved', async (req, res) => {
     // check parameters
     const { id } = req.query;
     if (id == undefined) {
-      res.status(200).json(new APIError(800, 'Invalid parameters'));
+      res.status(200).json(new APIError(421, 'Invalid parameters'));
       return;
     }
 
@@ -74,7 +74,7 @@ router.get('/solved', async (req, res) => {
     }
 
     if (profileResult.data.length != 1) {
-      res.status(200).json(new APIError(842, 'Profile not found'));
+      res.status(200).json(new APIError(422, 'Profile not found'));
       return;
     }
     const solved = profileResult.data[0].solved;
@@ -82,7 +82,7 @@ router.get('/solved', async (req, res) => {
     res.status(200).json(new APIResponse(0, solved));
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(844, 'Profile solved find failed'));
+    res.status(200).json(new APIError(420, 'Profile solved find failed'));
   }
 });
 

@@ -1,7 +1,6 @@
 // const { encryptPassword, createSalt } = require('./modules/encrypt');
 const { exit } = require('process');
 const { accountManager, contestManager, problemManager, profileManager, scoreboardManager, run } = require('./instances');
-const fs = require('fs');
 require('dotenv').config();
 
 const createRandomAccount = () => {

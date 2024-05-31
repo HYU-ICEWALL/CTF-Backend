@@ -56,7 +56,7 @@ router.get("/recent", async (req, res) => {
     res.status(200).json(contestResult);
   }catch(err){
     console.error(err);
-    res.status(200).json(new APIError(800, "Recent contest find failed"));
+    res.status(200).json(new APIError(200, "Recent contest find failed"));
   }
 });
 
@@ -68,6 +68,11 @@ router.get("/", async (req, res) => {
     if(name) query.name = name;
     console.log("Find contests");
     const result = await contestManager.findContests(query);
+    if (result instanceof APIError) {
+      res.status(200).json(result);
+      return;
+    }
+
     if(!name || (!!name && !problems && !scoreboard)){
       delete result.data[0].problems;
       delete result.data[0].participants;
@@ -82,7 +87,7 @@ router.get("/", async (req, res) => {
     }
 
     if(result.data.length != 1){
-      return res.status(200).json(new APIError(820, "Contest not found"));
+      return res.status(200).json(new APIError(211, "Contest not found"));
     }
 
     const contest = {
@@ -98,7 +103,7 @@ router.get("/", async (req, res) => {
     const data = JSON.parse(req.session.data);
     console.log("Check contest participants");
     if(!contest.participants.includes(data.id)){
-      return res.status(200).json(new APIError(821, "Not in contest participants"));
+      return res.status(200).json(new APIError(212, "Not in contest participants"));
     }
 
     console.log("Find contest problems and scoreboards");
@@ -122,7 +127,7 @@ router.get("/", async (req, res) => {
     return res.status(200).json(new APIResponse(0, contest));
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(821, "Contest find failed"));
+    res.status(200).json(new APIError(210, "Contest find failed"));
   }
 });
 
@@ -131,7 +136,7 @@ router.get('/scoreboard', async (req, res) => {
     // check parameters
     const { name } = req.query;
     if (!name) {
-      res.status(200).json(new APIResponse(800, 'Invalid parameters'));
+      res.status(200).json(new APIResponse(221, 'Invalid parameters'));
       return;
     }
 
@@ -146,7 +151,7 @@ router.get('/scoreboard', async (req, res) => {
     }
 
     if (contestResult.data.length != 1){
-      res.status(200).json(new APIError(822, 'Contest not found'));
+      res.status(200).json(new APIError(222, 'Contest not found'));
       return;
     }
 
@@ -159,14 +164,14 @@ router.get('/scoreboard', async (req, res) => {
     const contest = contestResult.data[0];
     const data = JSON.parse(req.session.data);
     if(!contest.participants.includes(data.id)){
-      return res.status(200).json(new APIError(823, "Not in contest participants"));
+      return res.status(200).json(new APIError(223, "Not in contest participants"));
     }
 
     const scoreboardResult = await scoreboardManager.findProcessedScoreboard({ contest: contest.name });
     res.status(200).json(scoreboardResult);
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(825, 'Failed to find scoreboard'));
+    res.status(200).json(new APIError(220, 'Failed to find scoreboard'));
   }
 });
 

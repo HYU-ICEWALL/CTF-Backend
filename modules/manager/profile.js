@@ -26,7 +26,7 @@ class ProfileManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(400, 'Failed to create profile : ' + id);
+      return new APIError(2300, 'Failed to create profile : ' + id);
     }
   }
 
@@ -37,7 +37,7 @@ class ProfileManager {
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(410, 'Failed to find profile : ', key);
+      return new APIError(2310, 'Failed to find profile : ', key);
     }
   }
 
@@ -50,7 +50,7 @@ class ProfileManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(420, 'Failed to delete profile : ' + key);
+      return new APIError(2320, 'Failed to delete profile : ' + key);
     }
   }
 
@@ -68,7 +68,7 @@ class ProfileManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(430, 'Failed to update profile : ' + id);
+      return new APIError(2330, 'Failed to update profile : ' + id);
     }
   }
 
@@ -89,7 +89,7 @@ class ProfileManager {
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(440, 'Failed to add solved : ' + id);
+      return new APIError(2340, 'Failed to update solved in profile : ' + id);
     }
   }
 }

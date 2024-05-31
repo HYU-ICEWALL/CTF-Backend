@@ -1,10 +1,19 @@
 const { createSalt, encryptPassword } = require("../encrypt")
 const { APIResponse, APIError } = require('../response');
+const crypto = require('crypto');
 
 class AccountManager{
   constructor(database, modelName){
     this.database = database;
     this.modelName = modelName;
+  }
+
+  createSalt = (saltSize) => {
+    return crypto.randomBytes(parseInt(saltSize)).toString('base64');
+  }
+
+  encryptPassword = (password, salt) => {
+    return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('base64');
   }
 
   checkValidAccount = (id, password, email) => {
@@ -34,8 +43,8 @@ class AccountManager{
       //   return new APIError(101, 'Invalid account format : ' + JSON.stringify(valid));
       // }
 
-      const salt = createSalt(saltSize);
-      const encryptedPassword = encryptPassword(password, salt);
+      const salt = this.createSalt(saltSize);
+      const encryptedPassword = this.encryptPassword(password, salt);
     
       const account = {
         id: id,
@@ -54,7 +63,7 @@ class AccountManager{
       return new APIResponse(0, {});
     } catch (err) {
       console.log(err);
-      return new APIError(100, 'Failed to create account : ' + id);
+      return new APIError(2000, 'Failed to create account : ' + id);
     }
   }
 
@@ -65,21 +74,21 @@ class AccountManager{
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(111, 'Failed to find accounts');
+      return new APIError(2010, 'Failed to find accounts');
     }
   }
 
-  async findAccountsWithId({id: id}){
+  async findAccountsById({id: id}){
     try {
       const result = await this.database.findData(this.modelName, {id: id});
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(110, 'Failed to find account : ' + id);
+      return new APIError(2020, 'Failed to find account : ' + id);
     }
   }
 
-  async findAccountWithPassword({id: id, password: password}){
+  async findAccountByPassword({id: id, password: password}){
     try {
       const result = await this.database.findData(this.modelName, {id: id});
       if(result instanceof APIError){
@@ -87,23 +96,20 @@ class AccountManager{
       }
 
       const accounts = result.data;
-      if(accounts.length === 0){
-        return new APIError(121, 'Account not found : ' + id);
-      }
-      else if(accounts.length > 1){
-        return new APIError(122, 'Account is duplicated : ' + id);
+      if(accounts.length != 1){
+        return new APIError(2031, 'Account not found : ' + id);
       }
 
       const account = accounts[0];
       const encryptedPassword = encryptPassword(password, account.salt);
       if(account.password !== encryptedPassword){
-        return new APIError(123, 'Password not matched : ' + id);
+        return new APIError(2032, 'Password incorrect : ' + id);
       }
 
       return new APIResponse(0, account);      
     } catch (error) {
       console.error(error);
-      return new APIError(120, 'Failed to find account : ' + id);
+      return new APIError(2030, 'Failed to find account : ' + id);
     }
   }
 
@@ -117,26 +123,22 @@ class AccountManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(130, 'Failed to delete account : ' + id);
+      return new APIError(2040, 'Failed to delete account : ' + id);
     }
   }
 
   async changePassword({id: id, password: password, newPassword: newPassword}){
     try {
       const accounts = this.database.findData(this.modelName, {id: id});
-      if (accounts.length === 0) {
-        return new APIError(141, 'Account not found : ' + id);
-      }
-
-      if (accounts.length > 1) {
-        return new APIError(142, 'Account is duplicated : ' + id);
+      if (accounts.length != 1) {
+        return new APIError(2051, 'Account not found : ' + id);
       }
 
       const account = accounts[0];
 
       const encryptedPassword = encryptPassword(password, account.salt);
       if (account.password !== encryptedPassword) {
-        return new APIError(143, 'Password not matched : ' + id);
+        return new APIError(2052, 'Password incorrect : ' + id);
       }
 
       const newEncryptedPassword = encryptPassword(newPassword, account.salt);
@@ -149,31 +151,8 @@ class AccountManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(140, 'Failed to change password : ' + id);
+      return new APIError(2050, 'Failed to change password : ' + id);
     }
-  }
-
-  checkAuthority = async (req) => {
-    const accountResult = await this.findAccountsWithId({id: req.session.data.id});
-    if (accountResult instanceof APIError) {
-      res.status(200).json(accountResult);
-      return;
-    }
-    const accounts = accountResult.data;
-    if (accounts.length === 0) {
-      return new APIError(141, 'Account not found : ' + id);
-    }
-
-    if (accounts.length > 1) {
-      return new APIError(142, 'Account is duplicated : ' + id);
-    }
-
-    if (accounts[0].authority != 1) {
-      res.status(200).json(new APIError(801, 'Permission denied'));
-      return;
-    }
-
-    return new APIResponse(0, {});
   }
 }
 
