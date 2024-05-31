@@ -34,7 +34,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(200, 'Failed to create contest');
+      return new APIError(2100, 'Failed to create contest');
     }
   }
 
@@ -44,7 +44,7 @@ class ContestManager{
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(210, 'Failed to find contest : ', key);
+      return new APIError(2110, 'Failed to find contest : ', key);
     }
   }
 
@@ -57,7 +57,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(220, 'Failed to delete contest : ' + key);
+      return new APIError(2120, 'Failed to delete contest : ' + key);
     }
   }
 
@@ -78,7 +78,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(230, 'Failed to update contest : ' + name);
+      return new APIError(2130, 'Failed to update contest : ' + name);
     }
   }
 
@@ -91,7 +91,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(240, 'Failed to update problems : ' + name);
+      return new APIError(2140, 'Failed to update problems in contest : ' + name);
     }
   }
 
@@ -104,7 +104,7 @@ class ContestManager{
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(250, 'Failed to update participants : ' + name);
+      return new APIError(2150, 'Failed to update participants : ' + name);
     }
   }
 }

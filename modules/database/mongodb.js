@@ -36,7 +36,7 @@ class Mongoose extends Database {
       return new APIResponse(0, result);
     }catch(err){
       console.error(err);
-      return new APIError(700, 'Failed to insert data');
+      return new APIError(1000, 'Failed to insert data');
     }
   }
 
@@ -47,7 +47,7 @@ class Mongoose extends Database {
       return new APIResponse(0, result);
     } catch (err) {
       console.error(err);
-      return new APIError(710, 'Failed to find data');
+      return new APIError(1010, 'Failed to find data');
     }
   }
 
@@ -56,14 +56,10 @@ class Mongoose extends Database {
       const [model, key, value] = arguments;
       // console.log(value);
       const result = await this.model[model].updateMany(key, value);
-      if (result.matchedCount == 0){
-        return new APIError(721, 'No matched data to update');
-      }
-
       return new APIResponse(0, result);
     } catch (err) {
       console.error(err);
-      return new APIError(720, 'Failed to update data');
+      return new APIError(1020, 'Failed to update data');
     }
   }
   
@@ -74,7 +70,7 @@ class Mongoose extends Database {
       return new APIResponse(0, result);
     } catch (err) {
       console.error(err);
-      return new APIError(730, 'Failed to delete data');
+      return new APIError(1030, 'Failed to delete data');
     }
   }
 }

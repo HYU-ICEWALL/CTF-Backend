@@ -30,7 +30,7 @@ class ProblemManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(300, 'Failed to create problem : ' + name);
+      return new APIError(2200, 'Failed to create problem : ' + name);
     }
   }
 
@@ -51,7 +51,7 @@ class ProblemManager {
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(310, 'Failed to find problem : ', key);
+      return new APIError(2210, 'Failed to find problem : ', key);
     }
   }
 
@@ -64,7 +64,7 @@ class ProblemManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(320, 'Failed to delete problem : ' + key);
+      return new APIError(2220, 'Failed to delete problem : ' + key);
     }
   }
 
@@ -87,7 +87,7 @@ class ProblemManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(330, 'Failed to update problem : ' + name);
+      return new APIError(2230, 'Failed to update problem : ' + name);
     }
   }
 }

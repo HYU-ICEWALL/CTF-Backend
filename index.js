@@ -55,7 +55,7 @@ app.listen(port, async () => {
   await run();
 
   const { accountManager, profileManager } = require('./instances');
-  const accountResult = await accountManager.findAccountWithPassword({
+  const accountResult = await accountManager.findAccountByPassword({
     id: process.env.ADMIN_ID,
     password: process.env.ADMIN_PASSWORD
   });

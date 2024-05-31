@@ -18,18 +18,23 @@ class SessionManager{
   }
 
   checkValidSession = async (req) => {
-    const session = req.session;
-    if (!session || !session.data) {
-      return new APIError(603, 'Session not found');
-    }
-    const data = JSON.parse(session.data);
-    if (!data.id || !data.token) {
-      return new APIError(604, 'Session data not found');
-    }
+    try{
+      const session = req.session;
+      if (!session || !session.data) {
+        return new APIError(2501, 'Session not found');
+      }
+      const data = JSON.parse(session.data);
+      if (!data.id || !data.token) {
+        return new APIError(2502, 'Session data not found');
+      }
+    
+      this.connect_ip[data.id] = req.ip; 
   
-    this.connect_ip[data.id] = req.ip; 
-
-    return new APIResponse(0, {});
+      return new APIResponse(0, {});
+    }catch(err){
+      console.error(err);
+      return new APIError(2500, 'Session check failed');
+    }
   }
 }
 
