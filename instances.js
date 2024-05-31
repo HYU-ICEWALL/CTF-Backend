@@ -16,6 +16,8 @@ const AccountManager = require('./modules/manager/account');
 const ProfileManager = require('./modules/manager/profile');
 const ScoreboardManager = require('./modules/manager/scoreboard');
 
+const TimeManager = require('./modules/manager/time');
+
 const redisSessionDBName = process.env.REDIS;
 const redisSessionDB = new RedisDatabase(redisSessionDBName, {
   socket: {
@@ -54,6 +56,7 @@ const problemManager = new ProblemManager(mongoDB, "problem");
 const contestManager = new ContestManager(mongoDB, "contest");
 const profileManager = new ProfileManager(mongoDB, "profile");
 const scoreboardManager = new ScoreboardManager(mongoDB, "scoreboard");
+const timeManager = new TimeManager();
 
 const run = async () => {
   await mongoDB.connect();
@@ -67,5 +70,6 @@ module.exports = {
   contestManager,
   profileManager,
   scoreboardManager,
+  timeManager,
   run
 }
