@@ -1,5 +1,5 @@
 const express = require('express');
-const { problemManager, scoreboardManager, contestManager, profileManager, sessionManager } = require('../instances');
+const { problemManager, scoreboardManager, contestManager, profileManager, sessionManager, timeManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
@@ -100,16 +100,7 @@ router.post('/submit', async (req, res) => {
 
     // check contest time
     // YYYY-MM-DD HH:MM:SS
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
-    const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-    const hour = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-    const minute = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    const second = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-    const time = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
-
-
+    const time = timeManager.timestamp();
     const begin = contestResult.data[0].begin_at;
     const end = contestResult.data[0].end_at;
 

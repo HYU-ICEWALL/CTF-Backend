@@ -436,7 +436,6 @@ const findTest = async () => {
   await testWrapper(findProblemTest);
   await testWrapper(findContestTest);
   await testWrapper(findScoreboardTest);
-  // await findScoreboardTest();
 }
 
 run().then(async () => {

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sessionManager, run } = require('./instances');
+const { accountManager, profileManager, sessionManager, timeManager, run } = require('./instances');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -26,7 +26,7 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use((req, res, next) => {
-  const time = new Date().toLocaleString();
+  const time = timeManager.timestamp();
   const ip = req.ip;
   const method = req.method;
   const path = req.path;
@@ -54,7 +54,6 @@ app.listen(port, async () => {
   console.log(`Auth Server listening on port ${port}`);
   await run();
 
-  const { accountManager, profileManager } = require('./instances');
   const accountResult = await accountManager.findAccountByPassword({
     id: process.env.ADMIN_ID,
     password: process.env.ADMIN_PASSWORD
