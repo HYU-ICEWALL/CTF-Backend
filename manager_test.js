@@ -303,7 +303,7 @@ const findTest = async () => {
     let flag = true;
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
-      const result = await accountManager.findAccountWithPassword({id: account.id, password: account.password});
+      const result = await accountManager.findAccountByPassword({id: account.id, password: account.password});
       if (result.code != 0) {
         flag = false;
         console.log(result);

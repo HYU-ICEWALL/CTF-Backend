@@ -1,4 +1,3 @@
-const { createSalt, encryptPassword } = require("../encrypt")
 const { APIResponse, APIError } = require('../response');
 const crypto = require('crypto');
 
@@ -101,7 +100,7 @@ class AccountManager{
       }
 
       const account = accounts[0];
-      const encryptedPassword = encryptPassword(password, account.salt);
+      const encryptedPassword = this.encryptPassword(password, account.salt);
       if(account.password !== encryptedPassword){
         return new APIError(2032, 'Password incorrect : ' + id);
       }
@@ -136,12 +135,12 @@ class AccountManager{
 
       const account = accounts[0];
 
-      const encryptedPassword = encryptPassword(password, account.salt);
+      const encryptedPassword = this.encryptPassword(password, account.salt);
       if (account.password !== encryptedPassword) {
         return new APIError(2052, 'Password incorrect : ' + id);
       }
 
-      const newEncryptedPassword = encryptPassword(newPassword, account.salt);
+      const newEncryptedPassword = this.encryptPassword(newPassword, account.salt);
       account.password = newEncryptedPassword;
       const result = await this.database.updateData(this.modelName, {id: id}, account);
       if (result instanceof APIError) {
