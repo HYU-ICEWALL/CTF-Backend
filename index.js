@@ -31,7 +31,7 @@ app.use((req, res, next) => {
   
   const time = timeManager.timestamp();
   const protocol = req.protocol;
-  const ip = req.ip;
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const method = req.method;
   const path = req.path;
   const query = req.query;
