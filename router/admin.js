@@ -80,13 +80,11 @@ router.get('/problems', async (req, res) => {
 
     const problems = problemResult.data;
 
-    console.log(contest, problems);
-    res.json({contest: contest, problems: problems})
-
-    // res.render('problems', {contest: contest, problems: problems});
+    res.render('problems', {contest: contest, problems: problems});
 });
 
 router.get('/users', async(req, res) => {
+    
     const users = [
         {
             name: "dongha",

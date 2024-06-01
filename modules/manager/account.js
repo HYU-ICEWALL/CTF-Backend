@@ -15,33 +15,24 @@ class AccountManager{
     return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('base64');
   }
 
-  checkValidAccount = (id, password, email) => {
-    // id must start with alphabet and contain only alphabet and number and length must be 6 ~ 20
-    const result = {}
-    if (!/^[a-zA-Z][a-zA-Z0-9]{5,19}$/.test(id)) {
-      result.id = id;
-    }
-
-    // password must contain alphabet, number, special character and length must be 8 ~ 20
-    if (!/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,20}$/.test(password)) {
-      result.password = password;
-    }
-
-    // email must be valid
-    if (!/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/.test(email)) {
-      result.email = email;
-    }
-
-    return Object.keys(result).length === 0 ? true : result;
-  }
 
   async createAccount({email: email, id: id, password: password, authority: authority}, saltSize, test=false){
     try {
-      // const valid = this.checkValidAccount(id, password, email);
-      // if(valid != true){
-      //   return new APIError(101, 'Invalid account format : ' + JSON.stringify(valid));
-      // }
+      const idRegex = /^[a-zA-Z0-9]{4,12}$/;
+      if (!idRegex.test(id)) {
+        return new APIError(2001, 'Invalid id : ' + id);
+      }
 
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        return new APIError(2002, 'Invalid email : ' + email);
+      }
+
+      const passwordRegex = /^[a-zA-Z0-9!@#$%^&*()_+]{8,20}$/;
+      if (!passwordRegex.test(password)) {
+        return new APIError(2003, 'Invalid password : ' + password);
+      }
+      
       const salt = this.createSalt(saltSize);
       const encryptedPassword = this.encryptPassword(password, salt);
     
