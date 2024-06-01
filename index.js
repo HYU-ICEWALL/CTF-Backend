@@ -29,18 +29,16 @@ app.set('views', './views');
 
 app.use((req, res, next) => {  
   const time = timeManager.timestamp();
-  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).toString().replace('::ffff:', '');
   const protocol = req.protocol;
   const method = req.method;
   const path = req.path;
   const query = req.query;
   const body = req.body;
-  const session = req.session;
 
   if (method == 'GET') {
-    console.log(`[${time}] ${protocol} ${ip} ${method} ${path} ${JSON.stringify(query)} ${JSON.stringify(session)}`);
+    console.log(`[${time}] ${protocol} ${method} ${path} ${JSON.stringify(query)}`);
   }else{
-    console.log(`[${time}] ${protocol} ${ip} ${method} ${path} ${JSON.stringify(body)} ${JSON.stringify(session)}`);
+    console.log(`[${time}] ${protocol} ${method} ${path} ${JSON.stringify(body)}`);
   }
 
   next();
