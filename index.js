@@ -27,11 +27,10 @@ app.use(sessionManager.session);
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
-app.use((req, res, next) => {
-  
+app.use((req, res, next) => {  
   const time = timeManager.timestamp();
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).toString().replace('::ffff:', '');
   const protocol = req.protocol;
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
   const method = req.method;
   const path = req.path;
   const query = req.query;
@@ -58,7 +57,7 @@ app.use((req, res) => {
   res.status(404).json(new APIResponse(-1, 'Page Not Found'));
 });
 
-app.listen(port, async () => {
+app.listen(port, '0.0.0.0', async () => {
   console.log(`Auth Server listening on port ${port}`);
   await run();
 
