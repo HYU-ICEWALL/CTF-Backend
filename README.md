@@ -61,12 +61,7 @@ const profileSchema = new Schema({
 
 /*
 solved : [
-  {
-    problem : problem id,
-    score : problem score,
-    account : account id,
-    time : time (YYYY-MM-DD HH:MM:SS)
-  }
+    // problem names
 ]
 */
 ```
@@ -84,10 +79,9 @@ const scoreboardSchema = new Schema({
 /*
 submission : [
   {
-    problem : problem _id,
+    problem : problem name,
     score : problem score,
-    account : account _id,
-    type : true / false,
+    account : account id,
     time : time (YYYY-MM-DD HH:MM:SS)
   }
 ]
@@ -102,6 +96,7 @@ submission : [
 #### POST `/api/account`
 - 계정 생성 후 프로필 생성을 한다.
 - 세션이 있으면 실패한다.
+- ID/Email 중복 확인을 한다.
 
 - Request Body
 ```json

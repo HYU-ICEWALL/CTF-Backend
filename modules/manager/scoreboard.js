@@ -151,6 +151,26 @@ class ScoreboardManager {
       }
   
       return processed;
+
+      // let timestamps = [];
+      // const processedObj = {};
+      // for (let i = 0; i < submissions.length; i++) {
+      //   if(submissions[i].type == 0) continue;
+      //   timestamps.push(submissions[i].time);
+      //   const accountId = submissions[i].account;
+      //   if (processedObj[accountId] == undefined) {
+      //     processedObj[accountId] = {
+      //       account: accountId,
+      //       total: 0,
+      //       timestamps: []
+      //     };
+      //   }
+      // }
+      // timestamps = new Set(timestamps);
+      // timestamps = Array.from(timestamps);
+      // timestamps.sort((a, b) => a - b);
+
+
     }catch(err){
       console.error(err);
       return new APIError(2460, 'Failed to process submissions');
