@@ -108,7 +108,7 @@ let problems = [];
 let contests = [];
 let scoreboards = [];
 
-const accountCount = 100;
+const accountCount = 10;
 const contestCount = 1;
 const problemCount = 10;
 

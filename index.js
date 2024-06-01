@@ -27,12 +27,12 @@ app.set('views', './views');
 
 app.use((req, res, next) => {
   const time = timeManager.timestamp();
-  const ip = req.ip;
+  const ip = req.header['x-forwarded-for'] || req.connection.remoteAddress;
   const method = req.method;
   const path = req.path;
   
   if(method == 'GET'){
-    console.log(`[${time}] ${ip} ${method} ${path}`);
+    console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.query)}`);
   }else{
     console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.body)}`);
   }
