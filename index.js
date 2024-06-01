@@ -13,6 +13,8 @@ const adminRouter = require('./router/admin');
 
 const { APIResponse } = require('./modules/response');
 
+app.set('trust proxy', true);
+
 app.use(cors({
   origin: true,
   credentials: true
@@ -26,16 +28,22 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use((req, res, next) => {
+  
   const time = timeManager.timestamp();
-  const ip = req.header['x-forwarded-for'] || req.connection.remoteAddress;
+  const protocol = req.protocol;
+  const ip = req.ip;
   const method = req.method;
   const path = req.path;
-  
-  if(method == 'GET'){
-    console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.query)}`);
+  const query = req.query;
+  const body = req.body;
+  const session = req.session;
+
+  if (method == 'GET') {
+    console.log(`[${time}] ${protocol} ${ip} ${method} ${path} ${JSON.stringify(query)} ${JSON.stringify(session)}`);
   }else{
-    console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.body)}`);
+    console.log(`[${time}] ${protocol} ${ip} ${method} ${path} ${JSON.stringify(body)} ${JSON.stringify(session)}`);
   }
+
   next();
 });
 
