@@ -63,91 +63,37 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/problems', async (req, res) => {
-    const contestResult = await contestManager.findContests({});
-    if(contestResult instanceof APIError){
-        res.status(200).json(contestResult);
-        return;
-    }
+    problemManager.findProblems({})
+        .then(result => {
+            if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
-    const contests = contestResult.data;
-    const contest = contests[0];
-
-    const problemResult = await problemManager.findProblems({contest : contest._id});
-    if(problemResult instanceof APIError){
-        res.status(200).json(problemResult);
-        return;
-    }
-
-    const problems = problemResult.data;
-
-    console.log(contest, problems);
-    res.json({contest: contest, problems: problems})
-
-    // res.render('problems', {contest: contest, problems: problems});
+            const problems = result.data;
+            res.render('problems', {problems: problems});
+        });
 });
 
 router.get('/users', async(req, res) => {
-    const users = [
-        {
-            name: "dongha",
-            depart: "컴퓨터소프트웨어학부",
-            rank: 1,
-            score: 32
-        },
-        {
-            name: "서윤호",
-            depart: "컴퓨터소프트웨어학부",
-            rank: 2,
-            score: 27
-        }
-    ]
-    res.render('users', {users: users});
+    profileManager.findProfiles({})
+        .then(result => {
+            if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+            const users = result.data;
+            res.render('users', {users: users});
+        });
 })
 
 router.get('/contests', async(req, res) => {
-    const contests = [
-        {
-            name: "contest1",
-            people: 37,
-            date: "2024-05-25"
-        },
-        {
-            name: "contest2",
-            people: 32,
-            date: "2024-05-26"
-        }
-    ];
+    contestManager.findContests({})
+        .then(result => {
+            if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
-    res.render('contests', {contests: contests});
+            const contests = result.data;
+            res.render('contests', {contests: contests});
+        });
 })
 
 router.get('/upload/problem', async (req, res) => {
     res.render('upload_problem');
-})
-
-router.get('/upload/contest', async (req, res) => {
-    const problems = [
-        {
-            id: "123",
-            domain: "pwn",
-            name: "test1",
-            difficult: "1"
-        },
-        {
-            id: "1234",
-            domain: "web",
-            name: "test2",
-            difficult: "2"
-        },
-        {
-            id: "12345",
-            domain: "forensic",
-            name: "test3",
-            difficult: "3"
-        },
-    ]
-
-    res.render('upload_contest', {problems: problems});
 });
 
 router.post('/upload/problem', upload.single('source'), async (req, res) => {
@@ -156,12 +102,12 @@ router.post('/upload/problem', upload.single('source'), async (req, res) => {
     problemManager.createProblem({
         name: name,
         description: description,
-        source: req.file.filename,
+        file: req.file.filename,
         flag: flag,
         url: url,
         port: port,
         score: score,
-        category: domain
+        domain: domain,
     })
     .then(response => {
         if(response instanceof APIError) console.log(`file upload error: ${response.message}`);
@@ -175,5 +121,55 @@ router.post('/upload/problem', upload.single('source'), async (req, res) => {
     })
 });
 
+router.get('/upload/contest', async (req, res) => {
+    problemManager.findProblems({})
+        .then(result => {
+            if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+            const problems = result.data;
+            res.render('upload_contest', {problems: problems});
+        })
+});
+
+router.post('/upload/contest', async (req, res) => {
+    const {name, selection, description} = req.body;
+    const problems_name = [];
+
+    if(Array.isArray(selection)){
+        selection.forEach(async id => {
+            const key = {_id: id};
+            problemManager.findProblems(key)
+                .then(async result => {
+                    if(result instanceof APIError){
+                        return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+                    }
+
+                    let new_doc = result.data[0];
+                    problems_name.push(new_doc.name);
+
+                    new_doc.contest = name;
+                    await problemManager.updateProblem(new_doc);
+                })
+
+        });
+
+        const contest = {
+            name: name,
+            description: description,
+            problems: problems_name,
+            begin_at: "default",
+            end_at: "default",
+        };
+
+        contestManager.createContest(contest)
+            .then(result => {
+                if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+                return res.redirect('/admin/contests');
+            })
+    }else{
+        return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+    }
+})
 
 module.exports = router;

@@ -51,6 +51,7 @@ class APIError {
   - code 310 : Failed to find problems
   - code 320 : Failed to delete problem
   - code 330 : Failed to update problem
+  - code 340 : Failed to get problem list
 
   code 4xx : profile manager error
   - code 400 : Failed to create profile

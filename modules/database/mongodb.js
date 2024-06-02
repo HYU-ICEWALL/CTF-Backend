@@ -29,6 +29,18 @@ class Mongoose extends Database {
     });
   }
   
+  // async getList(){
+  //   try{
+  //     const [model] = arguments;
+  //     const result = await this.model[model].find({}).toArray();
+
+  //     return new APIResponse(0, result);
+  //   }catch(err){
+  //     console.error(err);
+  //     return new APIError(340, "Failed to get problem list");
+  //   }
+  // }
+
   async insertData() {
     try{
       const [model, value] = arguments;

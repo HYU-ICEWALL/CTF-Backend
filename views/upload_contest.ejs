@@ -45,8 +45,8 @@
                     </thead>
         
                     <% problems.forEach((problem, idx) => { %>
-                        <tr onclick="toggle_checkbox(<%= problem.id %>)">
-                            <td><input type="checkbox" name="select" value="<%= problem.id %>" autocomplete="off" id="<%= problem.id %>"></td>
+                        <tr onclick="toggle_checkbox('<%= problem._id %>')">
+                            <td><input type="checkbox" name="selection" value="<%= problem._id %>" autocomplete="off" id="<%= problem._id %>"></td>
                             <td><%= problem.domain %></td>
                             <td><%= problem.name %></td>
                             <td><%= problem.difficult %></td>
@@ -60,6 +60,12 @@
                 <div class="input-group mb-5">
                     <span class="input-group-text" id="basic-addon1">Contest Name</span>
                     <input type="text" class="form-control" aria-describedby="basic-addon1" name="name" required>
+                </div>
+
+                <div class="form-floating mt-3 mb-3">
+                    <textarea class="form-control" id="floatingTextarea" placeholder="Input problem description here"
+                    name="description" style="min-height: 20vh;" required></textarea>
+                    <label for="floatingTextarea">Contest Description</label>
                 </div>
 
                 <div class="mt-3 mb-3 d-flex justify-content-end align-items-center">
