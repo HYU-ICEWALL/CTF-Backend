@@ -165,7 +165,13 @@ router.post('/upload/problem', upload.single('source'), async (req, res) => {
     })
     .then(response => {
         if(response instanceof APIError) console.log(`file upload error: ${response.message}`);
-        return res.redirect('/admin/problems');
+
+        res.redirect('/admin/problems');
+    }).catch(err => {
+        console.log(`file upload error: ${err}`);
+
+        error_res = "<script>alert('problem upload error'); history.go(-1);</script>"
+        res.send(error_res);
     })
 });
 
