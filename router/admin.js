@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { accountManager, profileManager, scoreboardManager, contestManager, problemManager } = require('../instances');
 const { APIError } = require('../modules/response');
-const ADMIN_CHK = process.env.ADMIN_CHK;
+const { ADMIN_CHK, ADMIN_ID, ADMIN_PASSWORD } = process.env;
 
 const { sessionManager } = require('../instances');
 
@@ -38,19 +38,18 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
     storage: storage,
-    // fileFilter: fileFilter
+    fileFilter: fileFilter
 });
 ///// defining upload finished /////
 
 ///// middleware : check if request is admin /////
 const chkAdmin = async (req, res, next) => {
+    console.log(req.session);
     const session = await sessionManager.checkValidSession(req);
     if(session instanceof APIError){
-        return res.status(200).json(session);
-    }
-
-    if(req.session.data !== ADMIN_CHK){
-        return res.status(400).json({msg: "invalid admin checking"});
+        return res.render('login');
+    }else if(req.session.data.chk !== ADMIN_CHK){
+        return res.render('login');
     }
 
     next();
@@ -58,11 +57,39 @@ const chkAdmin = async (req, res, next) => {
 
 
 /// routings ///
-router.get('/', async (req, res) => {
+router.get('/', chkAdmin, async (req, res) => {
     res.render('index');
 });
+router.get('/login', async (req, res) => {
+    return res.render('login');
+})
 
-router.get('/problems', async (req, res) => {
+router.post('/login', async (req, res) => {
+    const {id, passwd} = req.body;
+    console.log(ADMIN_ID);
+    if(id === ADMIN_ID && passwd === ADMIN_PASSWORD){
+        const token = sessionManager.createSessionToken();
+        req.session.data = {
+            id: ADMIN_ID,
+            token: token,
+            chk: ADMIN_CHK
+        };
+
+        console.log(req.session);
+        req.session.save(err => {
+            if(err !== undefined){
+                console.log(`Error: login error ${err}`);
+            }
+
+            return res.redirect('/admin');
+        });
+
+    }else{
+        return res.redirect('/login');
+    }
+})
+
+router.get('/problems', chkAdmin, async (req, res) => {
     problemManager.findProblems({})
         .then(result => {
             if (result instanceof APIError) return res.send(`Error: ${result.data}`);
@@ -72,7 +99,7 @@ router.get('/problems', async (req, res) => {
         });
 });
 
-router.get('/users', async(req, res) => {
+router.get('/users', chkAdmin, async(req, res) => {
     profileManager.findProfiles({})
         .then(result => {
             if(result instanceof APIError) return res.send(`Error: ${result.data}`);
@@ -82,7 +109,7 @@ router.get('/users', async(req, res) => {
         });
 })
 
-router.get('/contests', async(req, res) => {
+router.get('/contests', chkAdmin, async(req, res) => {
     contestManager.findContests({})
         .then(result => {
             if (result instanceof APIError) return res.send(`Error: ${result.data}`);
@@ -92,11 +119,11 @@ router.get('/contests', async(req, res) => {
         });
 })
 
-router.get('/upload/problem', async (req, res) => {
+router.get('/upload/problem', chkAdmin, async (req, res) => {
     res.render('upload_problem');
 });
 
-router.post('/upload/problem', upload.single('source'), async (req, res) => {
+router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, res) => {
     const {domain, name, flag, score, difficulty, url, port, description } = req.body;
     
     problemManager.createProblem({
@@ -121,7 +148,7 @@ router.post('/upload/problem', upload.single('source'), async (req, res) => {
     })
 });
 
-router.get('/upload/contest', async (req, res) => {
+router.get('/upload/contest', chkAdmin, async (req, res) => {
     problemManager.findProblems({})
         .then(result => {
             if(result instanceof APIError) return res.send(`Error: ${result.data}`);
@@ -131,7 +158,7 @@ router.get('/upload/contest', async (req, res) => {
         })
 });
 
-router.post('/upload/contest', async (req, res) => {
+router.post('/upload/contest', chkAdmin, async (req, res) => {
     const {name, selection, description} = req.body;
     const problems_name = [];
 
