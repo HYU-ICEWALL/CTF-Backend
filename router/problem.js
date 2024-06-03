@@ -135,4 +135,13 @@ router.post('/submit', async (req, res) => {
   }
 });
 
+router.get('/file/:filename', async (req, res) => {
+  const filename = `/workspace/problems/${req.params.filename}`;
+  res.sendFile(filename, (err => {
+    console.log(`Error at send flie: ${err}`);
+
+    return res.send("<script>alert('file send error'); history.go(-1);</script>");
+  }))
+})
+
 module.exports = router;

@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { accountManager, profileManager, scoreboardManager, contestManager, problemManager } = require('../instances');
 const { APIError } = require('../modules/response');
-const ADMIN_CHK = process.env.ADMIN_CHK;
+const { ADMIN_CHK, ADMIN_ID, ADMIN_PASSWORD } = process.env;
 
 const { sessionManager } = require('../instances');
 
@@ -38,19 +38,18 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
     storage: storage,
-    // fileFilter: fileFilter
+    fileFilter: fileFilter
 });
 ///// defining upload finished /////
 
 ///// middleware : check if request is admin /////
 const chkAdmin = async (req, res, next) => {
+    console.log(req.session);
     const session = await sessionManager.checkValidSession(req);
     if(session instanceof APIError){
-        return res.status(200).json(session);
-    }
-
-    if(req.session.data !== ADMIN_CHK){
-        return res.status(400).json({msg: "invalid admin checking"});
+        return res.render('login');
+    }else if(req.session.data.chk !== ADMIN_CHK){
+        return res.render('login');
     }
 
     next();
@@ -58,114 +57,146 @@ const chkAdmin = async (req, res, next) => {
 
 
 /// routings ///
-router.get('/', async (req, res) => {
+router.get('/', chkAdmin, async (req, res) => {
     res.render('index');
 });
+router.get('/login', async (req, res) => {
+    return res.render('login');
+})
 
-router.get('/problems', async (req, res) => {
-    const contestResult = await contestManager.findContests({});
-    if(contestResult instanceof APIError){
-        res.status(200).json(contestResult);
-        return;
+router.post('/login', async (req, res) => {
+    const {id, passwd} = req.body;
+    console.log(ADMIN_ID);
+    if(id === ADMIN_ID && passwd === ADMIN_PASSWORD){
+        const token = sessionManager.createSessionToken();
+        req.session.data = {
+            id: ADMIN_ID,
+            token: token,
+            chk: ADMIN_CHK
+        };
+
+        console.log(req.session);
+        req.session.save(err => {
+            if(err !== undefined){
+                console.log(`Error: login error ${err}`);
+            }
+
+            return res.redirect('/admin');
+        });
+
+    }else{
+        return res.redirect('/login');
     }
+})
 
-    const contests = contestResult.data;
-    const contest = contests[0];
+router.get('/problems', chkAdmin, async (req, res) => {
+    problemManager.findProblems({})
+        .then(result => {
+            if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
-    const problemResult = await problemManager.findProblems({contest : contest._id});
-    if(problemResult instanceof APIError){
-        res.status(200).json(problemResult);
-        return;
-    }
-
-    const problems = problemResult.data;
-
-    res.render('problems', {contest: contest, problems: problems});
+            const problems = result.data;
+            res.render('problems', {problems: problems});
+        });
 });
 
-router.get('/users', async(req, res) => {
-    
-    const users = [
-        {
-            name: "dongha",
-            depart: "컴퓨터소프트웨어학부",
-            rank: 1,
-            score: 32
-        },
-        {
-            name: "서윤호",
-            depart: "컴퓨터소프트웨어학부",
-            rank: 2,
-            score: 27
-        }
-    ]
-    res.render('users', {users: users});
+router.get('/users', chkAdmin, async(req, res) => {
+    profileManager.findProfiles({})
+        .then(result => {
+            if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+            const users = result.data;
+            res.render('users', {users: users});
+        });
 })
 
-router.get('/contests', async(req, res) => {
-    const contests = [
-        {
-            name: "contest1",
-            people: 37,
-            date: "2024-05-25"
-        },
-        {
-            name: "contest2",
-            people: 32,
-            date: "2024-05-26"
-        }
-    ];
+router.get('/contests', chkAdmin, async(req, res) => {
+    contestManager.findContests({})
+        .then(result => {
+            if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
-    res.render('contests', {contests: contests});
+            const contests = result.data;
+            res.render('contests', {contests: contests});
+        });
 })
 
-router.get('/upload/problem', async (req, res) => {
+router.get('/upload/problem', chkAdmin, async (req, res) => {
     res.render('upload_problem');
-})
-
-router.get('/upload/contest', async (req, res) => {
-    const problems = [
-        {
-            id: "123",
-            domain: "pwn",
-            name: "test1",
-            difficult: "1"
-        },
-        {
-            id: "1234",
-            domain: "web",
-            name: "test2",
-            difficult: "2"
-        },
-        {
-            id: "12345",
-            domain: "forensic",
-            name: "test3",
-            difficult: "3"
-        },
-    ]
-
-    res.render('upload_contest', {problems: problems});
 });
 
-router.post('/upload/problem', upload.single('source'), async (req, res) => {
+router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, res) => {
     const {domain, name, flag, score, difficulty, url, port, description } = req.body;
     
     problemManager.createProblem({
         name: name,
         description: description,
-        source: req.file.filename,
+        file: req.file.filename,
         flag: flag,
         url: url,
         port: port,
         score: score,
-        category: domain
+        domain: domain,
     })
     .then(response => {
         if(response instanceof APIError) console.log(`file upload error: ${response.message}`);
-        return res.redirect('/admin/problems');
+
+        res.redirect('/admin/problems');
+    }).catch(err => {
+        console.log(`file upload error: ${err}`);
+
+        error_res = "<script>alert('problem upload error'); history.go(-1);</script>"
+        res.send(error_res);
     })
 });
 
+router.get('/upload/contest', chkAdmin, async (req, res) => {
+    problemManager.findProblems({})
+        .then(result => {
+            if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+            const problems = result.data;
+            res.render('upload_contest', {problems: problems});
+        })
+});
+
+router.post('/upload/contest', chkAdmin, async (req, res) => {
+    const {name, selection, description} = req.body;
+    const problems_name = [];
+
+    if(Array.isArray(selection)){
+        selection.forEach(async id => {
+            const key = {_id: id};
+            problemManager.findProblems(key)
+                .then(async result => {
+                    if(result instanceof APIError){
+                        return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+                    }
+
+                    let new_doc = result.data[0];
+                    problems_name.push(new_doc.name);
+
+                    new_doc.contest = name;
+                    await problemManager.updateProblem(new_doc);
+                })
+
+        });
+
+        const contest = {
+            name: name,
+            description: description,
+            problems: problems_name,
+            begin_at: "default",
+            end_at: "default",
+        };
+
+        contestManager.createContest(contest)
+            .then(result => {
+                if(result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+                return res.redirect('/admin/contests');
+            })
+    }else{
+        return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+    }
+})
 
 module.exports = router;

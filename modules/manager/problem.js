@@ -34,6 +34,18 @@ class ProblemManager {
     }
   }
 
+  // async getProblems(){
+  //   try{
+  //     const result = await this.database.getList(this.modelName);
+
+  //     if(result instanceof APIError) return result;
+
+  //   }catch(err){
+  //     console.error(err);
+  //     return new APIError(340, 'Failed to get problem list');
+  //   }
+  // }
+
   async findProblems(key, flag=true){
     try {
       const result = await this.database.findData(this.modelName, key);
@@ -68,10 +80,10 @@ class ProblemManager {
     }
   }
 
-  async updateProblem({name: name, desc: desc, src: src, flag: flag, url: url, port: port, score: score, category: category, contest: contest}){
+  async updateProblem({name: name, description: description, src: src, flag: flag, url: url, port: port, score: score, category: category, contest: contest}){
     try {
       const change = {}
-      if(desc) change.description = desc;
+      if(desc) change.description = description;
       if(src) change.source = src;
       if(flag) change.flag = flag;
       if(url) change.url = url;

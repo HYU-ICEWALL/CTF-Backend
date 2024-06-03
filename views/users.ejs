@@ -31,18 +31,28 @@
 
             <tbody>
             <thead class="table-primary">
-                <td><b>Rank</b></td>
+                <td><b>조직</b></td>
                 <td><b>이름</b></td>
                 <td><b>학과</b></td>
-                <td><b>점수</b></td>
+                <td><b>푼 문제</b></td>
             </thead>
 
             <% users.forEach(user => { %>
                 <tr>
-                    <td><%= user.rank %></td>
+                    <td><%= user.organization %></td>
                     <td><%= user.name %></td>
-                    <td><%= user.depart %></td>
-                    <td><%= user.score %></td>
+                    <td><%= user.department %></td>
+                    <td>
+                        <% for (let i = 0; i < Math.min(user.solved.length, 5); i++) { %>
+                            <%= user.solved[i] %>
+                            <% if (i < Math.min(user.solved.length, 5) - 1) { %>
+                                ,
+                            <% } %>
+                        <% } %>
+                        <% if (user.solved.length > 5) { %>
+                            외 <%= user.solved.length - 5 %>개
+                        <% } %>
+                    </td>
                 </tr>
             <% }); %>
             </tbody>
