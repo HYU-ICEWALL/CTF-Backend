@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { sessionManager, run } = require('./instances');
+const { accountManager, profileManager, sessionManager, timeManager, run } = require('./instances');
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -13,6 +13,8 @@ const adminRouter = require('./router/admin');
 
 const { APIResponse } = require('./modules/response');
 
+app.set('trust proxy', true);
+
 app.use(cors({
   origin: true,
   credentials: true
@@ -25,17 +27,20 @@ app.use(sessionManager.session);
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
-app.use((req, res, next) => {
-  const time = new Date().toLocaleString();
-  const ip = req.ip;
+app.use((req, res, next) => {  
+  const time = timeManager.timestamp();
+  const protocol = req.protocol;
   const method = req.method;
   const path = req.path;
-  
-  if(method == 'GET'){
-    console.log(`[${time}] ${ip} ${method} ${path}`);
+  const query = req.query;
+  const body = req.body;
+
+  if (method == 'GET') {
+    console.log(`[${time}] ${protocol} ${method} ${path} ${JSON.stringify(query)}`);
   }else{
-    console.log(`[${time}] ${ip} ${method} ${path} ${JSON.stringify(req.body)}`);
+    console.log(`[${time}] ${protocol} ${method} ${path} ${JSON.stringify(body)}`);
   }
+
   next();
 });
 
@@ -50,12 +55,11 @@ app.use((req, res) => {
   res.status(404).json(new APIResponse(-1, 'Page Not Found'));
 });
 
-app.listen(port, async () => {
+app.listen(port, '0.0.0.0', async () => {
   console.log(`Auth Server listening on port ${port}`);
   await run();
 
-  const { accountManager, profileManager } = require('./instances');
-  const accountResult = await accountManager.findAccountWithPassword({
+  const accountResult = await accountManager.findAccountByPassword({
     id: process.env.ADMIN_ID,
     password: process.env.ADMIN_PASSWORD
   });

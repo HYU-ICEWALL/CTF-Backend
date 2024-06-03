@@ -1,5 +1,5 @@
 const express = require('express');
-const { problemManager, scoreboardManager, contestManager, profileManager, sessionManager } = require('../instances');
+const { problemManager, scoreboardManager, contestManager, profileManager, sessionManager, timeManager } = require('../instances');
 const { APIResponse, APIError } = require('../modules/response');
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
     res.status(200).json(problemResult);
   } catch (error) {
     console.error(error);
-    res.status(200).json(new APIError(831, "Problem find failed"));
+    res.status(200).json(new APIError(300, "Problem find failed"));
   }
 });
 
@@ -39,7 +39,7 @@ router.post('/submit', async (req, res) => {
     // parameter check
     const { name, flag } = req.body;
     if (name == undefined || flag == undefined) {
-      res.status(200).json(new APIError(800, "Invalid parameters"));
+      res.status(200).json(new APIError(311, "Invalid parameters"));
       return;
     }
 
@@ -53,7 +53,7 @@ router.post('/submit', async (req, res) => {
 
     // check problem length 1
     if (problemResult.data.length != 1) {
-      res.status(200).json(new APIError(833, "Problem not found"));
+      res.status(200).json(new APIError(312, "Problem not found"));
       return;
     }
 
@@ -85,7 +85,7 @@ router.post('/submit', async (req, res) => {
 
     // check contest length 1
     if (contestResult.data.length != 1) {
-      res.status(200).json(new APIError(834, "Contest not found"));
+      res.status(200).json(new APIError(313, "Contest not found"));
       return;
     }
 
@@ -100,16 +100,7 @@ router.post('/submit', async (req, res) => {
 
     // check contest time
     // YYYY-MM-DD HH:MM:SS
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
-    const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-    const hour = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
-    const minute = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    const second = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-    const time = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
-
-
+    const time = timeManager.timestamp();
     const begin = contestResult.data[0].begin_at;
     const end = contestResult.data[0].end_at;
 
@@ -140,7 +131,7 @@ router.post('/submit', async (req, res) => {
     res.status(200).json(new APIResponse(0, { result: problemResult.data[0].flag == flag }));
   }catch(error){
     console.error(error);
-    res.status(200).json(new APIError(837, "Problem flag check failed"));
+    res.status(200).json(new APIError(310, "Problem flag check failed"));
   }
 });
 

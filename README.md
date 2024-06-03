@@ -61,12 +61,7 @@ const profileSchema = new Schema({
 
 /*
 solved : [
-  {
-    problem : problem id,
-    score : problem score,
-    account : account id,
-    time : time (YYYY-MM-DD HH:MM:SS)
-  }
+    // problem names
 ]
 */
 ```
@@ -84,10 +79,9 @@ const scoreboardSchema = new Schema({
 /*
 submission : [
   {
-    problem : problem _id,
+    problem : problem name,
     score : problem score,
-    account : account _id,
-    type : true / false,
+    account : account id,
     time : time (YYYY-MM-DD HH:MM:SS)
   }
 ]
@@ -102,6 +96,7 @@ submission : [
 #### POST `/api/account`
 - 계정 생성 후 프로필 생성을 한다.
 - 세션이 있으면 실패한다.
+- ID/Email 중복 확인을 한다.
 
 - Request Body
 ```json
@@ -476,3 +471,144 @@ Get the `profile` information of the `account`.
     ]
 }
 ```
+
+
+## Error Codes
+
+- `0` : Success
+
+### Database
+
+#### `Mongoose (mongodb.js)`
+- `1000` : MongoDB Insert Error
+- `1010` : MongoDB Find Error
+- `1020` : MongoDB Update Error
+- `1030` : MongoDB Delete Error
+
+### Manager
+
+#### `AccountManager (account.js)`
+- `2000` : Failed to create account
+- `2010` : Failed to find account
+- `2020` : Failed to find account by id
+- `2030` : Failed to find account by password
+    - `2031` : Account not found
+    - `2032` : Password incorrect
+- `2040` : Failed to delete account
+- `2050` : Failed to change password
+    - `2051` : Account not found
+    - `2052` : Password incorrect    
+
+#### `ContestManager (contest.js)`
+- `2100` : Failed to create contest
+- `2110` : Failed to find contest
+- `2120` : Failed to delete contest
+- `2130` : Failed to update contest
+- `2140` : Failed to update problems in contest
+- `2150` : Failed to update participants in contest
+
+#### `ProblemManager (problem.js)`
+- `2200` : Failed to create problem
+- `2210` : Failed to find problem
+- `2220` : Failed to delete problem
+- `2230` : Failed to update problem
+
+#### `ProfileManager (profile.js)`
+- `2300` : Failed to create profile
+- `2310` : Failed to find profile
+- `2320` : Failed to delete profile
+- `2330` : Failed to update profile
+- `2340` : Failed to update solved in profile
+
+#### `ScoreboardManager (scoreboard.js)`
+- `2400` : Failed to create scoreboard
+- `2410` : Failed to find scoreboard
+- `2420` : Failed to delete scoreboard
+- `2430` : Failed to update scoreboard
+- `2440` : Failed to update submissions in scoreboard
+- `2450` : Failed to find processed scoreboard
+    - `2451` : Scoreboard not found
+- `2460` : Failed to process submissions in scoreboard
+
+#### `SessionManager (session.js)`
+- `2500` : Session check failed
+- `2501` : Session not found
+- `2502` : Session data not found
+
+### Router
+
+#### `/api/account`
+
+- POST `/api/account`
+    - `100` : Account registration failed
+    - `101` : Session already exists
+    - `102` : Invalid parameters
+    - `103` : ID already exists
+    - `104` : Email already exists
+
+
+- POST `/api/account/login`
+    - `110` : Account login failed
+    - `111` : Invalid parameters
+    - `112` : Session save failed
+
+- GET `/api/account/auth`
+    - `120` : Session check failed
+
+- GET `/api/account/logout`
+    - `130` : Account logout failed
+    - `131` : Session destroy failed
+
+- GET `/api/account/refresh`
+    - `140` : Account refresh failed
+    - `141` : Session refresh failed
+
+- DELETE `/api/account`
+    - `150` : Account deletion failed
+    - `151` : Invalid parameters
+    - `152` : Not allowed
+    - `153` : Session destroy failed
+
+- PUT `/api/account`
+    - `160` : Account password change failed
+    - `161` : Invalid parameters
+    - `162` : Password incorrect
+    - `163` : Session destroy failed
+
+#### `/api/contest`
+- GET `/api/contest/recent`
+    - `200` : Contest find failed
+
+- GET `/api/contest`
+    - `210` : Contest find failed
+    - `211` : Contest not found
+    - `212` : Not in contest participants
+
+- GET `/api/contest/scoreboard`
+    - `220` : Contest find failed
+    - `221` : Invalid parameters
+    - `222` : Contest not found
+    - `223` : Not in contest participants
+    
+#### `/api/problem`
+- GET `/api/problem`
+    - `300` : Problem find failed
+
+- POST `/api/problem/submit`
+    - `310` : Problem flag check failed
+    - `311` : Invalid parameters
+    - `312` : Problem not found
+    - `313` : Contest not found
+
+#### `/api/profile`
+- GET `/api/profile`
+    - `400` : Profile find failed
+
+- PUT `/api/profile`
+    - `410` : Profile update failed
+    - `411` : Invalid parameters
+
+- GET `/api/profile/solved`
+    - `420` : Profile solved find failed
+    - `421` : Invalid parameters
+    - `422` : Profile not found

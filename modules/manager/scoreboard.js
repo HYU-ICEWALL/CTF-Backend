@@ -25,7 +25,7 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(500, 'Failed to create scoreboard : ' + contest);
+      return new APIError(2400, 'Failed to create scoreboard : ' + contest);
     }
   }
 
@@ -35,7 +35,7 @@ class ScoreboardManager {
       return result;
     } catch (error) {
       console.error(error);
-      return new APIError(510, 'Failed to find scoreboard : ' + key);
+      return new APIError(2410, 'Failed to find scoreboard : ' + key);
     }
   }
 
@@ -49,7 +49,7 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(520, 'Failed to delete scoreboard : ' + key);
+      return new APIError(2420, 'Failed to delete scoreboard : ' + key);
     }
   }
 
@@ -68,7 +68,7 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(530, 'Failed to update scoreboard : ' + contest);
+      return new APIError(2430, 'Failed to update scoreboard : ' + contest);
     }
   }
 
@@ -93,7 +93,6 @@ class ScoreboardManager {
 
       scoreboard.submissions.push(submission);
 
-
       const result = await this.database.updateData(this.modelName, { contest: contest }, { $push: { submissions: submission } });
       if (result instanceof APIError) {
         return result;
@@ -102,49 +101,80 @@ class ScoreboardManager {
       return new APIResponse(0, {});
     } catch (error) {
       console.error(error);
-      return new APIError(540, 'Failed to add submission : ' + submission);
+      return new APIError(2440, 'Failed to update submissions in scoreboard : ' + submission);
     }
   }
 
   async findProcessedScoreboard({contest: contest}){
-    const result = await this.findScoreboards({contest: contest});
-    if (result.data.length === 0) {
-      return new APIError(511, 'Scoreboard not found : ' + key);
-    } else if (result.data.length > 1) {
-      return new APIError(512, 'Scoreboard is duplicated : ' + key);
-    }    
-    const processed = this.processSubmissions(result.data[0].submissions);
-    result.data[0].submissions = processed;
-    result.data = result.data[0];
-    return result;
+    try{
+      const result = await this.findScoreboards({contest: contest});
+      if (result instanceof APIError) {
+        return result;
+      }
+      if (result.data.length != 1) {
+        return new APIError(2451, 'Scoreboard not found : ' + key);
+      }
+      const processed = this.processSubmissions(result.data[0].submissions);
+      result.data[0].submissions = processed;
+      result.data = result.data[0];
+      return result;
+    }catch(error){
+      console.error(error);
+      return new APIError(2450, 'Failed to find processed scoreboard : ' + key);
+    }
   }
 
   processSubmissions(submissions){
-    const processedObj = {};
-    for (let i = 0; i < submissions.length; i++) {
-      if(submissions[i].type == 0) continue;
-      const accountId = submissions[i].account;
-      if (processedObj[accountId] == undefined) {
-        processedObj[accountId] = {
-          account: accountId,
-          total: 0,
-          timestamps: []
-        };
+    try{
+      const processedObj = {};
+      for (let i = 0; i < submissions.length; i++) {
+        if(submissions[i].type == 0) continue;
+        const accountId = submissions[i].account;
+        if (processedObj[accountId] == undefined) {
+          processedObj[accountId] = {
+            account: accountId,
+            total: 0,
+            timestamps: []
+          };
+        }
+        processedObj[accountId].total += submissions[i].score;
+        processedObj[accountId].timestamps.push({
+          problem: submissions[i].problem,
+          time: submissions[i].time,
+          score: processedObj[accountId].total,
+        });
       }
-      processedObj[accountId].total += submissions[i].score;
-      processedObj[accountId].timestamps.push({
-        problem: submissions[i].problem,
-        time: submissions[i].time,
-        score: processedObj[accountId].total,
-      });
-    }
-    
-    const processed = [];
-    for (const key in processedObj) {
-      processed.push(processedObj[key]);
-    }
+      
+      const processed = [];
+      for (const key in processedObj) {
+        processed.push(processedObj[key]);
+      }
+  
+      return processed;
 
-    return processed;
+      // let timestamps = [];
+      // const processedObj = {};
+      // for (let i = 0; i < submissions.length; i++) {
+      //   if(submissions[i].type == 0) continue;
+      //   timestamps.push(submissions[i].time);
+      //   const accountId = submissions[i].account;
+      //   if (processedObj[accountId] == undefined) {
+      //     processedObj[accountId] = {
+      //       account: accountId,
+      //       total: 0,
+      //       timestamps: []
+      //     };
+      //   }
+      // }
+      // timestamps = new Set(timestamps);
+      // timestamps = Array.from(timestamps);
+      // timestamps.sort((a, b) => a - b);
+
+
+    }catch(err){
+      console.error(err);
+      return new APIError(2460, 'Failed to process submissions');
+    }
   }
 }
 
