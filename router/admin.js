@@ -46,11 +46,14 @@ const upload = multer({
 const chkAdmin = async (req, res, next) => {
     console.log(req.session);
     const session = await sessionManager.checkValidSession(req);
+    const data = JSON.parse(req.session.data);
+
     if(session instanceof APIError){
         return res.render('login');
-    }else if(req.session.data.chk !== ADMIN_CHK){
-        return res.render('login');
     }
+    // else if(data.chk !== ADMIN_CHK){
+    //     return res.render('login');
+    // }
 
     next();
 };
@@ -67,26 +70,55 @@ router.get('/login', async (req, res) => {
 router.post('/login', async (req, res) => {
     const {id, passwd} = req.body;
     console.log(ADMIN_ID);
-    if(id === ADMIN_ID && passwd === ADMIN_PASSWORD){
-        const token = sessionManager.createSessionToken();
-        req.session.data = {
-            id: ADMIN_ID,
-            token: token,
-            chk: ADMIN_CHK
-        };
 
-        console.log(req.session);
-        req.session.save(err => {
-            if(err !== undefined){
-                console.log(`Error: login error ${err}`);
-            }
-
-            return res.redirect('/admin');
-        });
-
-    }else{
+    const accountResult = await accountManager.findAccountByPassword({
+        id: id,
+        password: passwd
+    });
+    
+    if(accountResult instanceof APIError){
         return res.redirect('/login');
     }
+
+    if(accountResult.data.authority !== 1){
+        return res.redirect('/login');
+    }
+
+    const token = sessionManager.createSessionToken();
+    req.session.data = JSON.stringify({
+        id: id,
+        token: token,
+        // chk: ADMIN_CHK
+    });
+
+    req.session.save(err => {
+        if(err !== undefined){
+            console.log(`Error: login error ${err}`);
+            return res.redirect('/login');
+        }
+        return res.redirect('/admin');
+    });
+
+    // if(id === ADMIN_ID && passwd === ADMIN_PASSWORD){
+    //     const token = sessionManager.createSessionToken();
+    //     req.session.data = {
+    //         id: ADMIN_ID,
+    //         token: token,
+    //         chk: ADMIN_CHK
+    //     };
+
+    //     console.log(req.session);
+    //     req.session.save(err => {
+    //         if(err !== undefined){
+    //             console.log(`Error: login error ${err}`);
+    //         }
+
+    //         return res.redirect('/admin');
+    //     });
+
+    // }else{
+    //     return res.redirect('/login');
+    // }
 })
 
 router.get('/problems', chkAdmin, async (req, res) => {
