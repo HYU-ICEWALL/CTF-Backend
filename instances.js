@@ -36,7 +36,7 @@ const sessionManager = new SessionManager(redisSessionDB, {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    domain: ".icewall.org"
+    domain: (process.env.MODE == "dev") ? undefined : ".icewall.org"
   }
 });
 
