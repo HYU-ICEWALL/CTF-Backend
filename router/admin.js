@@ -46,7 +46,7 @@ const upload = multer({
 const chkAdmin = async (req, res, next) => {
     console.log(req.session);
     const session = await sessionManager.checkValidSession(req);
-    const data = JSON.parse(req.session.data);
+    // const data = JSON.parse(req.session.data);
 
     if(session instanceof APIError){
         return res.render('login');
@@ -77,12 +77,14 @@ router.post('/login', async (req, res) => {
     });
     
     if(accountResult instanceof APIError){
-        return res.redirect('/login');
+        return res.redirect('/admin/login');
     }
 
     if(accountResult.data.authority !== 1){
-        return res.redirect('/login');
+        return res.redirect('/admin/login');
     }
+
+    console.log(accountResult.data);
 
     const token = sessionManager.createSessionToken();
     req.session.data = JSON.stringify({
@@ -94,7 +96,7 @@ router.post('/login', async (req, res) => {
     req.session.save(err => {
         if(err !== undefined){
             console.log(`Error: login error ${err}`);
-            return res.redirect('/login');
+            return res.redirect('/redirect/login');
         }
         return res.redirect('/admin');
     });
