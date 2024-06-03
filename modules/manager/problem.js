@@ -46,8 +46,10 @@ class ProblemManager {
   //   }
   // }
 
-  async findProblems(key, flag=true){
+  async findProblems(key, flag=true, contest=false){
     try {
+      if(contest) key.contest = { $exists: true };
+
       const result = await this.database.findData(this.modelName, key);
 
       if(result instanceof APIError){
