@@ -54,8 +54,8 @@ const chkAdmin = async (req, res, next) => {
 
   const data = JSON.parse(req.session.data);
   console.log(data);
-  if(data.chk == undefined || data.chk != ADMIN_CHK){
-      return res.render('login');
+  if (data.chk == undefined || data.chk != ADMIN_CHK) {
+    return res.render('login');
   }
 
   next();
@@ -91,9 +91,9 @@ router.post('/login', async (req, res) => {
 
   const token = sessionManager.createSessionToken();
   req.session.data = JSON.stringify({
-    id: id,
-    token: token,
-    chk: ADMIN_CHK
+    // id: id,
+    // token: token,
+    // chk: ADMIN_CHK
   });
 
   req.session.save(err => {
@@ -186,7 +186,7 @@ router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, re
 });
 
 router.get('/upload/contest', chkAdmin, async (req, res) => {
-  problemManager.findProblems({ contest : { $exists: false }})
+  problemManager.findProblems({ contest: { $exists: false } })
     .then(result => {
       if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
