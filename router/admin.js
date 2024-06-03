@@ -91,9 +91,9 @@ router.post('/login', async (req, res) => {
 
   const token = sessionManager.createSessionToken();
   req.session.data = JSON.stringify({
-    // id: id,
-    // token: token,
-    // chk: ADMIN_CHK
+    id: id,
+    token: token,
+    chk: ADMIN_CHK
   });
 
   req.session.save(err => {
