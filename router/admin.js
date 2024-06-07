@@ -16,7 +16,7 @@ const path = require('path');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log(file);
-    cb(null, '/workspace/problems/');
+    cb(null, '/problems/');
   },
   filename: (req, file, cb) => {
     const filename = md5(Date.now());

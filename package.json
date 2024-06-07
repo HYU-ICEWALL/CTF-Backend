@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "pm2 start index.js --name=authServer --watch --ignore-watch=`db/*` && pm2 log",
+    "test": "pm2 start index.js --name=authServer --watch --ignore-watch=`problems/*` && pm2 log",
     "stop": "pm2 stop authServer",
     "start": "node index.js"
   },
