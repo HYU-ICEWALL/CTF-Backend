@@ -27,8 +27,8 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const filetypes = '/zip/';
-  const mimetype = filetypes.test(file.mimetype);
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.match(file.mimetype);
+  const extname = filetypes.match(path.extname(file.originalname).toLowerCase());
 
   if (mimetype && extname) {
     return cb(null, true);
