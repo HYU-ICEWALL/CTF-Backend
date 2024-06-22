@@ -16,7 +16,7 @@ const path = require('path');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     console.log(file);
-    cb(null, '/problems/');
+    cb(null, './problems/');
   },
   filename: (req, file, cb) => {
     const filename = md5(Date.now());
@@ -27,10 +27,14 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const filetypes = '/zip/';
-  const mimetype = filetypes.match(file.mimetype);
+  console.log(file);
+  // const mimetype = filetypes.match(file.mimetype);
+  const mimetype = file.originalname.split('.').pop();
   const extname = filetypes.match(path.extname(file.originalname).toLowerCase());
 
-  if (mimetype && extname) {
+  console.log(mimetype, extname);
+
+  if (mimetype == "zip" && extname) {
     return cb(null, true);
   } else {
     cb(new Error('ZIP 파일만 업로드할 수 있습니다.'));
@@ -45,8 +49,8 @@ const upload = multer({
 
 ///// middleware : check if request is admin /////
 const chkAdmin = async (req, res, next) => {
-  console.log(req.session);
   const session = await sessionManager.checkValidSession(req);
+  console.log(session);
 
   if (session instanceof APIError) {
     return res.render('login');
@@ -60,7 +64,6 @@ const chkAdmin = async (req, res, next) => {
 
   next();
 };
-
 
 /// routings ///
 router.get('/', chkAdmin, async (req, res) => {

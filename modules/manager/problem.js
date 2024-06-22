@@ -85,7 +85,7 @@ class ProblemManager {
   async updateProblem({name: name, description: description, src: src, flag: flag, url: url, port: port, score: score, category: category, contest: contest}){
     try {
       const change = {}
-      if(desc) change.description = description;
+      if(description) change.description = description;
       if(src) change.source = src;
       if(flag) change.flag = flag;
       if(url) change.url = url;
