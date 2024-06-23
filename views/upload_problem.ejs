@@ -23,6 +23,7 @@
             <h5 class="card-header">Upload New Problem</h5>
             <div class="card-body">
                 <form action="/admin/upload/problem" method="post" enctype="multipart/form-data" id="problem_form">
+                    <input type="hidden" name="p_id" value="">
                     <input type="hidden" name="src" value="">
                     <input type="hidden" name="contest" value="">
                     <input type="hidden" name="bef_file" value="">
@@ -95,6 +96,7 @@
 
                 frm['src'].value = problem.file;
                 frm['contest'].value = problem.contest;
+                frm['p_id'].value = problem._id;
 
                 switch(problem.domain){
                     case 'web':

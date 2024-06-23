@@ -61,17 +61,18 @@ class ContestManager{
     }
   }
 
-  async updateContest({name: name, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants, state: state}){
+  async updateContest({name: name, begin_at: begin_at, end_at: end_at, duration: duration, problems: problems, participants: participants, state: state, c_id: c_id}){
     try {
       const change = {}
+      if(name) change.name = name;
       if(begin_at) change.begin_at = begin_at;
       if(end_at) change.end_at = end_at;
-      if(duration) change.duration = duration;
+      // if(duration) change.duration = duration;
       if(problems) change.problems = problems;
       if(participants) change.participants = participants;
       if(state) change.state = state;
 
-      const result = await this.database.updateData(this.modelName, {name: name}, change);
+      const result = await this.database.updateData(this.modelName, {_id: c_id}, change);
       if(result instanceof APIError){
         return result;
       }
