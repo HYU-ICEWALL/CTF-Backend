@@ -29,10 +29,11 @@
 
         <table class="table table-hover text-center w-100 mt-4">
             <colgroup>
-                <col style="width: 10%;">
+                <col style="width: 5%;">
                 <col style="width: 20%;">
-                <col style="width: 40%;">
+                <col style="width: 35%;">
                 <col style="width: 30%;">
+                <col style="width: 10%;">
             </colgroup>
 
             <tbody>
@@ -41,6 +42,7 @@
                 <td><b>분야</b></td>
                 <td><b>이름</b></td>
                 <td><b>푼 사람</b></td>
+                <td><b>수정/삭제</b></td>
             </thead>
 
             <% problems.forEach((problem, idx) => { %>
@@ -49,6 +51,10 @@
                     <td><%= problem.domain %></td>
                     <td><%= problem.name %></td>
                     <td><%= problem.num %></td>
+                    <td class="d-flex justify-content-center align-items-center">
+                        <button type="button" class="btn btn-danger btn-sm me-1" onclick="deleteProblem('<%= problem._id %>')">삭제</button>
+                        <button type="button" class="btn btn-warning btn-sm ms-1" onclick="javascript:location.href='/admin/upload/problem?type=modify&id=<%= problem._id %>'">수정</button>
+                    </td>
                 </tr>
             <% }); %>
             </tbody>
@@ -79,6 +85,27 @@
             
             title.innerText = problem.name;
             body.innerText = problem.description;
+        }
+
+        async function deleteProblem(id){
+            try{
+                const response = await fetch(`/admin/problem/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if(response.ok){
+                    alert('removed problem');
+                    window.location.reload(true);
+                }
+                else{
+                    alert(response.body);
+                }
+            }catch (error){
+                alert(`error: ${error}`);
+            }
         }
     </script>
 </body>
