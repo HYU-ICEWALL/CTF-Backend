@@ -176,6 +176,36 @@ class ScoreboardManager {
       return new APIError(2460, 'Failed to process submissions');
     }
   }
+
+  async getRanking({contest: contest}){
+    try{
+      const scoreboardResult = await this.findProcessedScoreboard({contest: contest});
+      if (scoreboardResult instanceof APIError) {
+        return scoreboardResult;
+      }
+      const processed = scoreboardResult.data;
+      console.log(processed);
+      const ranking = processed.submissions.sort((a, b) => {
+        if (a.total == b.total) {
+          return a.timestamps[a.timestamps.length - 1].time - b.timestamps[b.timestamps.length - 1].time;
+        }
+        return b.total - a.total;
+      });
+
+      const result = ranking.map((account, index) => {
+        return {
+          rank : index + 1,
+          account : account.account,
+          total : account.total,
+        }
+      });
+
+      return new APIResponse(0, result);
+    }catch(error){
+      console.error(error);
+      return new APIError(2470, 'Failed to get ranking : ' + contest);
+    } 
+  }
 }
 
 module.exports = ScoreboardManager;

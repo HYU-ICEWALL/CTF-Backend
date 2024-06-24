@@ -18,7 +18,7 @@ const ScoreboardManager = require('./modules/manager/scoreboard');
 
 const TimeManager = require('./modules/manager/time');
 
-const redisSessionDBName = process.env.REDIS;
+const redisSessionDBName = process.env.REDIS_DB_NAME;
 const redisSessionDB = new RedisDatabase(redisSessionDBName, {
   socket: {
     port: process.env.REDIS_PORT,
