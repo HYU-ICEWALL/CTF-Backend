@@ -58,7 +58,6 @@ const chkAdmin = async (req, res, next) => {
   }
 
   const data = JSON.parse(req.session.data);
-  console.log(data);
   if (data.chk == undefined || data.chk != ADMIN_CHK) {
     return res.render('login');
   }
@@ -90,8 +89,6 @@ router.post('/login', async (req, res) => {
   if (accountResult.data.authority !== 1) {
     return res.redirect('/admin/login');
   }
-
-  console.log(accountResult.data);
 
   const token = sessionManager.createSessionToken();
   req.session.data = JSON.stringify({
@@ -265,6 +262,7 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
   }
 });
 
+
 router.delete('/contest/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
   contestManager.deleteContests({_id: id})
@@ -317,5 +315,24 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
     return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
   }
 });
+
+
+// Ranking example
+/*
+  result example : [{"rank":1,"account":"test","total":302},{"rank":2,"account":"qwe123","total":280}]
+*/
+router.get('/rank', chkAdmin, async (req, res) => {
+  const { contest } = req.query;
+  if(!contest) return res.send('Error: contest not found');
+
+  const ranking = await scoreboardManager.getRanking({ contest: contest });
+
+  if (ranking instanceof APIError) {
+    return res.send(`Error: ${ranking.data}`);
+  }
+
+  res.json(ranking.data);
+});
+
 
 module.exports = router;
