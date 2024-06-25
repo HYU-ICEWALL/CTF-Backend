@@ -11,6 +11,7 @@ const { sessionManager } = require('../instances');
 const multer = require('multer');
 const md5 = require('md5');
 const path = require('path');
+const fs = require('fs');
 
 ///// define upload logic /////
 const storage = multer.diskStorage({
@@ -103,27 +104,6 @@ router.post('/login', async (req, res) => {
     }
     return res.redirect('/admin');
   });
-
-  // if(id === ADMIN_ID && passwd === ADMIN_PASSWORD){
-  //     const token = sessionManager.createSessionToken();
-  //     req.session.data = {
-  //         id: ADMIN_ID,
-  //         token: token,
-  //         chk: ADMIN_CHK
-  //     };
-
-  //     console.log(req.session);
-  //     req.session.save(err => {
-  //         if(err !== undefined){
-  //             console.log(`Error: login error ${err}`);
-  //         }
-
-  //         return res.redirect('/admin');
-  //     });
-
-  // }else{
-  //     return res.redirect('/login');
-  // }
 })
 
 router.get('/problems', chkAdmin, async (req, res) => {
@@ -185,8 +165,70 @@ router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, re
     })
 });
 
+router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, res) => {
+  const { domain, name, flag, score, difficulty, url, port, description, contest, bef_file, p_id } = req.body;
+
+  if(req.file){
+    fs.unlink(`/workspace/problems/${bef_file}`, err => {
+      if(err) console.log(`[Err] file remove: ${err}`);
+    })
+  }
+ 
+  const change = {
+    p_id: p_id,
+    name: name,
+    description: description,
+    src: req.file ? req.file.filename : bef_file,
+    flag: flag,
+    url: url,
+    port: port,
+    score: score,
+    domain: domain,
+    contest: contest,
+  }
+
+  problemManager.updateProblem(change)
+    .then(r => {
+      if(r instanceof APIError) console.log(`file modify error: ${r.message}`);
+
+      res.redirect('/admin/problems');
+    }).catch(err => {
+      console.log(`file modify error: ${err}`);
+
+      error_res = "<script>alert('problem modify error'); history.go(-1);</script>"
+      res.send(error_res);
+    })
+});
+
+router.get('/problem/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
+  
+  problemManager.findProblems({_id: id})
+    .then(r => {
+      if(r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
+      else return res.status(200).json(r);
+    })
+    .catch(err => {
+      console.log(`[Err] find problem: ${err}`);
+      return res.status(500).send('Cannot find problem');
+    })
+});
+
+router.delete('/problem/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
+  problemManager.deleteProblems({_id: id})
+    .then(r => {
+      if(r instanceof APIError) return res.status(500).send(`Cannot remove problem: ${r.message}`);
+      else return res.status(200).send('removed problem successfully');
+    })
+    .catch(err => {
+      console.log(`[Err] cannot remove problem: ${err}`);
+      return res.status(500).send('cannot remove problem');
+    });
+});
+
 router.get('/upload/contest', chkAdmin, async (req, res) => {
-  problemManager.findProblems({ contest: { $exists: false } })
+  problemManager.findProblems()
     .then(result => {
       if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
@@ -196,33 +238,17 @@ router.get('/upload/contest', chkAdmin, async (req, res) => {
 });
 
 router.post('/upload/contest', chkAdmin, async (req, res) => {
-  const { name, selection, description } = req.body;
-  const problems_name = [];
+  const { name, selection, description, begin_at, end_at, state } = req.body;
 
   if (Array.isArray(selection)) {
-    selection.forEach(async id => {
-      const key = { _id: id };
-      problemManager.findProblems(key)
-        .then(async result => {
-          if (result instanceof APIError) {
-            return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
-          }
-
-          let new_doc = result.data[0];
-          problems_name.push(new_doc.name);
-
-          new_doc.contest = name;
-          await problemManager.updateProblem(new_doc);
-        })
-
-    });
 
     const contest = {
       name: name,
       description: description,
-      problems: problems_name,
-      begin_at: "default",
-      end_at: "default",
+      problems: selection,
+      begin_at: begin_at,
+      end_at: end_at,
+      state: state
     };
 
     contestManager.createContest(contest)
@@ -235,6 +261,61 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
     return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
   }
 });
+
+
+router.delete('/contest/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
+  contestManager.deleteContests({_id: id})
+    .then(r => {
+      if(r instanceof APIError) return res.status(500).send(`Cannot remove contest: ${r.message}`);
+      else return res.status(200).send('removed contest successfully');
+    })
+    .catch(err => {
+      console.log(`[Err] cannot remove contest: ${err}`);
+      return res.status(500).send('cannot remove contest');
+    });
+});
+
+router.get('/contest/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
+  
+  contestManager.findContests({_id: id})
+    .then(r => {
+      if(r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
+      else return res.status(200).json(r);
+    })
+    .catch(err => {
+      console.log(`[Err] find problem: ${err}`);
+      return res.status(500).send('Cannot find problem');
+    })
+})
+
+router.post('/modify/contest', chkAdmin, async (req, res) => {
+  const { name, selection, description, begin_at, end_at, state, c_id } = req.body;
+
+  if (Array.isArray(selection)) {
+
+    const change = {
+      c_id: c_id,
+      name: name,
+      description: description,
+      problems: selection,
+      begin_at: begin_at,
+      end_at: end_at,
+      state: state
+    };
+
+    contestManager.updateContest(change)
+      .then(result => {
+        if (result instanceof APIError) console.log(`Error: ${result.data}`);
+
+        return res.redirect('/admin/contests');
+      })
+  } else {
+    return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+  }
+});
+
 
 // Ranking example
 /*
@@ -252,5 +333,6 @@ router.get('/rank', chkAdmin, async (req, res) => {
 
   res.json(ranking.data);
 });
+
 
 module.exports = router;

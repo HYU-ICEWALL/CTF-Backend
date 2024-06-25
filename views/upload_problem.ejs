@@ -22,7 +22,12 @@
         <div class="card w-50">
             <h5 class="card-header">Upload New Problem</h5>
             <div class="card-body">
-                <form action="/admin/upload/problem" method="post" enctype="multipart/form-data">
+                <form action="/admin/upload/problem" method="post" enctype="multipart/form-data" id="problem_form">
+                    <input type="hidden" name="p_id" value="">
+                    <input type="hidden" name="src" value="">
+                    <input type="hidden" name="contest" value="">
+                    <input type="hidden" name="bef_file" value="">
+
                     <select class="form-select mb-3 mt-3" aria-label="Default select example" name="domain" required>
                         <option selected>Select domain</option>
                         <option value="web">Web</option>
@@ -79,5 +84,58 @@
         </div>
     </div>
     
+    <script>
+        async function make_problem(id){
+            const res = await fetch(`/admin/problem/${id}`, {method: 'GET'});
+            if(res.ok){
+                const data = await res.json();
+                const problem = data.data[0];
+
+                const frm = document.getElementById('problem_form');
+                frm.action = '/admin/modify/problem';
+
+                frm['src'].value = problem.file;
+                frm['contest'].value = problem.contest;
+                frm['p_id'].value = problem._id;
+
+                switch(problem.domain){
+                    case 'web':
+                        frm['domain'].selectedIndex = 1;
+                        break;
+                    case 'pwnable':
+                        frm['domain'].selectedIndex = 2;
+                        break;
+                    case 'reversing':
+                        frm['domain'].selectedIndex = 3;
+                        break;
+                    case 'forensic':
+                        frm['domain'].selectedIndex = 4;
+                        break;
+                    case 'crypto':
+                        frm['domain'].selectedIndex = 5;
+                        break;
+                };
+
+                frm['bef_file'].value = problem.file;
+                frm['name'].value = problem.name;
+                frm['description'].value = problem.description;
+                frm['flag'].value = problem.flag;
+                frm['score'].value = problem.score;
+                // frm['difficulty'].value = problem.difficulty;
+                frm['url'].value = problem.url;
+                frm['port'].value = problem.port;
+            }
+        }
+
+        const params = new URL(location.href).searchParams;
+        const type = params.get('type');
+
+        if(type === 'modify'){
+            const p_id = params.get('id');
+            
+            const problem = make_problem(p_id);
+        }
+    </script>
+
 </body>
 </html>
