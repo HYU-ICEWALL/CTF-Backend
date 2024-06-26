@@ -256,11 +256,15 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
         if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
         for (let i = 0; i < selection.length; i++) {
-          await problemManager.updateProblem({
+          await problemManager.updateProblemWithName({
             p_id: selection[i],
             contest: name
           });
         }
+
+        const scoreboardResult = await scoreboardManager.createScoreboard({ contest: name, begin_at: begin_at, end_at: end_at});
+        if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
+
         return res.redirect('/admin/contests');
       });
   } else {
@@ -271,6 +275,22 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
 
 router.delete('/contest/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
+
+  const contest = await contestManager.findContests({ _id: id });
+  if (contest instanceof APIError) return res.status(500).send(`cannot find contest: ${contest.message}`);
+
+  const problems = contest.data[0].problems;
+  for (let i = 0; i < problems.length; i++) {
+    try{
+      await problemManager.updateProblemWithName({
+        name: problems[i],
+        contest: ''
+      });
+    }catch(err){
+      console.log(`[Err] cannot update problem: ${err}`);
+    }
+  }
+
   contestManager.deleteContests({ _id: id })
     .then(r => {
       if (r instanceof APIError) return res.status(500).send(`Cannot remove contest: ${r.message}`);
@@ -294,12 +314,26 @@ router.get('/contest/:id', chkAdmin, async (req, res) => {
       console.log(`[Err] find problem: ${err}`);
       return res.status(500).send('Cannot find problem');
     })
-})
+});
 
 router.post('/modify/contest', chkAdmin, async (req, res) => {
   const { name, selection, description, begin_at, end_at, state, c_id } = req.body;
 
   if (Array.isArray(selection)) {
+    const contest = await contestManager.findContests({ _id: c_id });
+    if (contest instanceof APIError) return res.send(`Error: ${contest.data}`);
+
+    const problems = contest.data[0].problems;
+    for (let i = 0; i < problems.length; i++) {
+      try{
+        await problemManager.updateProblemWithName({
+          name: problems[i],
+          contest: ''
+        });
+      }catch(err){
+        console.log(`[Err] cannot update problem: ${err}`);
+      }
+    }
 
     const change = {
       c_id: c_id,
@@ -321,6 +355,10 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
             contest: name
           });
         }
+
+        const scoreboardResult = await scoreboardManager.createScoreboard({ contest: name, begin_at: begin_at, end_at: end_at });
+        if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
+
         return res.redirect('/admin/contests');
       })
 

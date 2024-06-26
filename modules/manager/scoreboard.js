@@ -6,13 +6,12 @@ class ScoreboardManager {
     this.modelName = modelName;
   }
 
-  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at, duration: duration}, test = false) {
+  async createScoreboard({contest: contest, begin_at: begin_at, end_at: end_at}, test = false) {
     try {
       const scoreboard = {
         contest: contest,
         begin_at: begin_at,
         end_at: end_at,
-        duration: duration,
         submissions: [],
         test: test,
       };
