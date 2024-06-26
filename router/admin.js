@@ -252,16 +252,15 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
     };
 
     contestManager.createContest(contest)
-      .then(result => {
+      .then(async result => {
         if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
-        selection.forEach(async problem => {
+        for (let i = 0; i < selection.length; i++) {
           await problemManager.updateProblem({
-            p_id: problem,
-            contest: result.data.name
+            p_id: selection[i],
+            contest: name
           });
-        });
-
+        }
         return res.redirect('/admin/contests');
       });
   } else {
@@ -313,11 +312,15 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
     };
 
     contestManager.updateContest(change)
-      .then(result => {
+      .then(async result => {
         if (result instanceof APIError) console.log(`Error: ${result.data}`);
-      
 
-
+        for (let i = 0; i < selection.length; i++) {
+          await problemManager.updateProblemWithName({
+            name: selection[i],
+            contest: name
+          });
+        }
         return res.redirect('/admin/contests');
       })
 
