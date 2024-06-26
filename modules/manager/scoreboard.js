@@ -52,11 +52,10 @@ class ScoreboardManager {
     }
   }
 
-  async updateScoreboard({contest: contest, begin_at: begin_at, duration: duration, submissions: submissions}) {
+  async updateScoreboard({contest: contest, begin_at: begin_at, submissions: submissions}) {
     try {
       const change = {};
       if(begin_at) change.begin_at = begin_at;
-      if(duration) change.duration = duration;
       if(submissions) change.submissions = submissions;
       
       const result = await this.database.updateData(this.modelName, { contest: contest }, change);
