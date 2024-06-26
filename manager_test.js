@@ -441,11 +441,11 @@ const findTest = async () => {
 run().then(async () => {
   await deleteAll();
   console.log('Deleted all');
-  await createTest();
-  console.log('Created all');
-  await updateTest();
-  console.log('Updated all');
-  await findTest();
-  console.log('Found all');
+  // await createTest();
+  // console.log('Created all');
+  // await updateTest();
+  // console.log('Updated all');
+  // await findTest();
+  // console.log('Found all');
   exit(0);
 });

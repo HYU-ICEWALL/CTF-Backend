@@ -168,12 +168,12 @@ router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, re
 router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, res) => {
   const { domain, name, flag, score, difficulty, url, port, description, contest, bef_file, p_id } = req.body;
 
-  if(req.file){
+  if (req.file) {
     fs.unlink(`/workspace/problems/${bef_file}`, err => {
-      if(err) console.log(`[Err] file remove: ${err}`);
+      if (err) console.log(`[Err] file remove: ${err}`);
     })
   }
- 
+
   const change = {
     p_id: p_id,
     name: name,
@@ -189,7 +189,7 @@ router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, re
 
   problemManager.updateProblem(change)
     .then(r => {
-      if(r instanceof APIError) console.log(`file modify error: ${r.message}`);
+      if (r instanceof APIError) console.log(`file modify error: ${r.message}`);
 
       res.redirect('/admin/problems');
     }).catch(err => {
@@ -202,10 +202,10 @@ router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, re
 
 router.get('/problem/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
-  
-  problemManager.findProblems({_id: id})
+
+  problemManager.findProblems({ _id: id })
     .then(r => {
-      if(r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
+      if (r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
       else return res.status(200).json(r);
     })
     .catch(err => {
@@ -216,9 +216,9 @@ router.get('/problem/:id', chkAdmin, async (req, res) => {
 
 router.delete('/problem/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
-  problemManager.deleteProblems({_id: id})
+  problemManager.deleteProblems({ _id: id })
     .then(r => {
-      if(r instanceof APIError) return res.status(500).send(`Cannot remove problem: ${r.message}`);
+      if (r instanceof APIError) return res.status(500).send(`Cannot remove problem: ${r.message}`);
       else return res.status(200).send('removed problem successfully');
     })
     .catch(err => {
@@ -255,8 +255,15 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
       .then(result => {
         if (result instanceof APIError) return res.send(`Error: ${result.data}`);
 
+        selection.forEach(async problem => {
+          await problemManager.updateProblem({
+            p_id: problem,
+            contest: result.data.name
+          });
+        });
+
         return res.redirect('/admin/contests');
-      })
+      });
   } else {
     return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
   }
@@ -265,9 +272,9 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
 
 router.delete('/contest/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
-  contestManager.deleteContests({_id: id})
+  contestManager.deleteContests({ _id: id })
     .then(r => {
-      if(r instanceof APIError) return res.status(500).send(`Cannot remove contest: ${r.message}`);
+      if (r instanceof APIError) return res.status(500).send(`Cannot remove contest: ${r.message}`);
       else return res.status(200).send('removed contest successfully');
     })
     .catch(err => {
@@ -278,10 +285,10 @@ router.delete('/contest/:id', chkAdmin, async (req, res) => {
 
 router.get('/contest/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
-  
-  contestManager.findContests({_id: id})
+
+  contestManager.findContests({ _id: id })
     .then(r => {
-      if(r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
+      if (r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
       else return res.status(200).json(r);
     })
     .catch(err => {
@@ -308,9 +315,12 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
     contestManager.updateContest(change)
       .then(result => {
         if (result instanceof APIError) console.log(`Error: ${result.data}`);
+      
+
 
         return res.redirect('/admin/contests');
       })
+
   } else {
     return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
   }
@@ -323,7 +333,7 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
 */
 router.get('/rank', chkAdmin, async (req, res) => {
   const { contest } = req.query;
-  if(!contest) return res.send('Error: contest not found');
+  if (!contest) return res.send('Error: contest not found');
 
   const ranking = await scoreboardManager.getRanking({ contest: contest });
 

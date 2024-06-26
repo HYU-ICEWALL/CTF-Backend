@@ -108,6 +108,32 @@ class ContestManager{
       return new APIError(2150, 'Failed to update participants : ' + name);
     }
   }
+
+  async addProblem({name: name, problem: problem}){
+    try {
+      const update = await this.database.updateData(this.modelName, {name: name}, {$push: {problems: problem}});
+      if(update instanceof APIError){
+        return update;
+      }
+      return new APIResponse(0, {});
+    } catch (error) {
+      console.error(error);
+      return new APIError(2160, 'Failed to add problem : ' + name);
+    }
+  }
+
+  async deleteProblem({name: name, problem: problem}){
+    try {
+      const update = await this.database.updateData(this.modelName, {name: name}, {$pull: {problems: problem}});
+      if(update instanceof APIError){
+        return update;
+      }
+      return new APIResponse(0, {});
+    } catch (error) {
+      console.error(error);
+      return new APIError(2170, 'Failed to delete problem : ' + name);
+    }
+  }
 }
 
 module.exports = ContestManager;
