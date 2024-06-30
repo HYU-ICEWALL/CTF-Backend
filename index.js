@@ -63,12 +63,7 @@ app.listen(port, '0.0.0.0', async () => {
     id: process.env.ADMIN_ID,
     password: process.env.ADMIN_PASSWORD
   });
-
-  if (accountResult instanceof APIError) {
-    console.log(accountResult);
-    return;
-  }
-
+  
   if (accountResult.code == 0) {
     console.log('Admin account already exists');
     return;
