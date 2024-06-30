@@ -61,6 +61,9 @@ const chkAdmin = async (req, res, next) => {
 };
 
 /// routings ///
+
+
+// login routes
 router.get('/', chkAdmin, async (req, res) => {
   res.render('index');
 });
@@ -101,6 +104,7 @@ router.post('/login', async (req, res) => {
   });
 })
 
+// problem routes
 router.get('/problems', chkAdmin, async (req, res) => {
   problemManager.findProblems({})
     .then(result => {
@@ -111,25 +115,16 @@ router.get('/problems', chkAdmin, async (req, res) => {
     });
 });
 
-router.get('/users', chkAdmin, async (req, res) => {
-  profileManager.findProfiles({})
-    .then(result => {
-      if (result instanceof APIError) return res.send(`Error: ${result.data}`);
+router.get('/problem/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
 
-      const users = result.data;
-      res.render('users', { users: users });
-    });
-})
+  const problem = await problemManager.findProblems({ _id: id });
+  if (problem instanceof APIError) return res.send(`Error: ${problem.data}`);
 
-router.get('/contests', chkAdmin, async (req, res) => {
-  contestManager.findContests({})
-    .then(result => {
-      if (result instanceof APIError) return res.send(`Error: ${result.data}`);
+  // TODO : problem page
+  res.send("");
+});
 
-      const contests = result.data;
-      res.render('contests', { contests: contests });
-    });
-})
 
 router.get('/upload/problem', chkAdmin, async (req, res) => {
   res.render('upload_problem');
@@ -195,20 +190,6 @@ router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, re
     })
 });
 
-router.get('/problem/:id', chkAdmin, async (req, res) => {
-  const id = req.params.id;
-
-  problemManager.findProblems({ _id: id })
-    .then(r => {
-      if (r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
-      else return res.status(200).json(r);
-    })
-    .catch(err => {
-      console.log(`[Err] find problem: ${err}`);
-      return res.status(500).send('Cannot find problem');
-    })
-});
-
 router.delete('/problem/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
   const problem = await problemManager.findProblems({ _id: id });
@@ -229,6 +210,46 @@ router.delete('/problem/:id', chkAdmin, async (req, res) => {
       });
   });
 
+});
+
+// user routes
+router.get('/users', chkAdmin, async (req, res) => {
+  profileManager.findProfiles({})
+    .then(result => {
+      if (result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+      const users = result.data;
+      res.render('users', { users: users });
+    });
+})
+
+// contest routes
+router.get('/contests', chkAdmin, async (req, res) => {
+  contestManager.findContests({})
+    .then(result => {
+      if (result instanceof APIError) return res.send(`Error: ${result.data}`);
+
+      const contests = result.data;
+      res.render('contests', { contests: contests });
+    });
+})
+
+
+router.get('/contest/:id', chkAdmin, async (req, res) => {
+  const id = req.params.id;
+  
+  const contest = await contestManager.findContests({ _id: id });
+  const scoreboard = await scoreboardManager.findScoreboards({ contest: contest.data[0].name });
+  if (contest instanceof APIError || scoreboard instanceof APIError) return res.send(`Error: ${contest.data}`);
+  
+  /*
+  ranking result example : [{"rank":1,"account":"test","total":302},{"rank":2,"account":"qwe123","total":280}]
+  */
+  const ranking = await scoreboardManager.getRanking({ contest: contest.data[0].name });
+  if (ranking instanceof APIError) return res.send(`Error: ${ranking.data}`);
+
+  // TODO : contest page
+  res.send("");
 });
 
 router.get('/upload/contest', chkAdmin, async (req, res) => {
@@ -281,7 +302,6 @@ router.post('/upload/contest', chkAdmin, async (req, res) => {
 
 });
 
-
 router.delete('/contest/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
 
@@ -312,20 +332,6 @@ router.delete('/contest/:id', chkAdmin, async (req, res) => {
       console.log(`[Err] cannot remove contest: ${err}`);
       return res.status(500).send('cannot remove contest');
     });
-});
-
-router.get('/contest/:id', chkAdmin, async (req, res) => {
-  const id = req.params.id;
-
-  contestManager.findContests({ _id: id })
-    .then(r => {
-      if (r instanceof APIError) return res.status(500).send(`cannot find problem: ${r.message}`);
-      else return res.status(200).json(r);
-    })
-    .catch(err => {
-      console.log(`[Err] find problem: ${err}`);
-      return res.status(500).send('Cannot find problem');
-    })
 });
 
 router.post('/modify/contest', chkAdmin, async (req, res) => {
@@ -379,23 +385,6 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
   }
 });
 
-
-// Ranking example
-/*
-  result example : [{"rank":1,"account":"test","total":302},{"rank":2,"account":"qwe123","total":280}]
-*/
-router.get('/rank', chkAdmin, async (req, res) => {
-  const { contest } = req.query;
-  if (!contest) return res.send('Error: contest not found');
-
-  const ranking = await scoreboardManager.getRanking({ contest: contest });
-
-  if (ranking instanceof APIError) {
-    return res.send(`Error: ${ranking.data}`);
-  }
-
-  res.json(ranking.data);
-});
 
 
 module.exports = router;
