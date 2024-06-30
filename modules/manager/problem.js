@@ -108,21 +108,9 @@ class ProblemManager {
     }
   }
 
-  async updateProblemWithName({ name: name, description: description, src: src, flag: flag, url: url, port: port, score: score, domain: domain, contest: contest }) {
+  async updateProblemContestWithName({ name: name, contest: contest }) {
     try {
-      const change = {}
-      if (description) change.description = description;
-      if (src) change.file = src;
-      if (flag) change.flag = flag;
-      if (url) change.url = url;
-      if (port) change.port = port;
-      if (score) change.score = score;
-      if (domain) change.domain = domain;
-      if (contest) change.contest = contest;
-
-      console.log(change);
-
-      const result = await this.database.updateData(this.modelName, { name: name }, change);
+      const result = await this.database.updateData(this.modelName, { name: name }, { contest: contest });
       if (result instanceof APIError) {
         return result;
       }

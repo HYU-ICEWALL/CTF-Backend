@@ -110,7 +110,7 @@ class ScoreboardManager {
         return result;
       }
       if (result.data.length != 1) {
-        return new APIError(2451, 'Scoreboard not found : ' + key);
+        return new APIError(2451, 'Scoreboard not found : ' + contest);
       }
       const processed = this.processSubmissions(result.data[0].submissions);
       result.data[0].submissions = processed;
@@ -118,7 +118,7 @@ class ScoreboardManager {
       return result;
     }catch(error){
       console.error(error);
-      return new APIError(2450, 'Failed to find processed scoreboard : ' + key);
+      return new APIError(2450, 'Failed to find processed scoreboard : ' + contest);
     }
   }
 

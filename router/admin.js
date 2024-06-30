@@ -28,13 +28,8 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const filetypes = '/zip/';
-  console.log(file);
-  // const mimetype = filetypes.match(file.mimetype);
   const mimetype = file.originalname.split('.').pop();
   const extname = filetypes.match(path.extname(file.originalname).toLowerCase());
-
-  console.log(mimetype, extname);
-
   if (mimetype == "zip" && extname) {
     return cb(null, true);
   } else {
@@ -141,7 +136,7 @@ router.get('/upload/problem', chkAdmin, async (req, res) => {
 });
 
 router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, res) => {
-  const { domain, name, flag, score, difficulty, url, port, description } = req.body;
+  const { domain, name, flag, score, url, port, description } = req.body;
 
   problemManager.createProblem({
     name: name,
@@ -152,26 +147,27 @@ router.post('/upload/problem', chkAdmin, upload.single('source'), async (req, re
     port: port,
     score: score,
     domain: domain,
+    contest: ""
   })
     .then(response => {
-      if (response instanceof APIError) console.log(`file upload error: ${response.message}`);
+      if (response instanceof APIError) throw response;
 
       res.redirect('/admin/problems');
     }).catch(err => {
       console.log(`file upload error: ${err}`);
-
       error_res = "<script>alert('problem upload error'); history.go(-1);</script>"
       res.send(error_res);
     })
 });
 
 router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, res) => {
-  const { domain, name, flag, score, difficulty, url, port, description, contest, bef_file, p_id } = req.body;
+  const { domain, name, flag, score, url, port, description, bef_file, p_id } = req.body;
 
-  if (req.file) {
-    fs.unlink(`/workspace/problems/${bef_file}`, err => {
+  if (req.file && fs.existsSync(`./problems/${bef_file}`)) {
+    console.log(bef_file);
+    fs.unlink(`./problems/${bef_file}`, err => {
       if (err) console.log(`[Err] file remove: ${err}`);
-    })
+    });
   }
 
   const change = {
@@ -183,13 +179,12 @@ router.post('/modify/problem', chkAdmin, upload.single('source'), async (req, re
     url: url,
     port: port,
     score: score,
-    domain: domain,
-    contest: contest,
+    domain: domain
   }
 
   problemManager.updateProblem(change)
-    .then(r => {
-      if (r instanceof APIError) console.log(`file modify error: ${r.message}`);
+    .then(response => {
+      if (response instanceof APIError) throw response;
 
       res.redirect('/admin/problems');
     }).catch(err => {
@@ -216,15 +211,24 @@ router.get('/problem/:id', chkAdmin, async (req, res) => {
 
 router.delete('/problem/:id', chkAdmin, async (req, res) => {
   const id = req.params.id;
-  problemManager.deleteProblems({ _id: id })
-    .then(r => {
-      if (r instanceof APIError) return res.status(500).send(`Cannot remove problem: ${r.message}`);
-      else return res.status(200).send('removed problem successfully');
-    })
-    .catch(err => {
-      console.log(`[Err] cannot remove problem: ${err}`);
-      return res.status(500).send('cannot remove problem');
-    });
+  const problem = await problemManager.findProblems({ _id: id });
+  if (problem instanceof APIError) return res.status(500).send(`cannot find problem: ${problem.message}`);
+  console.log(problem.data);
+
+  const file = problem.data[0].file;
+  fs.unlink(`./problems/${file}`, err => {
+    if (err) res.send(`Error: ${err}`);
+    problemManager.deleteProblems({ _id: id })
+      .then(response => {
+        if (response instanceof APIError) return res.status(500).send(`Cannot remove problem: ${response.message}`);
+        return res.status(200).send('removed problem successfully');
+      })
+      .catch(err => {
+        console.log(`[Err] cannot remove problem: ${err}`);
+        return res.status(500).send('cannot remove problem');
+      });
+  });
+
 });
 
 router.get('/upload/contest', chkAdmin, async (req, res) => {
@@ -238,38 +242,43 @@ router.get('/upload/contest', chkAdmin, async (req, res) => {
 });
 
 router.post('/upload/contest', chkAdmin, async (req, res) => {
-  const { name, selection, description, begin_at, end_at, state } = req.body;
-
-  if (Array.isArray(selection)) {
-
-    const contest = {
-      name: name,
-      description: description,
-      problems: selection,
-      begin_at: begin_at,
-      end_at: end_at,
-      state: state
-    };
-
-    contestManager.createContest(contest)
-      .then(async result => {
-        if (result instanceof APIError) return res.send(`Error: ${result.data}`);
-
-        for (let i = 0; i < selection.length; i++) {
-          await problemManager.updateProblemWithName({
-            p_id: selection[i],
-            contest: name
+  try{
+    const { name, selection, description, begin_at, end_at, state } = req.body;
+      if (Array.isArray(selection)) {
+        const contest = {
+          name: name,
+          description: description,
+          problems: selection,
+          begin_at: begin_at,
+          end_at: end_at,
+          state: state
+        };
+    
+        contestManager.createContest(contest)
+          .then(async result => {
+            if (result instanceof APIError) return res.send(`Error: ${result.data}`);
+    
+            for (let i = 0; i < selection.length; i++) {
+              await problemManager.updateProblemContestWithName({
+                name: selection[i],
+                contest: name
+              });
+            }
+    
+            const scoreboardResult = await scoreboardManager.createScoreboard({ contest: name, begin_at: begin_at, end_at: end_at});
+            if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
+    
+            return res.redirect('/admin/contests');
           });
-        }
-
-        const scoreboardResult = await scoreboardManager.createScoreboard({ contest: name, begin_at: begin_at, end_at: end_at});
-        if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
-
-        return res.redirect('/admin/contests');
-      });
-  } else {
-    return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+      } else {
+        return res.send("<script>alert('pick more than 2 problems'); history.go(-1);</script>")
+      }
+  }catch(err){
+    console.log(`[Err] upload contest: ${err}`);
+    return res.send(`Error: ${err}`);
   }
+
+
 });
 
 
@@ -282,7 +291,7 @@ router.delete('/contest/:id', chkAdmin, async (req, res) => {
   const problems = contest.data[0].problems;
   for (let i = 0; i < problems.length; i++) {
     try{
-      await problemManager.updateProblemWithName({
+      await problemManager.updateProblemContestWithName({
         name: problems[i],
         contest: ''
       });
@@ -294,6 +303,9 @@ router.delete('/contest/:id', chkAdmin, async (req, res) => {
   contestManager.deleteContests({ _id: id })
     .then(r => {
       if (r instanceof APIError) return res.status(500).send(`Cannot remove contest: ${r.message}`);
+
+      const scoreboardResult = scoreboardManager.deleteScoreboards({ contest: contest.data[0].name });
+      if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
       else return res.status(200).send('removed contest successfully');
     })
     .catch(err => {
@@ -326,7 +338,7 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
     const problems = contest.data[0].problems;
     for (let i = 0; i < problems.length; i++) {
       try{
-        await problemManager.updateProblemWithName({
+        await problemManager.updateProblemContestWithName({
           name: problems[i],
           contest: ''
         });
@@ -350,13 +362,13 @@ router.post('/modify/contest', chkAdmin, async (req, res) => {
         if (result instanceof APIError) console.log(`Error: ${result.data}`);
 
         for (let i = 0; i < selection.length; i++) {
-          await problemManager.updateProblemWithName({
+          await problemManager.updateProblemContestWithName({
             name: selection[i],
             contest: name
           });
         }
 
-        const scoreboardResult = await scoreboardManager.createScoreboard({ contest: name, begin_at: begin_at, end_at: end_at });
+        const scoreboardResult = await scoreboardManager.updateScoreboard({ contest: name, begin_at: begin_at, end_at: end_at });
         if (scoreboardResult instanceof APIError) return res.send(`Error: ${scoreboardResult}`);
 
         return res.redirect('/admin/contests');
