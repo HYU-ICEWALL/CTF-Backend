@@ -36,11 +36,11 @@ const sessionManager = new SessionManager(redisSessionDB, {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: (process.env.MODE == "dev") ? false : true,
+    // secure: (process.env.MODE == "dev") ? false : true,
     domain: (process.env.MODE == "dev") ? undefined : ".icewall.org",
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24,
-    sameSite: 'lax'
+    // httpOnly: true,
+    // maxAge: 1000 * 60 * 60 * 24,
+    // sameSite: 'lax'
   }
 });
 
